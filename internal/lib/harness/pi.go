@@ -1,6 +1,10 @@
 package harness
 
-import "time"
+import (
+	"time"
+
+	"github.com/Harrison-Blair/hive/internal/guide"
+)
 
 // piProfile is the native profile of Pi.
 //
@@ -31,9 +35,14 @@ func (piProfile) StartTimeout() time.Duration { return 120 * time.Second }
 func (piProfile) ReadyTimeout() time.Duration { return 120 * time.Second }
 func (piProfile) ProcessNames() []string      { return []string{"pi"} }
 
-// SystemPromptArg selects first-prompt delivery. Herdr start arguments cannot
-// carry the multiline profile text and guide.
-func (piProfile) SystemPromptArg() string { return "" }
+// GuideArgs appends the guide to the system prompt of Pi. Each newline of the
+// guide becomes the two characters \n.
+func (piProfile) GuideArgs(text string) []string {
+	if text == "" {
+		return nil
+	}
+	return []string{"--append-system-prompt", guide.OneLine(text)}
+}
 
 // Trust gives the trust method of Pi 1.3.0. Pi shows the project trust dialog
 // only for project-local resources, for example .pi/settings.json. --approve

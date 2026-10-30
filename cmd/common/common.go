@@ -1,4 +1,3 @@
-// Package common shares persistent command context and output handling.
 package common
 
 import (

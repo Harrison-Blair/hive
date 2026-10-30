@@ -113,6 +113,7 @@ result object.
 | `hive project list` | List the registered projects. |
 | `hive init` | Write the home path to `~/.config/hive/config.toml`. |
 | `hive logs` | Read the daily log files in `.hive/logs/`. |
+| `hive guide` | Print the hive guide: each command with its flags, and the usage notes. Each agent that hive starts gets this text in its system prompt. |
 | `hive version` | Print the hive version. |
 
 ## Links

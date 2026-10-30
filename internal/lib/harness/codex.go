@@ -1,6 +1,10 @@
 package harness
 
-import "time"
+import (
+	"time"
+
+	"github.com/Harrison-Blair/hive/internal/guide"
+)
 
 // codexProfile is the native profile of Codex.
 //
@@ -38,9 +42,14 @@ func (codexProfile) StartTimeout() time.Duration { return 120 * time.Second }
 func (codexProfile) ReadyTimeout() time.Duration { return 120 * time.Second }
 func (codexProfile) ProcessNames() []string      { return []string{"codex"} }
 
-// SystemPromptArg is empty: Codex takes the profile and the guide at the start
-// of the first prompt (D4).
-func (codexProfile) SystemPromptArg() string { return "" }
+// GuideArgs gives the guide to Codex as developer instructions: a config
+// override with the guide as one TOML basic string.
+func (codexProfile) GuideArgs(text string) []string {
+	if text == "" {
+		return nil
+	}
+	return []string{"-c", "developer_instructions=" + guide.TOMLString(text)}
+}
 
 // Trust gives the trust result of Codex 0.160.1. A directory outside a Git
 // repository shows no trust dialog. A Git repository with no saved trust shows

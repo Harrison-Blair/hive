@@ -41,7 +41,11 @@ var (
 type callOptions struct {
 	deadline time.Duration
 	logger   *slog.Logger
+	redact   []redaction
 }
+
+// redaction is one value that the request and reply log events hide.
+type redaction struct{ value, placeholder string }
 
 // Option changes the behavior of one call.
 type Option func(*callOptions)
@@ -57,6 +61,14 @@ func WithDeadline(deadline time.Duration) Option {
 func WithLogger(logger *slog.Logger) Option {
 	return func(options *callOptions) {
 		options.logger = logger
+	}
+}
+
+// WithRedact makes the request and reply log events of one call show
+// placeholder in place of value. The request itself keeps value.
+func WithRedact(value, placeholder string) Option {
+	return func(options *callOptions) {
+		options.redact = append(options.redact, redaction{value, placeholder})
 	}
 }
 
@@ -153,7 +165,7 @@ func call(ctx context.Context, method string, params, result any, check func() e
 		}
 	}()
 
-	logEvent(options.logger, "herdr request", requestID, method, started, line)
+	logEvent(options.logger, "herdr request", requestID, method, started, redact(line, options.redact))
 	if err := writeLine(conn, line); err != nil {
 		return fail(callFailure(callCtx, fmt.Errorf("herdr %s: write request: %s", method, plainError(err))))
 	}
@@ -161,7 +173,7 @@ func call(ctx context.Context, method string, params, result any, check func() e
 	if err != nil {
 		return fail(callFailure(callCtx, err))
 	}
-	logEvent(options.logger, "herdr reply", requestID, method, started, reply)
+	logEvent(options.logger, "herdr reply", requestID, method, started, redact(reply, options.redact))
 	if err := settleReply(requestID, reply, result); err != nil {
 		return fail(err)
 	}
@@ -348,6 +360,28 @@ func callFailure(ctx context.Context, err error) error {
 		return context.DeadlineExceeded
 	}
 	return err
+}
+
+// redact replaces each value in the JSON body with its placeholder. A value
+// can come with HTML escapes (as Go writes it) or without them (as herdr
+// writes it), so redact replaces both forms.
+func redact(body []byte, redactions []redaction) []byte {
+	for _, r := range redactions {
+		for _, escapeHTML := range []bool{true, false} {
+			var encoded bytes.Buffer
+			encoder := json.NewEncoder(&encoded)
+			encoder.SetEscapeHTML(escapeHTML)
+			if encoder.Encode(r.value) != nil {
+				continue
+			}
+			quoted := bytes.TrimSuffix(encoded.Bytes(), []byte("\n"))
+			inner := quoted[1 : len(quoted)-1]
+			if len(inner) > 0 {
+				body = bytes.ReplaceAll(body, inner, []byte(r.placeholder))
+			}
+		}
+	}
+	return body
 }
 
 func logEvent(logger *slog.Logger, message, requestID, method string, started time.Time, body []byte) {

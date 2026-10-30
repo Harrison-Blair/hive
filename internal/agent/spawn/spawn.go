@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/guide"
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
@@ -38,7 +39,9 @@ type Options struct {
 	// CallerPane is the HERDR_PANE_ID of the caller.
 	CallerPane string
 	// Cwd is the directory of a new tab when Project is empty.
-	Cwd    string
+	Cwd string
+	// Guide is the hive guide. The harness gets it in its system prompt.
+	Guide  string
 	Logger *slog.Logger
 }
 
@@ -65,14 +68,6 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 	if message != "" {
 		return output.Failed("validate", message)
 	}
-	if err := checkName(ctx, home, options.Name, logger); err != nil {
-		return output.Failed("name", err.Error())
-	}
-	parent, err := agent.CallerName(home, options.CallerPane)
-	if err != nil {
-		return output.Failed("caller", err.Error())
-	}
-
 	trust := profile.Trust()
 	var extra []string
 	var env map[string]string
@@ -85,6 +80,18 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 			}
 			env[key] = value
 		}
+	}
+	guideArgs := profile.GuideArgs(options.Guide)
+	args := profile.Args(options.Model, append(extra, guideArgs...))
+	if err := harness.CheckStartLine(profile.Kind(), args); err != nil {
+		return output.Failed("validate", err.Error())
+	}
+	if err := checkName(ctx, home, options.Name, logger); err != nil {
+		return output.Failed("name", err.Error())
+	}
+	parent, err := agent.CallerName(home, options.CallerPane)
+	if err != nil {
+		return output.Failed("caller", err.Error())
 	}
 
 	var place placement
@@ -127,13 +134,18 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		return message + " (also: tab label: " + labelErr + ")"
 	}
 
+	startOpts := []herdr.Option{herdr.WithLogger(logger)}
+	if len(guideArgs) > 0 {
+		value := guideArgs[len(guideArgs)-1]
+		startOpts = append(startOpts, herdr.WithRedact(value, guide.Placeholder(value)))
+	}
 	argv, err := start(ctx, herdr.AgentStartParams{
 		Name:      options.Name,
 		Kind:      profile.Kind(),
 		PaneID:    paneID,
-		Args:      profile.Args(options.Model, extra),
+		Args:      args,
 		TimeoutMS: uint64(profile.StartTimeout() / time.Millisecond),
-	}, logger, session)
+	}, startOpts, session)
 	if err != nil {
 		envelope := output.Failed("start", withLabel(fmt.Sprintf("agent start in pane %s: %s", paneID, err)))
 		envelope.Effects = effects
@@ -142,7 +154,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		}
 		return envelope
 	}
-	logger.Debug("agent started", "command", "agent spawn", "target", options.Name, "pane_id", paneID, "argv", argv)
+	logger.Debug("agent started", "command", "agent spawn", "target", options.Name, "pane_id", paneID, "argv", guide.Redact(argv, guideArgs))
 	effects = append(effects, output.Effect{Resource: "agent", Path: paneID, Action: "started"})
 
 	record := agent.Record{
@@ -298,10 +310,10 @@ func waitReady(ctx context.Context, paneID string, timeout time.Duration, logger
 
 // start sends agent.start. A new pane can hold no shell prompt yet, so start
 // tries again while herdr reports the pane busy.
-func start(ctx context.Context, params herdr.AgentStartParams, logger *slog.Logger, session *string) ([]string, error) {
+func start(ctx context.Context, params herdr.AgentStartParams, opts []herdr.Option, session *string) ([]string, error) {
 	deadline := time.Now().Add(busyTimeout)
 	for {
-		started, err := herdr.AgentStart(ctx, params, herdr.WithLogger(logger))
+		started, err := herdr.AgentStart(ctx, params, opts...)
 		if err == nil {
 			keepSession(session, started.Agent.AgentSession)
 			return started.Argv, nil

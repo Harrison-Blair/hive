@@ -89,7 +89,7 @@ func TestBareHiveInHomeCtrlCQuitsWithNoRecord(t *testing.T) {
 }
 
 func TestRootListsOnlyKeptCommands(t *testing.T) {
-	want := []string{"agent", "completion", "help", "init", "logs", "project", "version"}
+	want := []string{"agent", "completion", "guide", "help", "init", "logs", "project", "version"}
 	var stdout, stderr bytes.Buffer
 	if status := executeWithStreams([]string{"--help"}, strings.NewReader(""), &stdout, &stderr); status != 0 {
 		t.Fatalf("status = %d; stderr %q", status, stderr.String())

@@ -9,7 +9,8 @@
 Hive is a small agent launcher on top of herdr. An agent has no fixed role. It gets its work from its spawn prompt.
 
 - Bare `hive` in the home shows a harness and model picker. Enter saves the `coordinator` record and runs the chosen harness in that pane. That session is the coordinator. The user talks to it.
-- Any agent can start another agent with `hive agent spawn`. The `--prompt` or `--prompt-file` text is the whole brief of the new agent. Hive adds no profile and no role text.
+- Any agent can start another agent with `hive agent spawn`. The `--prompt` or `--prompt-file` text is the whole brief of the new agent. Hive sends it unchanged and adds no role text.
+- Each agent that hive starts, the coordinator too, gets the hive guide in its system prompt: each command with its flags, and the usage notes of `internal/guide/usage.md`. `hive guide` prints the same text. Hive reads and writes no file for the guide. Herdr rejects a start argument with a newline, so the guide goes as one line: claude and pi get `--append-system-prompt` with each newline as the two characters `\n`; codex gets `-c developer_instructions="…"` with the guide as one TOML basic string. Herdr types the start command line into the pane shell, and a shell in canonical mode can cut a line at 4095 bytes. So the full start line, each argument in single quotes, must be at most 4000 bytes (`harness.MaxStartLine`). `guide_budget_test.go` fails when the guide with a long model goes above that. Spawn checks the real line before it calls herdr, and fails in phase `validate` when the line is too long, for example with a long `--model`. Keep the guide dense.
 - A session with no spawn prompt and no coordinator record for its pane has no role. It tells the user so and takes no work from its working directory.
 - When two sources conflict, the spawn prompt wins over the working directory. If the work is still unclear, stop and ask the user.
 
@@ -85,6 +86,7 @@ hive/                            the checkout is the home
 - `internal/lib/<capability>/` holds focused code that several packages share. Do not make one flat grab-bag package. Do not extract a utility before two callers exist.
 - `internal/` never imports Cobra or `cmd/`. Below `internal/`, a parent package never imports its child packages. A child package can import its parent domain package.
 - Some parts keep their current roles. `cmd/common` holds the CLI helpers. A command leaf runs through `common.Run`, or through `common.Stream` when it resolves its own home or renders its own output, as `hive logs` and `hive init` do. Both log `command start` and `command end`. The root command runs bare `hive` through `internal/coordinator`. Each package below `internal/lib/` holds shared code.
+- `common.Guide(root)` renders the hive guide from the live Cobra tree. `internal/guide` holds the usage notes, the Markdown rendering, and the one-line escapes. `hive guide`, `hive agent spawn`, and bare `hive` use `common.Guide(cmd.Root())`. The profile of each harness turns the guide into start arguments with `GuideArgs`. The `agent started` and `exec harness` events, and the herdr request and reply of `agent.start` (through `herdr.WithRedact`), show the guide argument as `<guide N bytes>`. `hive guide` also runs outside a home: it then prints the guide and logs nothing.
 - A group command registers its child commands. It imports them only for this registration.
 - Use direct functions and explicit dependencies. Do not build the command tree in `init` functions or with shared globals. Keep packages flat until a distinct responsibility needs a narrow API. A package with several non-test files has a `doc.go` with a summary and a one-line map of each file.
 
@@ -93,9 +95,10 @@ hive/                            the checkout is the home
 This map shows the path of `hive agent spawn` through the packages. The other agent commands use the same shape.
 
 ```text
-cmd/agent/spawn                flags and the CLI adapter
+cmd/agent/spawn                flags and the CLI adapter; renders the guide with common.Guide
 └▶ internal/agent/spawn        checks the options, places the pane, starts the harness, sends the prompt
-   ├▶ internal/lib/harness     the profile of claude, codex, or pi
+   ├▶ internal/lib/harness     the profile of claude, codex, or pi, and its guide arguments
+   │  └▶ internal/guide        the usage notes and the one-line escapes
    ├▶ internal/lib/herdr       the herdr socket client, protocol 22
    ├▶ internal/agent           the agent records in .hive/agents/ and the caller lookup
    └▶ internal/lib/store       locked, atomic JSON files below the home

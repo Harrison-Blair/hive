@@ -564,3 +564,10 @@ func RegisterProject(t testing.TB, home, id, path, base string) {
 		t.Fatal(err)
 	}
 }
+
+// RequestCount returns the number of requests that the fake received.
+func (h *Herdr) RequestCount() int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return len(h.requests)
+}

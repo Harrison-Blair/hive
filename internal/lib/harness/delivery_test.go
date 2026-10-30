@@ -1,17 +1,19 @@
 package harness
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
-// TestSystemPromptDelivery gives the delivery of each harness. Claude Code
-// reads the profile and the guide from the file that
-// --append-system-prompt-file names. Herdr start arguments cannot carry
-// multiline text. Each other
-// harness takes them at the start of the first prompt (D4).
-func TestSystemPromptDelivery(t *testing.T) {
-	cases := map[string]string{
-		"claude": "--append-system-prompt-file",
-		"pi":     "",
-		"codex":  "",
+// TestGuideArgs gives the start arguments that carry the guide in the system
+// prompt of each harness. Herdr rejects an argument with a newline, so each
+// value is one line.
+func TestGuideArgs(t *testing.T) {
+	const guide = "a \"b\"\nc\\d"
+	cases := map[string][]string{
+		"claude": {"--append-system-prompt", `a "b"\nc\d`},
+		"pi":     {"--append-system-prompt", `a "b"\nc\d`},
+		"codex":  {"-c", `developer_instructions="a \"b\"\nc\\d"`},
 	}
 	for kind, want := range cases {
 		t.Run(kind, func(t *testing.T) {
@@ -19,8 +21,11 @@ func TestSystemPromptDelivery(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Lookup(%s) error = %v", kind, err)
 			}
-			if got := profile.SystemPromptArg(); got != want {
-				t.Fatalf("SystemPromptArg() = %q; want %q", got, want)
+			if got := profile.GuideArgs(guide); !slices.Equal(got, want) {
+				t.Fatalf("GuideArgs() = %q; want %q", got, want)
+			}
+			if got := profile.GuideArgs(""); got != nil {
+				t.Fatalf("GuideArgs(\"\") = %q; want nil", got)
 			}
 		})
 	}
