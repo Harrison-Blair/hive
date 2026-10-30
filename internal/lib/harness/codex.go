@@ -19,6 +19,9 @@ const (
 	sessionPause   = 250 * time.Millisecond
 )
 
+// queueTimeout bounds one codex queue process. A test can shorten it.
+var queueTimeout = 30 * time.Second
+
 // codexProfile is the native profile of Codex.
 //
 // Codex starts its tool commands through one shared app-server daemon by
@@ -89,8 +92,16 @@ func (codexProfile) Deliver(ctx context.Context, paneID, text string, logger *sl
 		return err
 	}
 	started := time.Now()
-	out, err := exec.CommandContext(ctx, "codex", "queue", "--thread", thread, "--message", text).CombinedOutput()
+	queueCtx, cancel := context.WithTimeout(ctx, queueTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(queueCtx, "codex", "queue", "--thread", thread, "--message", text)
+	// A child of codex can keep the output pipe open after the kill.
+	cmd.WaitDelay = time.Second
+	out, err := cmd.CombinedOutput()
 	attrs := []any{"binary", "codex", "args", []string{"queue", "--thread", thread, "--message", "<message>"}, "pane_id", paneID, "duration_ms", time.Since(started).Milliseconds()}
+	if errors.Is(queueCtx.Err(), context.DeadlineExceeded) {
+		err = fmt.Errorf("did not finish within %s: check codex, then send again", queueTimeout)
+	}
 	if err != nil {
 		message := fmt.Sprintf("codex queue --thread %s: %s: %s", thread, err, strings.TrimSpace(string(out)))
 		if logger != nil {

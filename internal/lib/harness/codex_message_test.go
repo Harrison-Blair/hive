@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Harrison-Blair/hive/internal/agent/agenttest"
 )
@@ -85,5 +86,26 @@ func TestCodexDeliverReportsAFailedQueue(t *testing.T) {
 	err := profile.Deliver(deliverCtx(t), paneID, "hi", nil)
 	if err == nil || !strings.Contains(err.Error(), "no rollout found") {
 		t.Fatalf("Deliver error = %v; want the codex error", err)
+	}
+}
+
+func TestCodexDeliverFailsWhenCodexQueueHangs(t *testing.T) {
+	dir := t.TempDir()
+	// The child sleep keeps the output pipe open after codex is killed.
+	if err := os.WriteFile(filepath.Join(dir, "codex"), []byte("#!/bin/sh\nsleep 60\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	defer func(previous time.Duration) { queueTimeout = previous }(queueTimeout)
+	queueTimeout = 200 * time.Millisecond
+	_, paneID := codexPane(t, "01a18ed7-6603-7fc1-9d78-2a5e693e23fb")
+	profile, _ := Lookup("codex")
+	started := time.Now()
+	err := profile.Deliver(deliverCtx(t), paneID, "hi", nil)
+	if err == nil || !strings.Contains(err.Error(), "did not finish within") {
+		t.Fatalf("Deliver error = %v; want a timeout", err)
+	}
+	if elapsed := time.Since(started); elapsed > 4*time.Second {
+		t.Fatalf("Deliver took %s; want it bounded", elapsed)
 	}
 }
