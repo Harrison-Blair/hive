@@ -18,7 +18,10 @@ import (
 // await, it rejects every message during a compaction, and a message without
 // deliverAs during a run; else it starts a run of 300 ms or queues a
 // follow-up. Each outcome is one JSON line on stdout. A stdin line "compact"
-// runs a manual compaction of 500 ms.
+// runs a manual compaction of 500 ms. A stdin line "timers" prints the count of
+// pending timers as event "timers". A stdin line "shutdown" ends the session,
+// emits agent_settled 600 ms later as a run that settles late does, and prints
+// the count of timers 1 s later.
 const fakePi = `
 const ext = await import(process.argv[2]);
 const handlers = {};
@@ -40,7 +43,15 @@ ext.default({
 	},
 });
 handlers.session_start({}, context);
-process.stdin.on("data", () => {
+process.stdin.setEncoding("utf8");
+const timers = () => process.getActiveResourcesInfo().filter((name) => name === "Timeout").length;
+process.stdin.on("data", (command) => {
+	if (command.trim() === "timers") return out("timers", String(timers()));
+	if (command.trim() === "shutdown") {
+		emit("session_shutdown");
+		setTimeout(() => emit("agent_settled"), 600);
+		return setTimeout(() => out("timers", String(timers() - 1)), 1000); // less this timeout
+	}
 	compacting = true;
 	out("compacting", "");
 	setTimeout(() => { compacting = false; emit("session_compact"); }, 500);
@@ -205,5 +216,34 @@ func TestPiExtensionHoldsMessagesDuringCompaction(t *testing.T) {
 	writeTo(t, socket, `{"text":"held"}`+"\n")
 	if got, want := nextEvent(t, events), (event{"started", "held"}); got != want {
 		t.Fatalf("pi event = %+v; want %+v", got, want)
+	}
+}
+
+// TestPiExtensionStopsAtShutdown sends two lines during a compaction, checks
+// that the extension keeps one timer, and ends the session before the
+// compaction ends. The extension must then send nothing and keep no timer.
+func TestPiExtensionStopsAtShutdown(t *testing.T) {
+	socket, stdin, events := runExtension(t)
+	if _, err := io.WriteString(stdin, "compact\n"); err != nil {
+		t.Fatal(err)
+	}
+	if got := nextEvent(t, events); got.Event != "compacting" {
+		t.Fatalf("pi event = %+v; want compacting", got)
+	}
+	writeTo(t, socket, `{"text":"one"}`+"\n")
+	writeTo(t, socket, `{"text":"two"}`+"\n")
+	time.Sleep(100 * time.Millisecond) // the second connection end runs pump
+	if _, err := io.WriteString(stdin, "timers\n"); err != nil {
+		t.Fatal(err)
+	}
+	// One timer of the compaction of fakePi and one of the extension.
+	if got, want := nextEvent(t, events), (event{"timers", "2"}); got != want {
+		t.Fatalf("pi event = %+v; want %+v", got, want)
+	}
+	if _, err := io.WriteString(stdin, "shutdown\n"); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := nextEvent(t, events), (event{"timers", "0"}); got != want {
+		t.Fatalf("pi event = %+v; want %+v and no message after the shutdown", got, want)
 	}
 }

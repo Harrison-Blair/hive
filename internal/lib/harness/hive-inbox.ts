@@ -19,9 +19,12 @@ export default function (pi: ExtensionAPI) {
 	const queue: string[] = [];
 	let running = false; // from agent_start to agent_settled
 	let sentAt = 0; // when a message went to an idle pi whose run has not started yet
-	let timer: ReturnType<typeof setTimeout> | undefined;
+	let timer: ReturnType<typeof setTimeout> | undefined; // at most one
+	let active = false; // from session_start to session_shutdown
 	const pump = () => {
+		clearTimeout(timer);
 		timer = undefined;
+		if (!active) return;
 		try {
 			while (queue.length > 0) {
 				if (running) pi.sendUserMessage(queue.shift()!, { deliverAs: "followUp" });
@@ -34,7 +37,7 @@ export default function (pi: ExtensionAPI) {
 		} catch {
 			// A socket callback never throws: an error there would end pi.
 		}
-		if (queue.length > 0 && !timer) timer = setTimeout(pump, 250);
+		if (queue.length > 0) timer = setTimeout(pump, 250);
 	};
 	const receive = (line: string) => {
 		try {
@@ -55,6 +58,7 @@ export default function (pi: ExtensionAPI) {
 	});
 	pi.on("session_start", (_event, context) => {
 		ctx = context;
+		active = true;
 		if (server) return;
 		fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
 		fs.rmSync(socket, { force: true });
@@ -65,14 +69,19 @@ export default function (pi: ExtensionAPI) {
 			conn.on("error", () => {});
 			// Only a newline ends a record: drop a record cut before its newline.
 			conn.on("end", () => {
+				if (!active) return;
 				data.split("\n").slice(0, -1).filter(Boolean).forEach(receive);
 				pump();
 			});
 		});
 		server.listen(socket);
 	});
+	// A session ends all of its work: its queue, its timer, and its socket.
 	pi.on("session_shutdown", () => {
+		active = false;
+		queue.length = 0;
 		clearTimeout(timer);
+		timer = undefined;
 		server?.close();
 		server = undefined;
 		fs.rmSync(socket, { force: true });
