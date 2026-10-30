@@ -2,10 +2,13 @@
 package harness
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 )
 
 // Profile gives the native arguments, the timeouts, and the process names of
@@ -21,6 +24,10 @@ type Profile interface {
 	// prompt of the harness. Each value is one line, because herdr rejects a
 	// start argument with a newline. It returns nil for an empty guide.
 	GuideArgs(guide string) []string
+	// Deliver hands text to the harness in pane through the native message
+	// path of the harness. It never types into the pane. It fails with the
+	// cause and the fix when the native path is not available.
+	Deliver(ctx context.Context, paneID, text string, opts ...herdr.Option) error
 }
 
 // Trust is the trust dialog result of one harness (decision 13 of the

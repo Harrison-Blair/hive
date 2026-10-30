@@ -152,3 +152,33 @@ func decodePaneInfo(raw json.RawMessage) (PaneInfo, error) {
 	info.RestoreError = wire.RestoreError
 	return info, nil
 }
+
+// ProcessInfo is the shell and the foreground processes of one pane.
+type ProcessInfo struct {
+	PaneID                   string    `json:"pane_id"`
+	ShellPID                 int       `json:"shell_pid"`
+	ForegroundProcessGroupID int       `json:"foreground_process_group_id"`
+	ForegroundProcesses      []Process `json:"foreground_processes"`
+}
+
+// Process is one process of the foreground process group of a pane.
+type Process struct {
+	PID  int      `json:"pid"`
+	Name string   `json:"name"`
+	Argv []string `json:"argv"`
+}
+
+// PaneProcessInfo reads the shell and the foreground processes of one pane.
+func PaneProcessInfo(ctx context.Context, paneID string, opts ...Option) (ProcessInfo, error) {
+	var result struct {
+		Type        *string     `json:"type"`
+		ProcessInfo ProcessInfo `json:"process_info"`
+	}
+	if err := Call(ctx, "pane.process_info", PaneTarget{PaneID: paneID}, &result, opts...); err != nil {
+		return ProcessInfo{}, err
+	}
+	if result.Type == nil || *result.Type != "pane_process_info" {
+		return ProcessInfo{}, fmt.Errorf("bad reply: result type %q, want pane_process_info", stringValue(result.Type))
+	}
+	return result.ProcessInfo, nil
+}

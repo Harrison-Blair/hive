@@ -6,6 +6,6 @@
 // types that hive reads. workspace.go owns workspace.create, workspace.close,
 // and the typed worktree metadata. tab.go owns tab.rename; tab_create.go owns
 // tab.create. worktree.go owns worktree.list and worktree.create. agent.go owns
-// agent.start, agent.prompt, agent.get, and the typed session. pane.go owns
-// pane.get and pane.close.
+// agent.start, agent.prompt, agent.get, agent.wait, and the typed session.
+// pane.go owns pane.get, pane.close, pane.send_input, and pane.process_info.
 package herdr

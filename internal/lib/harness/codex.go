@@ -1,9 +1,12 @@
 package harness
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/guide"
+	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 )
 
 // codexProfile is the native profile of Codex.
@@ -62,4 +65,9 @@ func (codexProfile) Trust() Trust {
 		Version:  "0.160.1",
 		NoMethod: "a Git repository with no saved trust shows the folder trust dialog; only a saved trust in ~/.codex/config.toml skips it",
 	}
+}
+
+// Deliver fails: hive has no native message path to codex yet.
+func (codexProfile) Deliver(context.Context, string, string, ...herdr.Option) error {
+	return fmt.Errorf("hive has no native message path to codex yet")
 }

@@ -1,4 +1,4 @@
-// Package send sends one prompt to one agent by name.
+// Package send sends one message to one agent by name.
 package send
 
 import (
@@ -10,13 +10,18 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 )
 
-// waitTimeout bounds the wait of --wait for the end of the turn.
-const waitTimeout = 60 * time.Minute
+const (
+	// waitTimeout bounds the wait of --wait for the end of the turn.
+	waitTimeout = 60 * time.Minute
+	// startTimeout bounds the wait of --wait for the start of the turn.
+	startTimeout = 15 * time.Second
+)
 
 // Options holds the values of one send.
 type Options struct {
@@ -36,7 +41,8 @@ type Result struct {
 	Status string `json:"status"`
 }
 
-// Run sends "⬢ SENDER: TEXT" to the agent of the record Name.
+// Run delivers "⬢ SENDER: TEXT" to the agent of the record Name through the
+// native message path of its harness. It never types into the pane.
 func Run(ctx context.Context, home string, options Options) output.Envelope {
 	logger := agent.Logger(options.Logger)
 	envelope := run(ctx, home, options, logger)
@@ -66,33 +72,55 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	if sender == "" {
 		sender = "user"
 	}
-	if _, err := herdr.PaneGet(ctx, record.Pane, herdr.WithLogger(logger)); err != nil {
+	pane, err := herdr.PaneGet(ctx, record.Pane, herdr.WithLogger(logger))
+	if err != nil {
 		if agent.IsCode(err, herdr.CodePaneNotFound) {
 			return output.Failed("agent", fmt.Sprintf("agent %s is gone: herdr has no pane %s", record.Name, record.Pane))
 		}
 		return output.Failed("agent", fmt.Sprintf("agent %s: %s", record.Name, err))
 	}
-
-	params := herdr.AgentPromptParams{Target: record.Pane, Text: "⬢ " + sender + ": " + options.Text}
-	opts := []herdr.Option{herdr.WithLogger(logger)}
-	if options.Wait {
-		params.Wait = &herdr.AgentPromptWaitOptions{Until: []string{"idle", "done", "blocked"}, TimeoutMS: uint64(waitTimeout / time.Millisecond)}
-		opts = append(opts, herdr.WithDeadline(waitTimeout+10*time.Second))
-	}
-	info, err := herdr.AgentPrompt(ctx, params, opts...)
-	if agent.IsCode(err, herdr.CodeAgentBlocked) {
-		return output.Failed("prompt", fmt.Sprintf("agent %s is blocked by a dialog in pane %s: answer it in the pane; the prompt was not sent", record.Name, record.Pane))
-	}
+	profile, err := harness.Lookup(record.Harness)
 	if err != nil {
-		return output.Failed("prompt", fmt.Sprintf("prompt to agent %s in pane %s: %s", record.Name, record.Pane, err))
+		return output.Failed("agent", fmt.Sprintf("agent %s: %s", record.Name, err))
 	}
-	logger.Debug("agent prompted", "command", "agent send", "target", record.Name, "pane_id", record.Pane, hivelog.Body(params.Text))
-	result := Result{Name: record.Name, Pane: record.Pane, Sender: sender, Status: info.AgentStatus}
-	effects := []output.Effect{{Resource: "agent", Path: record.Pane, Action: "prompted"}}
-	if options.Wait && info.AgentStatus == "blocked" {
-		return output.Envelope{Outcome: output.OutcomePartial, Phase: "wait", Effects: effects, Error: fmt.Sprintf("agent %s is blocked by a dialog in pane %s: answer it in the pane", record.Name, record.Pane), Result: result}
+
+	text := "⬢ " + sender + ": " + options.Text
+	if err := profile.Deliver(ctx, record.Pane, text, herdr.WithLogger(logger)); err != nil {
+		return output.Failed("deliver", fmt.Sprintf("agent %s in pane %s: %s", record.Name, record.Pane, err))
+	}
+	logger.Debug("agent messaged", "command", "agent send", "target", record.Name, "pane_id", record.Pane, hivelog.Body(text))
+	result := Result{Name: record.Name, Pane: record.Pane, Sender: sender, Status: pane.AgentStatus}
+	effects := []output.Effect{{Resource: "agent", Path: record.Pane, Action: "messaged"}}
+	if !options.Wait {
+		return output.Envelope{Outcome: output.OutcomeOK, Phase: "complete", Effects: effects, Error: nil, Result: result}
+	}
+	status, err := waitTurn(ctx, record.Pane, pane.AgentStatus, logger)
+	if err != nil {
+		return output.Envelope{Outcome: output.OutcomePartial, Phase: "wait", Effects: effects, Error: fmt.Sprintf("wait for agent %s in pane %s: %s", record.Name, record.Pane, err), Result: result}
+	}
+	result.Status = status
+	if status == "blocked" {
+		return output.Envelope{Outcome: output.OutcomePartial, Phase: "wait", Effects: effects, Error: fmt.Sprintf("agent %s is blocked by a dialog in pane %s: the message waits until the dialog closes; answer it in the pane", record.Name, record.Pane), Result: result}
 	}
 	return output.Envelope{Outcome: output.OutcomeOK, Phase: "complete", Effects: effects, Error: nil, Result: result}
+}
+
+// waitTurn waits for the turn of the message to end and returns the status.
+// The harness starts the turn some time after the delivery, and agent.wait
+// matches a status that the agent already has. So when the agent was idle or
+// done, waitTurn first waits up to startTimeout for the status working.
+func waitTurn(ctx context.Context, paneID, before string, logger *slog.Logger) (string, error) {
+	if before != "working" && before != "blocked" {
+		_, err := herdr.AgentWait(ctx, herdr.AgentWaitParams{Target: paneID, Until: []string{"working"}, TimeoutMS: uint64(startTimeout / time.Millisecond)}, herdr.WithLogger(logger), herdr.WithDeadline(startTimeout+10*time.Second))
+		if err != nil && !agent.IsCode(err, "timeout") {
+			return "", err
+		}
+	}
+	info, err := herdr.AgentWait(ctx, herdr.AgentWaitParams{Target: paneID, Until: []string{"idle", "done", "blocked"}, TimeoutMS: uint64(waitTimeout / time.Millisecond)}, herdr.WithLogger(logger), herdr.WithDeadline(waitTimeout+10*time.Second))
+	if err != nil {
+		return "", err
+	}
+	return info.AgentStatus, nil
 }
 
 // Text renders the result of one send.

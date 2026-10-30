@@ -18,6 +18,11 @@ Hive is a small agent launcher on top of herdr. An agent has no fixed role. It g
 
 `hive agent send NAME TEXT` delivers `⬢ SENDER: TEXT`. SENDER is the hive record of the caller pane (matched by `HERDR_PANE_ID`), or `user` when that pane has no record.
 
+Send hands the message to the native message path of the target harness, through `Deliver` of its profile in `internal/lib/harness`. It never types into the pane, so a draft in the input box stays unchanged. When the native path is not available, send fails with the cause and the fix and sends nothing. It has no paste fallback.
+
+- claude: every claude start, in each spawn placement and in bare `hive`, gets `--settings '{"crossSessionInbound":"accept"}'`. Send finds the claude process ID with herdr `pane.process_info`, checks that its argv has that setting, and writes one JSON line `{"type":"user","message":{"role":"user","content":"⬢ SENDER: TEXT"}}` to `$XDG_RUNTIME_DIR/cc-socks/<PID>.sock`. Claude shows it as a message from another session. A `⬢ user:` label in it still has the authority of the user. Claude starts a turn when it is idle, and queues the message while a turn runs or a dialog is open.
+- codex and pi: no native path yet. Send fails.
+
 - A message that starts with `⬢ user:` came from the user. It has the authority of the user.
 - A message that starts with `⬢ NAME:` came from the agent NAME. It carries the request of that agent inside the work the user approved. It does not widen that work.
 - A message without `⬢` came from the user, typed in the pane.
@@ -104,12 +109,12 @@ The home is `$HIVE_HOME` when that variable is set and not empty, otherwise `~/.
 
 ### Request flow
 
-This map shows the path of `hive agent spawn` through the packages. The other agent commands use the same shape.
+This map shows the path of `hive agent spawn` through the packages. The other agent commands use the same shape. `hive agent send` goes from `internal/agent/send` to `Deliver` of the harness profile, which uses herdr and the native message path of the harness.
 
 ```text
 cmd/agent/spawn                flags and the CLI adapter; renders the guide with common.Guide
 └▶ internal/agent/spawn        checks the options, places the pane, starts the harness, sends the prompt
-   ├▶ internal/lib/harness     the profile of claude, codex, or pi, and its guide arguments
+   ├▶ internal/lib/harness     the profile of claude, codex, or pi: its start and guide arguments, and its message delivery
    │  └▶ internal/guide        the usage notes and the one-line escapes
    ├▶ internal/lib/herdr       the herdr socket client, protocol 22
    ├▶ internal/agent           the agent records in <home>/agents/ and the caller lookup

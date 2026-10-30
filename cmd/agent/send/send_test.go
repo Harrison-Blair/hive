@@ -5,12 +5,13 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"slices"
 	"testing"
+	"time"
 
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/agent/agenttest"
+	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/spf13/cobra"
 )
 
@@ -34,14 +35,27 @@ func execute(t *testing.T, args ...string) (int, string) {
 	return 0, out.String()
 }
 
+// claudeAgent starts a fake claude agent in pane with an inbox socket.
+func claudeAgent(t *testing.T, fake *agenttest.Herdr, paneID string) <-chan string {
+	t.Helper()
+	profile, err := harness.Lookup("claude")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fake.StartAgent(paneID, "kid", "claude", "idle")
+	fake.SetArgs(paneID, profile.Args("m", nil))
+	pane, _ := fake.Pane(paneID)
+	return agenttest.ListenClaude(t, pane.PID)
+}
+
 func TestSendCLISendsTextFromCallerPane(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	home := agenttest.Home(t)
 	t.Setenv("HIVE_HOME", home)
 	_, boss := fake.AddWorkspace("mine", "", false)
 	kid := fake.AddPane("w1", "")
-	fake.StartAgent(kid.ID, "kid", "pi", "idle")
-	for _, record := range []agent.Record{{Name: "boss", Pane: boss.ID}, {Name: "kid", Pane: kid.ID}} {
+	lines := claudeAgent(t, fake, kid.ID)
+	for _, record := range []agent.Record{{Name: "boss", Pane: boss.ID}, {Name: "kid", Pane: kid.ID, Harness: "claude"}} {
 		if err := agent.Save(home, record); err != nil {
 			t.Fatal(err)
 		}
@@ -50,9 +64,14 @@ func TestSendCLISendsTextFromCallerPane(t *testing.T) {
 	if status, out := execute(t, "send", "kid", "hi there"); status != 0 {
 		t.Fatalf("status %d, output %q", status, out)
 	}
-	pane, _ := fake.Pane(kid.ID)
-	if !slices.Equal(pane.Prompts, []string{"⬢ boss: hi there"}) {
-		t.Fatalf("prompts = %q", pane.Prompts)
+	want := `{"type":"user","message":{"role":"user","content":"⬢ boss: hi there"}}` + "\n"
+	select {
+	case line := <-lines:
+		if line != want {
+			t.Fatalf("line = %q; want %q", line, want)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("no message reached the socket")
 	}
 }
 
@@ -68,8 +87,8 @@ func TestSendCLILogsCallerAndTargetOnEachEvent(t *testing.T) {
 	t.Setenv("HIVE_HOME", home)
 	_, boss := fake.AddWorkspace("mine", "", false)
 	kid := fake.AddPane("w1", "")
-	fake.StartAgent(kid.ID, "kid", "pi", "idle")
-	for _, record := range []agent.Record{{Name: "boss", Pane: boss.ID}, {Name: "kid", Pane: kid.ID}} {
+	claudeAgent(t, fake, kid.ID)
+	for _, record := range []agent.Record{{Name: "boss", Pane: boss.ID}, {Name: "kid", Pane: kid.ID, Harness: "claude"}} {
 		if err := agent.Save(home, record); err != nil {
 			t.Fatal(err)
 		}
@@ -88,8 +107,8 @@ func TestSendCLILogsUserWhenThePaneHasNoRecord(t *testing.T) {
 	t.Setenv("HIVE_HOME", home)
 	fake.AddWorkspace("mine", "", false)
 	kid := fake.AddPane("w1", "")
-	fake.StartAgent(kid.ID, "kid", "pi", "idle")
-	if err := agent.Save(home, agent.Record{Name: "kid", Pane: kid.ID}); err != nil {
+	claudeAgent(t, fake, kid.ID)
+	if err := agent.Save(home, agent.Record{Name: "kid", Pane: kid.ID, Harness: "claude"}); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("HERDR_PANE_ID", "")

@@ -735,7 +735,7 @@ func TestSpawnStartsTheHarnessWithTheGuide(t *testing.T) {
 	}
 	record, _ := agent.Load(home, "kid")
 	pane, _ := fake.Pane(record.Pane)
-	want := []string{"--dangerously-skip-permissions", "--model", "m", "--append-system-prompt", `line one\nline two`}
+	want := []string{"--dangerously-skip-permissions", "--settings", `{"crossSessionInbound":"accept"}`, "--model", "m", "--append-system-prompt", `line one\nline two`}
 	if !slices.Equal(pane.Args, want) {
 		t.Fatalf("agent.start args = %q; want %q", pane.Args, want)
 	}

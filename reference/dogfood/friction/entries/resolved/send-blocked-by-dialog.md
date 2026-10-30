@@ -1,9 +1,9 @@
 ---
 title: "A report sent to a pane with an open dialog is lost"
 description: "hive agent send refuses a target that a dialog blocks, and a worker that ends its turn never sends the report again"
-status: "Open"
+status: "Resolved 2026-10-30"
 opened: 2026-10-30
-decision: ""
+decision: "hive agent send writes the message to the claude inbox socket, and claude queues it while a dialog is open and delivers it after the dialog closes (live check with claude 2.1.314, an AskUserQuestion dialog). Send no longer refuses a blocked target. With --wait it returns partial with status blocked and the message waits. The second point, the worktree name with a slash, moved to the entry worktree-name-no-slash"
 ---
 
 **Issue:** `hive agent send` fails in phase `prompt` when herdr reports the

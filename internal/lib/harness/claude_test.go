@@ -28,13 +28,14 @@ func TestClaudeArgsAndTimeouts(t *testing.T) {
 	if got, want := profile.Kind(), "claude"; got != want {
 		t.Fatalf("Kind() = %q; want %q", got, want)
 	}
-	if got, want := profile.Args("", nil), []string{"--dangerously-skip-permissions"}; !reflect.DeepEqual(got, want) {
+	const inbound = `{"crossSessionInbound":"accept"}`
+	if got, want := profile.Args("", nil), []string{"--dangerously-skip-permissions", "--settings", inbound}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("Args empty = %#v; want %#v", got, want)
 	}
-	if got, want := profile.Args("claude-haiku-5-5", nil), []string{"--dangerously-skip-permissions", "--model", "claude-haiku-5-5"}; !reflect.DeepEqual(got, want) {
+	if got, want := profile.Args("claude-haiku-5-5", nil), []string{"--dangerously-skip-permissions", "--settings", inbound, "--model", "claude-haiku-5-5"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("Args model = %#v; want %#v", got, want)
 	}
-	if got, want := profile.Args("m", []string{"--one", "--two"}), []string{"--dangerously-skip-permissions", "--model", "m", "--one", "--two"}; !reflect.DeepEqual(got, want) {
+	if got, want := profile.Args("m", []string{"--one", "--two"}), []string{"--dangerously-skip-permissions", "--settings", inbound, "--model", "m", "--one", "--two"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("Args extra = %#v; want %#v", got, want)
 	}
 	if got, want := profile.StartTimeout(), 120*time.Second; got != want {

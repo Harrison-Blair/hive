@@ -1,9 +1,12 @@
 package harness
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 )
 
 type testProfile struct {
@@ -21,6 +24,9 @@ func (p testProfile) ReadyTimeout() time.Duration                { return p.read
 func (p testProfile) ProcessNames() []string                     { return p.names }
 func (p testProfile) Trust() Trust                               { return Trust{} }
 func (p testProfile) GuideArgs(string) []string                  { return nil }
+func (p testProfile) Deliver(context.Context, string, string, ...herdr.Option) error {
+	return nil
+}
 
 func TestCheckBounds(t *testing.T) {
 	cases := []struct {

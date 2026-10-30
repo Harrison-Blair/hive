@@ -1,9 +1,13 @@
 package harness
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/guide"
+	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 )
 
 // claudeProfile is the native profile of Claude Code.
@@ -12,7 +16,7 @@ type claudeProfile struct{}
 func (claudeProfile) Kind() string { return "claude" }
 
 func (claudeProfile) Args(model string, extra []string) []string {
-	args := []string{"--dangerously-skip-permissions"}
+	args := []string{"--dangerously-skip-permissions", "--settings", claudeInbound}
 	if model != "" {
 		args = append(args, "--model", model)
 	}
@@ -38,4 +42,37 @@ func (claudeProfile) GuideArgs(text string) []string {
 // value shows the dialog again.
 func (claudeProfile) Trust() Trust {
 	return Trust{Version: "2.1.307", Env: []string{"CLAUDE_CODE_SANDBOXED=1"}}
+}
+
+// Deliver writes text as one user message line to the inbox socket of the
+// Claude Code process in pane. Claude Code shows it as a message from another
+// session. It starts a turn when the session is idle, and it queues the
+// message while a turn runs or a dialog is open.
+func (p claudeProfile) Deliver(ctx context.Context, paneID, text string, opts ...herdr.Option) error {
+	process, err := harnessProcess(ctx, p, paneID, opts...)
+	if err != nil {
+		return err
+	}
+	if !hasArgPair(process.Argv, "--settings", claudeInbound) {
+		return fmt.Errorf("claude process %d was started without --settings %s: restart the agent", process.PID, claudeInbound)
+	}
+	path, err := claudeSocket(process.PID)
+	if err != nil {
+		return fmt.Errorf("%w: restart the agent", err)
+	}
+	type message struct {
+		Role    string `json:"role"`
+		Content string `json:"content"`
+	}
+	line, err := json.Marshal(struct {
+		Type    string  `json:"type"`
+		Message message `json:"message"`
+	}{"user", message{"user", text}})
+	if err != nil {
+		return err
+	}
+	if err := writeLine(ctx, path, line); err != nil {
+		return fmt.Errorf("write to the message socket %s: %w", path, err)
+	}
+	return nil
 }

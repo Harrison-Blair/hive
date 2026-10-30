@@ -47,7 +47,7 @@ func TestRunWritesRecordAndExecsHarness(t *testing.T) {
 		wantArgs   []string
 	}{
 		{Choice{"pi", "openai-codex/gpt-6-sol"}, "pi", []string{"--model", "openai-codex/gpt-6-sol"}},
-		{Choice{"claude", "claude-opus-5-5"}, "claude", []string{"--dangerously-skip-permissions", "--model", "claude-opus-5-5"}},
+		{Choice{"claude", "claude-opus-5-5"}, "claude", []string{"--dangerously-skip-permissions", "--settings", `{"crossSessionInbound":"accept"}`, "--model", "claude-opus-5-5"}},
 		{Choice{"codex", "gpt-6-sol"}, "codex", []string{"--no-daemon", "--dangerously-bypass-approvals-and-sandbox", "--model", "gpt-6-sol"}},
 	}
 	for _, tc := range cases {

@@ -1,9 +1,12 @@
 package harness
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/guide"
+	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 )
 
 // piProfile is the native profile of Pi.
@@ -49,4 +52,9 @@ func (piProfile) GuideArgs(text string) []string {
 // trusts them for this run only and writes nothing to ~/.pi/agent/trust.json.
 func (piProfile) Trust() Trust {
 	return Trust{Version: "1.3.0", Args: []string{"--approve"}}
+}
+
+// Deliver fails: hive has no native message path to pi yet.
+func (piProfile) Deliver(context.Context, string, string, ...herdr.Option) error {
+	return fmt.Errorf("hive has no native message path to pi yet")
 }

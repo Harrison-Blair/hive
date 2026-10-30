@@ -53,6 +53,8 @@ type Pane struct {
 	Prompts  []string
 	// Session is the native session ID that herdr reports as agent_session.
 	Session string
+	// PID is the process ID that pane.process_info gives for the agent.
+	PID int
 	// ready is true when herdr reports interactive_ready for the agent.
 	ready bool
 	// pending counts the agent.get calls that still see the launch.
@@ -75,7 +77,8 @@ type Herdr struct {
 	nextPane   int
 	// StartStatus is the status that agent.wait gives after agent.start.
 	StartStatus string
-	// WaitStatus is the status that a prompt with a wait gives.
+	// WaitStatus is the status that a prompt with a wait, or an agent.wait
+	// for a settled status, gives.
 	WaitStatus string
 	// StartSession is the session ID that an agent gets when it is ready.
 	StartSession string
@@ -132,6 +135,14 @@ func (h *Herdr) StartAgent(paneID, name, kind, status string) {
 	pane := h.pane(paneID)
 	pane.Name, pane.Kind, pane.Status = name, kind, status
 	pane.ready = status != "blocked"
+}
+
+// SetArgs sets the start arguments of the agent of one pane, as
+// pane.process_info shows them in its argv.
+func (h *Herdr) SetArgs(paneID string, args []string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.pane(paneID).Args = args
 }
 
 // SetSession sets the agent session ID of one pane.
@@ -238,6 +249,7 @@ func (h *Herdr) addPane(ws *Workspace, cwd string, env map[string]string) *Pane 
 		Cwd:         cwd,
 		Status:      "unknown",
 		Env:         env,
+		PID:         1000 + h.nextPane,
 	}
 	h.panes = append(h.panes, pane)
 	return pane
@@ -412,6 +424,19 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 			return nil, failed
 		}
 		return map[string]any{"type": "pane_info", "pane": paneInfo(pane)}, nil
+	case "pane.process_info":
+		pane, failed := paneOf()
+		if failed != nil {
+			return nil, failed
+		}
+		processes := []any{}
+		if pane.Kind != "" {
+			argv := append([]string{pane.Kind}, pane.Args...)
+			processes = append(processes, map[string]any{"pid": pane.PID, "name": pane.Kind, "argv": argv})
+		}
+		return map[string]any{"type": "pane_process_info", "process_info": map[string]any{
+			"pane_id": pane.ID, "shell_pid": pane.PID - 1, "foreground_process_group_id": pane.PID, "foreground_processes": processes,
+		}}, nil
 	case "pane.close":
 		if _, failed := paneOf(); failed != nil {
 			return nil, failed
@@ -470,6 +495,21 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 			if pane.ready {
 				pane.Session = h.StartSession
 			}
+		}
+		return map[string]any{"type": "agent_info", "agent": agentInfo(pane)}, nil
+	case "agent.wait":
+		pane := h.pane(text("target"))
+		if pane == nil || pane.Kind == "" {
+			return nil, &serverError{"agent_not_found", "agent " + text("target") + " not found"}
+		}
+		until, _ := params["until"].([]any)
+		if len(until) == 1 && until[0] == "working" {
+			// A delivered message starts a turn.
+			if pane.Status != "blocked" {
+				pane.Status = "working"
+			}
+		} else if pane.Status != "blocked" {
+			pane.Status = h.WaitStatus
 		}
 		return map[string]any{"type": "agent_info", "agent": agentInfo(pane)}, nil
 	case "agent.prompt":

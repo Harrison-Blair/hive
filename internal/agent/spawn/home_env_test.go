@@ -89,6 +89,20 @@ func TestSpawnGivesClaudeTheTrustEnv(t *testing.T) {
 	}
 }
 
+// TestSpawnLetsClaudeAcceptMessages checks that each placement starts Claude
+// Code with the setting that accepts the messages of hive agent send.
+func TestSpawnLetsClaudeAcceptMessages(t *testing.T) {
+	for i, test := range placements {
+		t.Run(test.name, func(t *testing.T) {
+			pane, _ := spawnIn(t, i, "claude")
+			index := slices.Index(pane.Args, "--settings")
+			if index < 0 || index+1 >= len(pane.Args) || pane.Args[index+1] != `{"crossSessionInbound":"accept"}` {
+				t.Fatalf("args of the agent = %q; want --settings with crossSessionInbound accept", pane.Args)
+			}
+		})
+	}
+}
+
 // TestSpawnGivesPiTheTrustArgs checks that each placement starts Pi with
 // --approve.
 func TestSpawnGivesPiTheTrustArgs(t *testing.T) {
