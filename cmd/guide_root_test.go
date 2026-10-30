@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/Harrison-Blair/hive/internal/agent/agenttest"
 )
 
 func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
@@ -15,28 +17,28 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 	}
 	text := stdout.String()
 	for _, command := range []string{
-		"hive", "hive agent", "hive agent list", "hive agent send", "hive agent spawn", "hive agent stop",
-		"hive guide", "hive init", "hive logs", "hive project", "hive project list", "hive project register", "hive version",
+		"hive", "hive agent", "hive agent list", "hive agent send NAME TEXT", "hive agent spawn", "hive agent stop NAME",
+		"hive guide", "hive init", "hive logs", "hive project", "hive project list", "hive project register PATH", "hive version",
 	} {
-		if !strings.Contains(text, "\n### "+command+"\n") {
+		if !strings.Contains(text, "\n"+command+": ") {
 			t.Errorf("guide has no command %q", command)
 		}
 	}
 	for _, flag := range []string{
-		"- `--json` (bool): write JSON output",
-		"- `--harness` (string): harness: claude, codex, or pi (required)",
-		"- `--prompt-file` (string): file with the first prompt text",
-		"- `--worktree` (string): worktree and branch name: start in a new worktree of --project",
-		"- `--wait` (bool): wait until the agent is idle or done again",
-		"- `--remove-worktree` (bool): also remove the clean worktree checkout; the branch stays",
-		"- `--limit` (int, default 200): maximum matches to print",
-		"- `--agent` (string): agent name: matches agent_id or target",
+		"  --json bool: write JSON output",
+		"  --harness string: harness: claude, codex, or pi (required)",
+		"  --prompt-file string: file with the first prompt text",
+		"  --worktree string: worktree and branch name: start in a new worktree of --project",
+		"  --wait bool: wait until the agent is idle or done again",
+		"  --remove-worktree bool: also remove the clean worktree checkout; the branch stays",
+		"  --limit int=200: maximum matches to print",
+		"  --agent string: agent name: matches agent_id or target",
 	} {
 		if !strings.Contains(text, flag+"\n") {
 			t.Errorf("guide has no flag line %q", flag)
 		}
 	}
-	for _, absent := range []string{"### hive completion", "### hive help"} {
+	for _, absent := range []string{"\nhive completion", "\nhive help"} {
 		if strings.Contains(text, absent) {
 			t.Errorf("guide has %q", absent)
 		}
@@ -60,5 +62,40 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 	}
 	if envelope.Outcome != "ok" || envelope.Result.Text != text {
 		t.Fatalf("envelope = %+v; want ok with the text of hive guide", envelope)
+	}
+}
+
+func TestRootGuideWorksWithoutAHome(t *testing.T) {
+	t.Chdir(t.TempDir())
+	t.Setenv("HIVE_HOME", "")
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	for _, args := range [][]string{{"guide"}, {"--json", "guide"}} {
+		var stdout, stderr bytes.Buffer
+		if status := executeWithStreams(args, strings.NewReader(""), &stdout, &stderr); status != 0 || stderr.Len() != 0 {
+			t.Fatalf("%v: status = %d, stderr = %q; want 0 and empty stderr", args, status, stderr.String())
+		}
+		if !strings.Contains(stdout.String(), "hive agent spawn: start an agent") {
+			t.Fatalf("%v: stdout = %q; want the guide", args, stdout.String())
+		}
+	}
+	var stdout bytes.Buffer
+	_ = executeWithStreams([]string{"--json", "guide"}, strings.NewReader(""), &stdout, &stdout)
+	var envelope struct {
+		Outcome string `json:"outcome"`
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &envelope); err != nil || envelope.Outcome != "ok" {
+		t.Fatalf("--json stdout = %q; want one ok envelope", stdout.String())
+	}
+}
+
+func TestRootGuideLogsInAHome(t *testing.T) {
+	home := testHome(t)
+	var stdout, stderr bytes.Buffer
+	if status := executeWithStreams([]string{"guide"}, strings.NewReader(""), &stdout, &stderr); status != 0 {
+		t.Fatalf("status = %d, stderr = %q; want 0", status, stderr.String())
+	}
+	events := agenttest.CommandEvents(t, home, "guide")
+	if len(events) != 2 || events[0]["msg"] != "command start" || events[1]["msg"] != "command end" || events[1]["outcome"] != "ok" {
+		t.Fatalf("events = %v; want command start and an ok command end", events)
 	}
 }
