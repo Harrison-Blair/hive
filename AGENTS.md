@@ -51,7 +51,6 @@ hive/                            the repository
 ├─ reference/dogfood/friction/   friction log          tracked
 ├─ memory/  overrides/  plans/   personal              ignored
 ├─ handoff.md  _archive/         personal              ignored
-├─ projects/                     old home, until the state move  ignored
 └─ .hive/tmp/                    scratch               ignored
 ```
 
@@ -136,7 +135,7 @@ golangci-lint run ./...
 env -u TERM TZ=UTC go test -race ./...
 ```
 
-The first command must print nothing. The second command must print nothing. The gate acts on tracked and new files only. It must not read a checkout below `projects/` or `.hive/`.
+The first command must print nothing. The second command must print nothing. The gate acts on tracked and new files only. It must not read a checkout below `.hive/`.
 
 - To run one test, use the environment of the gate:
 
