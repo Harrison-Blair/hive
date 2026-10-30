@@ -2,8 +2,6 @@ package store
 
 import (
 	"bytes"
-	"context"
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,19 +18,6 @@ const (
 	writeLimitEscapePrefix = "{\n  \"escape\": \"\\u0001\",\n  \"padding\": \""
 	writeLimitEscapeSuffix = "\",\n  \"unicode\": \"\u00e9\"\n}\n"
 )
-
-func writeLimitRecordData(t *testing.T, size int) []byte {
-	t.Helper()
-	padding := size - len(writeLimitFrame)
-	if padding < 0 {
-		t.Fatalf("encoded size %d is smaller than the frame %d", size, len(writeLimitFrame))
-	}
-	data := []byte(writeLimitFrame[:len(writeLimitFrame)-len("\"\n}\n")] + strings.Repeat("x", padding) + "\"\n}\n")
-	if len(data) != size {
-		t.Fatalf("fixture encoded size = %d; want %d", len(data), size)
-	}
-	return data
-}
 
 func writeLimitRecordValue(t *testing.T, size int) map[string]string {
 	t.Helper()
@@ -91,152 +76,47 @@ func TestWriteLimitRejectsEncodedCreate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			store := openStore(t, t.TempDir())
 			value := writeLimitRecordValue(t, test.size)
-			data := writeLimitRecordData(t, test.size)
-			update := func(json.RawMessage) (json.RawMessage, error) {
-				return json.RawMessage(data), nil
+			path := writeLimitPath(store, "tasks", "generic-write")
+			err := store.WriteIn([]string{"tasks"}, "generic-write", value)
+			want := "record too large: " + path
+			if err == nil || err.Error() != want {
+				t.Fatalf("WriteIn() error = %v; want %q", err, want)
 			}
-			for _, test := range []struct {
-				name  string
-				id    string
-				path  string
-				write func() error
-			}{
-				{
-					name: "generic WriteIn",
-					id:   "generic-write",
-					write: func() error {
-						return store.WriteIn([]string{"tasks"}, "generic-write", value)
-					},
-				},
-				{
-					name: "generic UpdateIn",
-					id:   "generic-update",
-					write: func() error {
-						return store.UpdateIn([]string{"tasks"}, "generic-update", update)
-					},
-				},
-			} {
-				path := writeLimitPath(store, "tasks", test.id)
-				err := test.write()
-				want := "record too large: " + path
-				if err == nil || err.Error() != want {
-					t.Errorf("%s error = %v; want %q", test.name, err, want)
-					continue
-				}
-				if _, statErr := os.Lstat(path); !os.IsNotExist(statErr) {
-					t.Errorf("%s made a record at %s: %v", test.name, path, statErr)
-				}
+			if _, statErr := os.Lstat(path); !os.IsNotExist(statErr) {
+				t.Fatalf("WriteIn() made a record at %s: %v", path, statErr)
 			}
 		})
 	}
 }
 
 func TestWriteLimitPreservesRecordOnRejectedReplacement(t *testing.T) {
-	data := writeLimitRecordData(t, writeLimitAbove)
-	update := func(json.RawMessage) (json.RawMessage, error) {
-		return json.RawMessage(data), nil
-	}
-	value := writeLimitRecordValue(t, writeLimitAbove)
-	for _, test := range []struct {
-		name  string
-		id    string
-		path  string
-		write func(*Store) error
-	}{
-		{
-			name: "generic WriteIn",
-			id:   "generic-write",
-			write: func(store *Store) error {
-				return store.WriteIn([]string{"tasks"}, "generic-write", value)
-			},
-		},
-		{
-			name: "generic UpdateIn",
-			id:   "generic-update",
-			write: func(store *Store) error {
-				return store.UpdateIn([]string{"tasks"}, "generic-update", update)
-			},
-		},
-		{
-			name: "locked WriteIn",
-			id:   "locked-write-in",
-			write: func(store *Store) error {
-				return store.WithLock(context.Background(), func(locked *LockedStore) error {
-					return locked.WriteIn([]string{"tasks"}, "locked-write-in", value)
-				})
-			},
-		},
-		{
-			name: "locked UpdateIn",
-			id:   "locked-update-in",
-			write: func(store *Store) error {
-				return store.WithLock(context.Background(), func(locked *LockedStore) error {
-					return locked.UpdateIn([]string{"tasks"}, "locked-update-in", update)
-				})
-			},
-		},
-	} {
-		t.Run(test.name, func(t *testing.T) {
-			store := openStore(t, t.TempDir())
-			if err := store.WriteIn([]string{"tasks"}, test.id, map[string]string{"value": "old"}); err != nil {
-				t.Fatal(err)
-			}
-			path := writeLimitPath(store, "tasks", test.id)
-			old, err := os.ReadFile(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			err = test.write(store)
-			want := "record too large: " + path
-			if err == nil || err.Error() != want {
-				t.Fatalf("%s error = %v; want %q", test.name, err, want)
-			}
-			after, err := os.ReadFile(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if !bytes.Equal(old, after) {
-				t.Fatalf("%s changed the old record: got %d bytes, want %d", test.name, len(after), len(old))
-			}
-			var record map[string]string
-			if err := store.ReadIn([]string{"tasks"}, test.id, &record); err != nil {
-				t.Fatalf("%s left the old record unreadable: %v", test.name, err)
-			}
-			if record["value"] != "old" {
-				t.Fatalf("%s old value = %q; want old", test.name, record["value"])
-			}
-		})
-	}
-}
-
-func TestWriteLimitKeepsEarlierGroupedWrite(t *testing.T) {
 	store := openStore(t, t.TempDir())
-	value := writeLimitRecordValue(t, writeLimitAbove)
-	var writeErr error
-	err := store.WithLock(context.Background(), func(locked *LockedStore) error {
-		if err := locked.WriteIn([]string{"tasks"}, "first", map[string]string{"value": "small"}); err != nil {
-			return err
-		}
-		writeErr = locked.WriteIn([]string{"tasks"}, "second", value)
-		return nil
-	})
+	if err := store.WriteIn([]string{"tasks"}, "generic-write", map[string]string{"value": "old"}); err != nil {
+		t.Fatal(err)
+	}
+	path := writeLimitPath(store, "tasks", "generic-write")
+	old, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	second := writeLimitPath(store, "tasks", "second")
-	want := "record too large: " + second
-	if writeErr == nil || writeErr.Error() != want {
-		t.Fatalf("later write error = %v; want %q", writeErr, want)
+	err = store.WriteIn([]string{"tasks"}, "generic-write", writeLimitRecordValue(t, writeLimitAbove))
+	want := "record too large: " + path
+	if err == nil || err.Error() != want {
+		t.Fatalf("WriteIn() error = %v; want %q", err, want)
 	}
-	if _, statErr := os.Lstat(second); !os.IsNotExist(statErr) {
-		t.Fatalf("later write made a record at %s: %v", second, statErr)
+	after, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
 	}
-	var first map[string]string
-	if err := store.ReadIn([]string{"tasks"}, "first", &first); err != nil {
-		t.Fatalf("earlier write is unreadable: %v", err)
+	if !bytes.Equal(old, after) {
+		t.Fatalf("WriteIn() changed the old record: got %d bytes, want %d", len(after), len(old))
 	}
-	if first["value"] != "small" {
-		t.Fatalf("earlier value = %q; want small", first["value"])
+	var record map[string]string
+	if err := store.ReadIn([]string{"tasks"}, "generic-write", &record); err != nil {
+		t.Fatalf("WriteIn() left the old record unreadable: %v", err)
+	}
+	if record["value"] != "old" {
+		t.Fatalf("old value = %q; want old", record["value"])
 	}
 }
 

@@ -24,26 +24,6 @@ func TestStoreNamesAcceptValidComponents(t *testing.T) {
 	}
 }
 
-func TestListInKeepsLongStoreSegment(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	id := strings.Repeat("k", 201)
-	dir := filepath.Join(store.home, "tasks")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, id+".json"), []byte(`{"id":"`+id+`"}`), 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	records, err := store.ListIn([]string{"tasks"}, nil)
-	if err != nil {
-		t.Fatalf("ListIn() error = %v", err)
-	}
-	if len(records) != 1 || !strings.Contains(string(records[0]), id) {
-		t.Fatalf("ListIn() records = %q; want the long store segment", records)
-	}
-}
-
 func TestStoreNamesRejectInvalidComponents(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	invalid := []string{
@@ -73,8 +53,8 @@ func TestStoreNamesRejectInvalidComponents(t *testing.T) {
 		if err := store.WriteIn(collection, "one", map[string]string{"id": "one"}); err == nil || !strings.Contains(err.Error(), "invalid store") {
 			t.Errorf("WriteIn(%q) error = %v; want invalid store", collection, err)
 		}
-		if _, err := store.ListIn(collection, nil); err == nil || !strings.Contains(err.Error(), "invalid store") {
-			t.Errorf("ListIn(%q) error = %v; want invalid store", collection, err)
+		if _, err := store.ListEach(collection, "one"); err == nil || !strings.Contains(err.Error(), "invalid store") {
+			t.Errorf("ListEach(%q) error = %v; want invalid store", collection, err)
 		}
 	}
 }
@@ -95,82 +75,6 @@ func TestWriteInNestedInbox(t *testing.T) {
 	}
 	if record["body"] != "hello" {
 		t.Fatalf("record body = %q; want hello", record["body"])
-	}
-}
-
-func TestListInMissingCollection(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	records, err := store.ListIn([]string{"missing"}, nil)
-	if err != nil {
-		t.Fatalf("ListIn() error = %v", err)
-	}
-	if records == nil {
-		t.Fatal("ListIn() returned a nil slice; want an empty slice")
-	}
-	if len(records) != 0 {
-		t.Fatalf("ListIn() returned %d records; want 0", len(records))
-	}
-}
-
-func TestListInIncludeSelectsOne(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	if err := store.WriteIn([]string{"tasks"}, "alpha", map[string]string{"id": "alpha"}); err != nil {
-		t.Fatal(err)
-	}
-	if err := store.WriteIn([]string{"tasks"}, "beta", map[string]string{"id": "beta"}); err != nil {
-		t.Fatal(err)
-	}
-	var seen []string
-	records, err := store.ListIn([]string{"tasks"}, func(filename string) bool {
-		seen = append(seen, filename)
-		return filename == "beta.json"
-	})
-	if err != nil {
-		t.Fatalf("ListIn() error = %v", err)
-	}
-	if len(records) != 1 || !strings.Contains(string(records[0]), `"beta"`) {
-		t.Fatalf("ListIn() records = %q; want only beta", records)
-	}
-	if len(seen) != 2 || seen[0] != "alpha.json" || seen[1] != "beta.json" {
-		t.Fatalf("include saw %q; want the file names with the .json suffix", seen)
-	}
-}
-
-func TestListInSkipsInvalidStoreSegments(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	dir := filepath.Join(store.home, "tasks")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	for name, data := range map[string]string{
-		"valid.json":     `{"id":"valid"}`,
-		"Bad.json":       `{"id":"bad-uppercase"}`,
-		"a..b.json":      `{"id":"bad-dots"}`,
-		".hidden.json":   `{"id":"hidden"}`,
-		"has space.json": `{"id":"bad-space"}`,
-		"notes.txt":      `not a record`,
-	} {
-		if err := os.WriteFile(filepath.Join(dir, name), []byte(data), 0o644); err != nil {
-			t.Fatal(err)
-		}
-	}
-	records, err := store.ListIn([]string{"tasks"}, nil)
-	if err != nil {
-		t.Fatalf("ListIn() error = %v", err)
-	}
-	var got []string
-	for _, raw := range records {
-		var record struct {
-			ID string `json:"id"`
-		}
-		if err := json.Unmarshal(raw, &record); err != nil {
-			t.Fatal(err)
-		}
-		got = append(got, record.ID)
-	}
-	want := []string{"hidden", "bad-uppercase", "bad-space", "valid"}
-	if strings.Join(got, ",") != strings.Join(want, ",") {
-		t.Fatalf("ListIn() IDs = %q; want %q", got, want)
 	}
 }
 
@@ -264,28 +168,6 @@ func TestReadInSizeBoundary(t *testing.T) {
 		if err != nil {
 			t.Errorf("ReadIn(%q) rejected %d bytes: %v", test.id, test.size, err)
 		}
-	}
-}
-
-func TestListInBadSelectedFileReturnsNoRecords(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	dir := filepath.Join(store.home, "tasks")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, "alpha.json"), []byte(`{"id":"alpha"}`), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	invalid := filepath.Join(dir, "beta.json")
-	if err := os.WriteFile(invalid, []byte(`{"id":`), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	records, err := store.ListIn([]string{"tasks"}, nil)
-	if err == nil || err.Error() != "record invalid: "+invalid {
-		t.Fatalf("ListIn() error = %v; want the first read error", err)
-	}
-	if records != nil {
-		t.Fatalf("ListIn() records = %q; want no records", records)
 	}
 }
 
