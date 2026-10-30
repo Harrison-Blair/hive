@@ -31,7 +31,7 @@ reads the worker pane with `herdr pane read`.
 Possible fixes, not decided:
 - Hive queues the message and delivers it when the target is idle.
 - `hive agent send` waits, with a timeout, until the dialog closes, then sends.
-- The worker brief tells agents to retry the send with `--wait`.
+- The worker brief tells agents to retry the send in a loop until it is delivered.
 
 **Reproduction steps:**
 1. Run bare `hive` to start the coordinator, and spawn one agent.
