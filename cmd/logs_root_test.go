@@ -12,7 +12,7 @@ import (
 )
 
 func dailyLogPath(home string) string {
-	return filepath.Join(home, ".hive", "logs", time.Now().Local().Format("2006-01-02")+".jsonl")
+	return filepath.Join(home, "logs", time.Now().Local().Format("2006-01-02")+".jsonl")
 }
 
 func makeLogFixture(t *testing.T) (string, string) {

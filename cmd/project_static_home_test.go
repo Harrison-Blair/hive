@@ -14,70 +14,45 @@ type staticTreeEntry struct {
 	data []byte
 }
 
-func TestProjectListRejectsLinkedHiveHome(t *testing.T) {
-	for _, test := range []struct {
-		name string
-		json bool
-		env  bool
-		cwd  bool
-	}{
-		{name: "environment text", env: true},
-		{name: "cwd discovery text", cwd: true},
-	} {
-		t.Run(test.name, func(t *testing.T) {
-			home, external := linkedHomeFixture(t)
-			t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-			t.Setenv("HIVE_HOME", "")
+func TestProjectListRejectsLinkedProjectsDirectory(t *testing.T) {
+	for _, jsonOutput := range []bool{false, true} {
+		t.Run(map[bool]string{false: "text", true: "json"}[jsonOutput], func(t *testing.T) {
+			home := testHome(t)
+			external := t.TempDir()
+			if err := os.MkdirAll(filepath.Join(external, "linked"), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(external, "linked", "project.json"), []byte(`{"id":"linked"}`), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			projects := filepath.Join(home, "projects")
+			if err := os.Symlink(external, projects); err != nil {
+				t.Fatal(err)
+			}
 			beforeExternal := captureTree(t, external)
-			beforeHome := captureTree(t, home)
 
-			args := []string{}
-			if test.json {
-				args = append(args, "--json")
+			args := []string{"project", "list"}
+			if jsonOutput {
+				args = append([]string{"--json"}, args...)
 			}
-			t.Chdir(filepath.Dir(home))
-			if test.env {
-				t.Setenv("HIVE_HOME", home)
-			} else if test.cwd {
-				t.Chdir(home)
-			}
-			args = append(args, "project", "list")
-
 			var stdout, stderr bytes.Buffer
 			status := executeWithStreams(args, strings.NewReader(""), &stdout, &stderr)
 			if status != 1 {
 				t.Fatalf("status = %d; want 1 (stdout %q, stderr %q)", status, stdout.String(), stderr.String())
 			}
-
-			wantError := "not a hive home: " + home
-			if test.cwd {
-				wantError = "not a hive home: no marker above " + home + "; run hive init in the home"
-			}
-			if test.json {
-				if stderr.Len() != 0 {
-					t.Fatalf("stderr = %q; want empty", stderr.String())
-				}
-				if strings.Count(stdout.String(), "\n") != 1 {
-					t.Fatalf("stdout = %q; want one JSON line", stdout.String())
-				}
+			wantError := "store path invalid: " + projects
+			if jsonOutput {
 				var envelope map[string]any
-				if err := json.Unmarshal(stdout.Bytes(), &envelope); err != nil {
-					t.Fatalf("stdout is not one JSON object: %v; output %q", err, stdout.String())
+				if err := json.Unmarshal(stdout.Bytes(), &envelope); err != nil || stderr.Len() != 0 {
+					t.Fatalf("stdout = %q, stderr = %q; want one JSON object", stdout.String(), stderr.String())
 				}
-				if envelope["outcome"] != "failed" || envelope["phase"] != "home" || envelope["error"] != wantError {
-					t.Fatalf("envelope = %#v; want failed home error %q", envelope, wantError)
+				if envelope["outcome"] != "failed" || envelope["phase"] != "store" || envelope["error"] != wantError {
+					t.Fatalf("envelope = %#v; want failed store error %q", envelope, wantError)
 				}
-			} else {
-				if stdout.Len() != 0 {
-					t.Fatalf("stdout = %q; want empty", stdout.String())
-				}
-				if got := stderr.String(); got != "hive: "+wantError+"\n" {
-					t.Fatalf("stderr = %q; want one home error line %q", got, wantError)
-				}
+			} else if got := stderr.String(); stdout.Len() != 0 || got != "hive: "+wantError+"\n" {
+				t.Fatalf("stdout = %q, stderr = %q; want one store error line %q", stdout.String(), got, wantError)
 			}
-
 			assertSameTree(t, "external", beforeExternal, captureTree(t, external))
-			assertSameTree(t, "home", beforeHome, captureTree(t, home))
 		})
 	}
 }
@@ -89,10 +64,15 @@ func TestProjectListAcceptsRegularHiveHome(t *testing.T) {
 	if status != 0 || stdout.String() != "no projects\n" || stderr.Len() != 0 {
 		t.Fatalf("status = %d, stdout = %q, stderr = %q; want a normal list", status, stdout.String(), stderr.String())
 	}
-	for _, name := range []string{"logs", "state"} {
-		info, err := os.Stat(filepath.Join(home, ".hive", name))
-		if err != nil || !info.IsDir() {
-			t.Fatalf("regular home .hive/%s: stat = %v, %v; want a directory", name, info, err)
+	if info, err := os.Stat(filepath.Join(home, "logs")); err != nil || !info.IsDir() {
+		t.Fatalf("home logs: stat = %v, %v; want a directory", info, err)
+	}
+	if info, err := os.Stat(filepath.Join(home, "schema.json")); err != nil || !info.Mode().IsRegular() {
+		t.Fatalf("home schema.json: stat = %v, %v; want a file", info, err)
+	}
+	for _, name := range []string{".hive", "state"} {
+		if _, err := os.Stat(filepath.Join(home, name)); !os.IsNotExist(err) {
+			t.Fatalf("home %s: stat error = %v; want none", name, err)
 		}
 	}
 }
@@ -109,33 +89,13 @@ func TestProjectListAcceptsSymlinkedHomeRoot(t *testing.T) {
 	if status != 0 || stdout.String() != "no projects\n" || stderr.Len() != 0 {
 		t.Fatalf("status = %d, stdout = %q, stderr = %q; want a normal list", status, stdout.String(), stderr.String())
 	}
-	info, err := os.Stat(filepath.Join(home, ".hive", "logs"))
+	info, err := os.Stat(filepath.Join(home, "logs"))
 	if err != nil || !info.IsDir() {
 		t.Fatalf("canonical home logs: stat = %v, %v; want a directory", info, err)
 	}
 	if info, err := os.Lstat(alias); err != nil || info.Mode()&os.ModeSymlink == 0 {
 		t.Fatalf("alias: lstat = %v, %v; want a symbolic link", info, err)
 	}
-}
-
-func linkedHomeFixture(t *testing.T) (home, external string) {
-	t.Helper()
-	root := t.TempDir()
-	external = filepath.Join(root, "external")
-	if err := os.MkdirAll(external, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(external, "README.md"), []byte("linked marker "+t.Name()), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	home = filepath.Join(root, "home")
-	if err := os.Mkdir(home, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Symlink(external, filepath.Join(home, ".hive")); err != nil {
-		t.Fatal(err)
-	}
-	return home, external
 }
 
 func captureTree(t *testing.T, root string) map[string]staticTreeEntry {

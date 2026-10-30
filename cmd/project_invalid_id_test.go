@@ -54,8 +54,8 @@ func TestRegisterInvalidIDReportsRuleAndStatus(t *testing.T) {
 			}
 		})
 	}
-	if _, err := os.Stat(filepath.Join(home, ".hive", "state")); !os.IsNotExist(err) {
-		t.Fatalf("invalid ID created state: stat error = %v", err)
+	if _, err := os.Stat(filepath.Join(home, "schema.json")); !os.IsNotExist(err) {
+		t.Fatalf("invalid ID opened the store: stat error = %v", err)
 	}
 	if _, err := os.Stat(filepath.Join(home, "projects")); !os.IsNotExist(err) {
 		t.Fatalf("invalid ID created project directories: stat error = %v", err)

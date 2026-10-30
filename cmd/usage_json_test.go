@@ -19,6 +19,7 @@ func TestUsageErrorsUnderJSONPrintOneEnvelope(t *testing.T) {
 		{"unknown flag", []string{"agent", "spawn", "--bogus", "--json"}, "unknown flag: --bogus"},
 		{"empty register path", []string{"--json", "project", "register", ""}, "PATH requires a value"},
 		{"last json flag true", []string{"--json=false", "--json", "bogus"}, `unknown command \"bogus\" for \"hive\"`},
+		{"removed init", []string{"--json", "init"}, `unknown command \"init\" for \"hive\"`},
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
@@ -41,6 +42,7 @@ func TestUsageErrorsWithoutJSONPrintOneLine(t *testing.T) {
 	}{
 		{"no json flag", []string{"agent", "send"}, "accepts 2 arg(s), received 0"},
 		{"json false", []string{"--json=false", "bogus"}, `unknown command "bogus" for "hive"`},
+		{"removed init", []string{"init"}, `unknown command "init" for "hive"`},
 		{"json after the terminator", []string{"agent", "stop", "--", "a", "--json"}, "accepts 1 arg(s), received 2"},
 		{"empty register path", []string{"project", "register", ""}, "PATH requires a value"},
 		{"last json flag false", []string{"--json", "--json=false", "bogus"}, `unknown command "bogus" for "hive"`},

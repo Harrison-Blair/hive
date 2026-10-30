@@ -9,20 +9,22 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	for _, key := range []string{"HERDR_ENV", "HERDR_PANE_ID", "HERDR_SOCKET_PATH", "HIVE_NO_STARTUP"} {
+	for _, key := range []string{"HERDR_ENV", "HERDR_PANE_ID", "HERDR_SOCKET_PATH", "HIVE_HOME", "HIVE_NO_STARTUP"} {
 		if err := os.Unsetenv(key); err != nil {
 			panic(err)
 		}
 	}
-	configDir, err := os.MkdirTemp("", "hive-cmd-test-config-")
+	// A test never reaches the real ~/.hive: the fallback home is below a
+	// temporary user home.
+	userHome, err := os.MkdirTemp("", "hive-cmd-test-home-")
 	if err != nil {
 		panic(err)
 	}
-	if err := os.Setenv("XDG_CONFIG_HOME", configDir); err != nil {
+	if err := os.Setenv("HOME", userHome); err != nil {
 		panic(err)
 	}
 	code := m.Run()
-	_ = os.RemoveAll(configDir)
+	_ = os.RemoveAll(userHome)
 	os.Exit(code)
 }
 
@@ -50,14 +52,7 @@ func TestVersionSubcommandPrintsVersion(t *testing.T) {
 
 func newRootTestHome(t *testing.T) string {
 	t.Helper()
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	home := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(home, ".hive"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(home, ".hive", "README.md"), []byte("home\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
 	t.Setenv("HIVE_HOME", home)
 	return home
 }
@@ -69,7 +64,7 @@ func TestBareHiveInHomeCtrlCQuitsWithNoRecord(t *testing.T) {
 	if status != 0 {
 		t.Fatalf("status = %d; want 0; stderr %q", status, stderr.String())
 	}
-	logs, err := filepath.Glob(filepath.Join(home, ".hive", "logs", "*.jsonl"))
+	logs, err := filepath.Glob(filepath.Join(home, "logs", "*.jsonl"))
 	if err != nil || len(logs) != 1 {
 		t.Fatalf("log files = %v, %v; want one", logs, err)
 	}
@@ -83,13 +78,13 @@ func TestBareHiveInHomeCtrlCQuitsWithNoRecord(t *testing.T) {
 	if strings.Contains(stdout.String(), "Available Commands:") {
 		t.Fatalf("stdout = %q; want no help text", stdout.String())
 	}
-	if _, err := os.Stat(filepath.Join(home, ".hive", "agents", "coordinator.json")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(home, "agents", "coordinator.json")); !os.IsNotExist(err) {
 		t.Fatalf("coordinator record stat = %v; want none", err)
 	}
 }
 
 func TestRootListsOnlyKeptCommands(t *testing.T) {
-	want := []string{"agent", "completion", "guide", "help", "init", "logs", "project", "version"}
+	want := []string{"agent", "completion", "guide", "help", "logs", "project", "version"}
 	var stdout, stderr bytes.Buffer
 	if status := executeWithStreams([]string{"--help"}, strings.NewReader(""), &stdout, &stderr); status != 0 {
 		t.Fatalf("status = %d; stderr %q", status, stderr.String())
@@ -123,18 +118,32 @@ func helpCommands(help string) []string {
 	return names
 }
 
-func TestBareHiveOutsideHomeFailsWithNoPicker(t *testing.T) {
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+func TestBareHiveWithoutHiveHomeUsesDotHiveInUserHome(t *testing.T) {
+	userHome := t.TempDir()
+	t.Setenv("HOME", userHome)
 	t.Setenv("HIVE_HOME", "")
-	outside := t.TempDir()
-	t.Chdir(outside)
+	t.Chdir(t.TempDir())
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams(nil, strings.NewReader("\x03"), &stdout, &stderr)
+	if status != 0 {
+		t.Fatalf("status = %d; want 0; stderr %q", status, stderr.String())
+	}
+	logs, err := filepath.Glob(filepath.Join(userHome, ".hive", "logs", "*.jsonl"))
+	if err != nil || len(logs) != 1 {
+		t.Fatalf("log files in ~/.hive = %v, %v; want one", logs, err)
+	}
+}
+
+func TestBareHiveWithoutUserHomeFailsWithNoPicker(t *testing.T) {
+	t.Setenv("HOME", "")
+	t.Setenv("HIVE_HOME", "")
 	var stdout, stderr bytes.Buffer
 	status := executeWithStreams(nil, strings.NewReader(""), &stdout, &stderr)
 	if status == 0 {
 		t.Fatalf("status = 0; want non-zero; stdout %q", stdout.String())
 	}
-	if !strings.Contains(stderr.String(), "not a hive home") {
-		t.Fatalf("stderr = %q; want a not a hive home error", stderr.String())
+	if !strings.HasPrefix(stderr.String(), "hive: hive home: ") {
+		t.Fatalf("stderr = %q; want a hive home error", stderr.String())
 	}
 	if stdout.Len() != 0 {
 		t.Fatalf("stdout = %q; want no picker output", stdout.String())

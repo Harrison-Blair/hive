@@ -48,7 +48,7 @@ func TestVersionUsageErrorWritesNoLog(t *testing.T) {
 	if err := ExecuteWithArgs([]string{"version", "extra"}, strings.NewReader(""), &output); err == nil {
 		t.Fatalf("version extra succeeded; want a usage error")
 	}
-	if _, err := os.Stat(filepath.Join(home, ".hive", "logs")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(home, "logs")); !os.IsNotExist(err) {
 		t.Fatalf("logs directory exists after hive version (stat err %v); want no log", err)
 	}
 }

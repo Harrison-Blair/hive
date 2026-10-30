@@ -33,8 +33,23 @@ func TestRootProjectListJSONEnvelope(t *testing.T) {
 	}
 }
 
-func TestRootMissingHomeUsesOneErrorLine(t *testing.T) {
+func TestRootWithoutHiveHomeUsesDotHiveInUserHome(t *testing.T) {
+	userHome := t.TempDir()
+	t.Setenv("HOME", userHome)
+	t.Setenv("HIVE_HOME", "")
 	t.Chdir(t.TempDir())
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"project", "list"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 0 || stdout.String() != "no projects\n" || stderr.Len() != 0 {
+		t.Fatalf("status = %d, stdout = %q, stderr = %q; want an empty list", status, stdout.String(), stderr.String())
+	}
+	if info, err := os.Stat(filepath.Join(userHome, ".hive", "schema.json")); err != nil || !info.Mode().IsRegular() {
+		t.Fatalf("~/.hive/schema.json: stat = %v, %v; want the home created in the user home", info, err)
+	}
+}
+
+func TestRootMissingHomeUsesOneErrorLine(t *testing.T) {
+	t.Setenv("HOME", "")
 	t.Setenv("HIVE_HOME", "")
 	var stdout, stderr bytes.Buffer
 	status := executeWithStreams([]string{"project", "list"}, strings.NewReader(""), &stdout, &stderr)
@@ -44,13 +59,13 @@ func TestRootMissingHomeUsesOneErrorLine(t *testing.T) {
 	if stdout.Len() != 0 {
 		t.Fatalf("stdout = %q; want empty", stdout.String())
 	}
-	if got := stderr.String(); !strings.HasPrefix(got, "hive: not a hive home: no marker above ") || strings.Count(got, "\n") != 1 {
+	if got := stderr.String(); !strings.HasPrefix(got, "hive: hive home: ") || strings.Count(got, "\n") != 1 {
 		t.Fatalf("stderr = %q; want one hive error line", got)
 	}
 }
 
 func TestRootMissingHomeJSONEnvelope(t *testing.T) {
-	t.Chdir(t.TempDir())
+	t.Setenv("HOME", "")
 	t.Setenv("HIVE_HOME", "")
 	var stdout, stderr bytes.Buffer
 	status := executeWithStreams([]string{"--json", "project", "list"}, strings.NewReader(""), &stdout, &stderr)
@@ -88,13 +103,6 @@ func TestHomeFlagUnknownPrecedesHomeResolution(t *testing.T) {
 func testHome(t *testing.T) string {
 	t.Helper()
 	home := t.TempDir()
-	marker := filepath.Join(home, ".hive", "README.md")
-	if err := os.MkdirAll(filepath.Dir(marker), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(marker, []byte("home"), 0o644); err != nil {
-		t.Fatal(err)
-	}
 	t.Setenv("HIVE_HOME", home)
 	return home
 }

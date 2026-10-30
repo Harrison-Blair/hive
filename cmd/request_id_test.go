@@ -42,32 +42,23 @@ func TestCommandRequestIDAndLogsRequestFilter(t *testing.T) {
 }
 
 func TestCommandRequestIDReachesCommandOwnedLoggers(t *testing.T) {
-	initConfigPath(t)
-	home := requestTestHome(t)
-	t.Chdir(home)
-	t.Setenv("HIVE_HOME", "")
+	home := t.TempDir()
+	t.Setenv("HIVE_HOME", home)
 	var output strings.Builder
-	if err := ExecuteWithArgs([]string{"init"}, strings.NewReader(""), &output); err != nil {
-		t.Fatalf("init: %v\n%s", err, output.String())
+	if err := ExecuteWithArgs([]string{"logs", "--limit", "0"}, strings.NewReader(""), &output); err != nil {
+		t.Fatalf("logs: %v\n%s", err, output.String())
 	}
-	commandRequestID(t, requestTestEvents(t, home), "init", []string{"command start", "command end"})
+	commandRequestID(t, requestTestEvents(t, home), "logs", []string{"command start", "command end"})
 }
 
 func requestTestHome(t *testing.T) string {
 	t.Helper()
-	home := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(home, ".hive"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(home, ".hive", "README.md"), []byte("home\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	return home
+	return t.TempDir()
 }
 
 func requestTestEvents(t *testing.T, home string) []map[string]any {
 	t.Helper()
-	path := filepath.Join(home, ".hive", "logs", time.Now().Format("2006-01-02")+".jsonl")
+	path := filepath.Join(home, "logs", time.Now().Format("2006-01-02")+".jsonl")
 	file, err := os.Open(path)
 	if err != nil {
 		t.Fatal(err)

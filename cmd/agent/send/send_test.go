@@ -103,10 +103,10 @@ func TestSendCLILogsTheTargetOnAFailedCallerLookup(t *testing.T) {
 	agenttest.NewHerdr(t)
 	home := agenttest.Home(t)
 	t.Setenv("HIVE_HOME", home)
-	if err := os.MkdirAll(filepath.Join(home, ".hive", "agents"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(home, "agents"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(home, ".hive", "agents", "broken.json"), []byte("{"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(home, "agents", "broken.json"), []byte("{"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("HERDR_PANE_ID", "w1:p1")
