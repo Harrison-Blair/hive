@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/guide"
-	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 )
 
 // claudeProfile is the native profile of Claude Code.
@@ -48,8 +48,8 @@ func (claudeProfile) Trust() Trust {
 // Claude Code process in pane. Claude Code shows it as a message from another
 // session. It starts a turn when the session is idle, and it queues the
 // message while a turn runs or a dialog is open.
-func (p claudeProfile) Deliver(ctx context.Context, paneID, text string, opts ...herdr.Option) error {
-	process, err := harnessProcess(ctx, p, paneID, opts...)
+func (p claudeProfile) Deliver(ctx context.Context, paneID, text string, logger *slog.Logger) error {
+	process, err := harnessProcess(ctx, p, paneID, logger)
 	if err != nil {
 		return err
 	}

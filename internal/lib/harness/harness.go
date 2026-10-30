@@ -4,11 +4,10 @@ package harness
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sort"
 	"strings"
 	"time"
-
-	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 )
 
 // Profile gives the native arguments, the timeouts, and the process names of
@@ -26,8 +25,9 @@ type Profile interface {
 	GuideArgs(guide string) []string
 	// Deliver hands text to the harness in pane through the native message
 	// path of the harness. It never types into the pane. It fails with the
-	// cause and the fix when the native path is not available.
-	Deliver(ctx context.Context, paneID, text string, opts ...herdr.Option) error
+	// cause and the fix when the native path is not available. It logs each
+	// herdr call and external process to logger.
+	Deliver(ctx context.Context, paneID, text string, logger *slog.Logger) error
 }
 
 // Trust is the trust dialog result of one harness (decision 13 of the

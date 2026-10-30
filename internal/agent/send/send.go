@@ -85,7 +85,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	}
 
 	text := "⬢ " + sender + ": " + options.Text
-	if err := profile.Deliver(ctx, record.Pane, text, herdr.WithLogger(logger)); err != nil {
+	if err := profile.Deliver(ctx, record.Pane, text, logger); err != nil {
 		return output.Failed("deliver", fmt.Sprintf("agent %s in pane %s: %s", record.Name, record.Pane, err))
 	}
 	logger.Debug("agent messaged", "command", "agent send", "target", record.Name, "pane_id", record.Pane, hivelog.Body(text))

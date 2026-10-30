@@ -2,11 +2,21 @@ package harness
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
+	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/guide"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
+)
+
+const (
+	// sessionTimeout bounds the wait for the session ID of a new Codex.
+	sessionTimeout = 3 * time.Second
+	sessionPause   = 250 * time.Millisecond
 )
 
 // codexProfile is the native profile of Codex.
@@ -67,7 +77,53 @@ func (codexProfile) Trust() Trust {
 	}
 }
 
-// Deliver fails: hive has no native message path to codex yet.
-func (codexProfile) Deliver(context.Context, string, string, ...herdr.Option) error {
-	return fmt.Errorf("hive has no native message path to codex yet")
+// Deliver queues text on the thread of the Codex session in pane with
+// codex queue (codex-cli 0.166.0). Codex starts a turn with it when it is
+// idle, and it never types into the pane. The thread UUID is the herdr
+// agent_session of the pane. Codex makes the thread only at its first turn,
+// so right after a spawn the session can be missing: Deliver waits up to
+// sessionTimeout for it.
+func (codexProfile) Deliver(ctx context.Context, paneID, text string, logger *slog.Logger) error {
+	thread, err := codexThread(ctx, paneID, logger)
+	if err != nil {
+		return err
+	}
+	started := time.Now()
+	out, err := exec.CommandContext(ctx, "codex", "queue", "--thread", thread, "--message", text).CombinedOutput()
+	attrs := []any{"binary", "codex", "args", []string{"queue", "--thread", thread, "--message", "<message>"}, "pane_id", paneID, "duration_ms", time.Since(started).Milliseconds()}
+	if err != nil {
+		message := fmt.Sprintf("codex queue --thread %s: %s: %s", thread, err, strings.TrimSpace(string(out)))
+		if logger != nil {
+			logger.Error("external process", append(attrs, "error", message)...)
+		}
+		return errors.New(message)
+	}
+	if logger != nil {
+		logger.Debug("external process", attrs...)
+	}
+	return nil
+}
+
+// codexThread returns the thread UUID of the Codex session in pane. It polls
+// pane.get until herdr reports a herdr:codex session ID, at most for
+// sessionTimeout.
+func codexThread(ctx context.Context, paneID string, logger *slog.Logger) (string, error) {
+	deadline := time.Now().Add(sessionTimeout)
+	for {
+		pane, err := herdr.PaneGet(ctx, paneID, herdr.WithLogger(logger))
+		if err != nil {
+			return "", fmt.Errorf("pane %s: %w", paneID, err)
+		}
+		if session := pane.AgentSession; session != nil && session.Source == "herdr:codex" && session.Kind == "id" && session.Value != "" {
+			return session.Value, nil
+		}
+		if time.Now().After(deadline) {
+			return "", fmt.Errorf("codex in pane %s has no session ID after %s: codex makes its session at its first turn; send again after that turn, or restart the agent with a prompt", paneID, sessionTimeout)
+		}
+		select {
+		case <-ctx.Done():
+			return "", ctx.Err()
+		case <-time.After(sessionPause):
+		}
+	}
 }

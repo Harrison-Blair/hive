@@ -21,7 +21,8 @@ Hive is a small agent launcher on top of herdr. An agent has no fixed role. It g
 Send hands the message to the native message path of the target harness, through `Deliver` of its profile in `internal/lib/harness`. It never types into the pane, so a draft in the input box stays unchanged. When the native path is not available, send fails with the cause and the fix and sends nothing. It has no paste fallback.
 
 - claude: every claude start, in each spawn placement and in bare `hive`, gets `--settings '{"crossSessionInbound":"accept"}'`. Send finds the claude process ID with herdr `pane.process_info`, checks that its argv has that setting, and writes one JSON line `{"type":"user","message":{"role":"user","content":"⬢ SENDER: TEXT"}}` to `$XDG_RUNTIME_DIR/cc-socks/<PID>.sock`. Claude shows it as a message from another session. A `⬢ user:` label in it still has the authority of the user. Claude starts a turn when it is idle, and queues the message while a turn runs or a dialog is open.
-- codex and pi: no native path yet. Send fails.
+- codex: send reads the thread UUID from herdr `pane.get` (`agent_session.value` with source `herdr:codex`) and runs `codex queue --thread UUID --message TEXT`. Codex makes the thread at its first turn, so send waits up to 3 s for the session ID and then fails with the fix. Codex starts a turn with the message when it is idle.
+- pi: no native path yet. Send fails.
 
 `send --wait` waits for the turn of the message to start, then to end. It reports `partial` when hive cannot tell which turn handled the message: the target was busy when the message arrived, or it started no turn within 15 s.
 

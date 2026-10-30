@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"net"
 	"os"
 	"path/filepath"
@@ -29,8 +30,8 @@ const claudeInbound = `{"crossSessionInbound":"accept"}`
 // harnessProcess returns the process of profile in the foreground group of
 // pane. It prefers the group leader, because the harness can start child
 // processes with the same name.
-func harnessProcess(ctx context.Context, profile Profile, paneID string, opts ...herdr.Option) (herdr.Process, error) {
-	opts = append(opts, herdr.WithReplyRedact(func(reply []byte) map[string]string { return guideValues(profile, reply) }))
+func harnessProcess(ctx context.Context, profile Profile, paneID string, logger *slog.Logger) (herdr.Process, error) {
+	opts := []herdr.Option{herdr.WithLogger(logger), herdr.WithReplyRedact(func(reply []byte) map[string]string { return guideValues(profile, reply) })}
 	info, err := herdr.PaneProcessInfo(ctx, paneID, opts...)
 	if err != nil {
 		return herdr.Process{}, fmt.Errorf("process info of pane %s: %w", paneID, err)
