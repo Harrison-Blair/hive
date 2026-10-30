@@ -1,9 +1,9 @@
 ---
 title: "A test TMPDIR below the home lets tests reach the real home"
 description: "Home discovery picks the outermost marker, so a t.TempDir() below the home resolves to the real home"
-status: "Open"
+status: "Resolved 2026-10-30"
 opened: 2026-10-24
-decision: ""
+decision: "PR #64 moved the home to $HIVE_HOME or ~/.hive, which removed marker discovery and the TMPDIR path, and TestMain in cmd/root_test.go now sets HOME to a temporary directory and unsets HIVE_HOME"
 ---
 
 **Issue:** Home discovery picks the outermost `.hive/README.md` marker above the
