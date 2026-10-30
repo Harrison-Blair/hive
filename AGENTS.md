@@ -131,7 +131,8 @@ The first command must print nothing. The second command must print nothing. The
 env -u TERM TZ=UTC go test -race -run 'TestName' ./internal/agent/spawn/
 ```
 
-- A live check in herdr uses a binary built with `go build -o .hive/tmp/hive .` and `HIVE_HOME="$PWD"`. Give each pane, tab, workspace, and worktree a unique name, and close each one that the check made.
+- A live check in herdr uses a binary built with `go build -o .hive/tmp/hive .` and `HIVE_HOME="$PWD"`. Give each pane, tab, workspace, and worktree a unique name, and close each one that the check made. Do not stop, close, or type into a pane, tab, or process that the check did not make.
+- Run tests with a `TMPDIR` that is outside the hive home.
 
 ### Dependencies
 
