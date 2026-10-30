@@ -148,6 +148,7 @@ func TestListInSkipsInvalidStoreSegments(t *testing.T) {
 		"a..b.json":      `{"id":"bad-dots"}`,
 		".hidden.json":   `{"id":"hidden"}`,
 		"has space.json": `{"id":"bad-space"}`,
+		"notes.txt":      `not a record`,
 	} {
 		if err := os.WriteFile(filepath.Join(dir, name), []byte(data), 0o644); err != nil {
 			t.Fatal(err)
@@ -187,6 +188,10 @@ func TestReadInRecordInvalid(t *testing.T) {
 	if err := os.WriteFile(array, []byte(`[]`), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	truncated := filepath.Join(dir, "truncated.json")
+	if err := os.WriteFile(truncated, []byte(`{"id":`), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	directory := filepath.Join(dir, "directory.json")
 	if err := os.Mkdir(directory, 0o755); err != nil {
 		t.Fatal(err)
@@ -202,6 +207,7 @@ func TestReadInRecordInvalid(t *testing.T) {
 	for id, want := range map[string]string{
 		"empty":     "record invalid: " + empty,
 		"array":     "record invalid: " + array,
+		"truncated": "record invalid: " + truncated,
 		"directory": "record invalid: " + directory,
 		"symlink":   "record invalid: " + symlink,
 	} {

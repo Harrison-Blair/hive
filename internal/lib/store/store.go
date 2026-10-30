@@ -46,118 +46,6 @@ func (s *Store) lockPath() string {
 	return filepath.Join(s.stateDir(), "lock")
 }
 
-// Read reads one record without taking the mutation lock.
-func (s *Store) Read(kind, id string, target any) error {
-	return s.readUnlocked(kind, id, target)
-}
-
-func (s *Store) readUnlocked(kind, id string, target any) error {
-	path, err := s.recordPath(kind, id)
-	if err != nil {
-		return err
-	}
-	if err := s.checkRead(path, []string{kind}); err != nil {
-		return err
-	}
-	data, err := readRecordFile(path)
-	if err != nil {
-		return err
-	}
-	if err := json.Unmarshal(data, target); err != nil {
-		return fmt.Errorf("record invalid: %s", path)
-	}
-	return nil
-}
-
-// Write replaces one record while holding the store lock.
-func (s *Store) Write(kind, id string, value any) error {
-	data, err := marshalRecord(value)
-	if err != nil {
-		return err
-	}
-	return s.withLock(context.Background(), func(locked *LockedStore) error {
-		return locked.store.writeData(kind, id, data)
-	})
-}
-
-// Update runs one read-change-write operation under the store lock.
-func (s *Store) Update(kind, id string, fn func(json.RawMessage) (json.RawMessage, error)) error {
-	return s.withLock(context.Background(), func(locked *LockedStore) error {
-		return locked.Update(kind, id, fn)
-	})
-}
-
-// List reads all valid store segments of one kind in ID order.
-func (s *Store) List(kind string) ([]json.RawMessage, error) {
-	if err := validateSegment("kind", kind); err != nil {
-		return nil, err
-	}
-	return s.listUnlocked(kind)
-}
-
-func (s *Store) listUnlocked(kind string) ([]json.RawMessage, error) {
-	dir := filepath.Join(s.stateDir(), kind)
-	if err := s.checkList(dir, []string{kind}); err != nil {
-		return nil, err
-	}
-	entries, err := os.ReadDir(dir)
-	if errors.Is(err, os.ErrNotExist) {
-		return []json.RawMessage{}, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	found := []json.RawMessage{}
-	for _, entry := range entries {
-		name := entry.Name()
-		if !strings.HasSuffix(name, ".json") {
-			continue
-		}
-		id := strings.TrimSuffix(name, ".json")
-		if err := validateSegment("id", id); err != nil {
-			continue
-		}
-		data, err := readRecordFile(filepath.Join(dir, name))
-		if err != nil {
-			return nil, err
-		}
-		found = append(found, json.RawMessage(data))
-	}
-	return found, nil
-}
-
-// Next increments and returns a named counter. The first value is 1.
-func (s *Store) Next(name string) (uint64, error) {
-	var next uint64
-	err := s.withLock(context.Background(), func(locked *LockedStore) error {
-		var err error
-		next, err = locked.Next(name)
-		return err
-	})
-	return next, err
-}
-
-func (s *Store) nextUnlocked(name string) (uint64, error) {
-	if err := validateSegment("counter", name); err != nil {
-		return 0, err
-	}
-	var next uint64
-	err := s.updateUnlocked("counters", name, func(raw json.RawMessage) (json.RawMessage, error) {
-		var counter struct {
-			Value uint64 `json:"value"`
-		}
-		if len(raw) != 0 {
-			if err := json.Unmarshal(raw, &counter); err != nil {
-				return nil, err
-			}
-		}
-		counter.Value++
-		next = counter.Value
-		return json.Marshal(counter)
-	})
-	return next, err
-}
-
 // ReadIn reads one record below a nested collection without taking the lock.
 func (s *Store) ReadIn(collection []string, id string, target any) error {
 	return s.readInUnlocked(collection, id, target)
@@ -284,14 +172,6 @@ func (s *Store) ListEach(collection []string, id string) ([]json.RawMessage, err
 	return found, nil
 }
 
-func (s *Store) writeData(kind, id string, data []byte) error {
-	path, err := s.recordPath(kind, id)
-	if err != nil {
-		return err
-	}
-	return s.writePath(path, []string{kind}, data)
-}
-
 func (s *Store) writeInData(collection []string, id string, data []byte) error {
 	path, err := s.recordPathIn(collection, id)
 	if err != nil {
@@ -311,14 +191,6 @@ func (s *Store) writePath(path string, collection []string, data []byte) error {
 		return err
 	}
 	return writeRecordFile(path, data)
-}
-
-func (s *Store) updateUnlocked(kind, id string, fn func(json.RawMessage) (json.RawMessage, error)) error {
-	path, err := s.recordPath(kind, id)
-	if err != nil {
-		return err
-	}
-	return s.updatePath(path, []string{kind}, fn)
 }
 
 func (s *Store) updateInUnlocked(collection []string, id string, fn func(json.RawMessage) (json.RawMessage, error)) error {
@@ -348,16 +220,6 @@ func (s *Store) updatePath(path string, collection []string, fn func(json.RawMes
 		return fmt.Errorf("record invalid: %s", path)
 	}
 	return s.writePath(path, collection, next)
-}
-
-func (s *Store) recordPath(kind, id string) (string, error) {
-	if err := validateSegment("kind", kind); err != nil {
-		return "", err
-	}
-	if err := validateSegment("id", id); err != nil {
-		return "", err
-	}
-	return filepath.Join(s.stateDir(), kind, id+".json"), nil
 }
 
 func (s *Store) recordPathIn(collection []string, id string) (string, error) {
@@ -514,7 +376,8 @@ func validateComponent(kind, value string) error {
 	return nil
 }
 
-// validateSegment keeps the legacy name rule for Read, Write, Update, and Next.
+// validateSegment is the file name rule of ListIn: it skips only a name with a
+// slash or "..", so a record with a long or legacy ID stays listed.
 func validateSegment(kind, value string) error {
 	if value == "" || strings.Contains(value, "/") || strings.Contains(value, "..") {
 		return fmt.Errorf("invalid store %s: %q", kind, value)

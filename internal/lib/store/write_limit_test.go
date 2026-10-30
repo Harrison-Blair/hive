@@ -58,25 +58,6 @@ func TestWriteLimitAcceptsEncodedBoundary(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			store := openStore(t, t.TempDir())
 			value := writeLimitRecordValue(t, test.size)
-			if err := store.Write("tasks", "legacy", value); err != nil {
-				t.Fatalf("Write() rejected %d encoded bytes: %v", test.size, err)
-			}
-			path := writeLimitPath(store, "tasks", "legacy")
-			data, err := os.ReadFile(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(data) != test.size {
-				t.Fatalf("Write() encoded %d bytes; want %d", len(data), test.size)
-			}
-			var legacy map[string]string
-			if err := store.Read("tasks", "legacy", &legacy); err != nil {
-				t.Fatalf("Read() rejected the boundary record: %v", err)
-			}
-			if len(legacy["padding"]) != test.size-len(writeLimitFrame) {
-				t.Fatalf("Read() padding = %d bytes; want %d", len(legacy["padding"]), test.size-len(writeLimitFrame))
-			}
-
 			if err := store.WriteIn([]string{"tasks"}, "generic", value); err != nil {
 				t.Fatalf("WriteIn() rejected %d encoded bytes: %v", test.size, err)
 			}
@@ -121,20 +102,6 @@ func TestWriteLimitRejectsEncodedCreate(t *testing.T) {
 				write func() error
 			}{
 				{
-					name: "legacy Write",
-					id:   "legacy-write",
-					write: func() error {
-						return store.Write("tasks", "legacy-write", value)
-					},
-				},
-				{
-					name: "legacy Update",
-					id:   "legacy-update",
-					write: func() error {
-						return store.Update("tasks", "legacy-update", update)
-					},
-				},
-				{
 					name: "generic WriteIn",
 					id:   "generic-write",
 					write: func() error {
@@ -146,24 +113,6 @@ func TestWriteLimitRejectsEncodedCreate(t *testing.T) {
 					id:   "generic-update",
 					write: func() error {
 						return store.UpdateIn([]string{"tasks"}, "generic-update", update)
-					},
-				},
-				{
-					name: "locked Write",
-					id:   "locked-write",
-					write: func() error {
-						return store.WithLock(context.Background(), func(locked *LockedStore) error {
-							return locked.Write("tasks", "locked-write", value)
-						})
-					},
-				},
-				{
-					name: "locked Update",
-					id:   "locked-update",
-					write: func() error {
-						return store.WithLock(context.Background(), func(locked *LockedStore) error {
-							return locked.Update("tasks", "locked-update", update)
-						})
 					},
 				},
 			} {
@@ -195,20 +144,6 @@ func TestWriteLimitPreservesRecordOnRejectedReplacement(t *testing.T) {
 		write func(*Store) error
 	}{
 		{
-			name: "legacy Write",
-			id:   "legacy-write",
-			write: func(store *Store) error {
-				return store.Write("tasks", "legacy-write", value)
-			},
-		},
-		{
-			name: "legacy Update",
-			id:   "legacy-update",
-			write: func(store *Store) error {
-				return store.Update("tasks", "legacy-update", update)
-			},
-		},
-		{
 			name: "generic WriteIn",
 			id:   "generic-write",
 			write: func(store *Store) error {
@@ -220,24 +155,6 @@ func TestWriteLimitPreservesRecordOnRejectedReplacement(t *testing.T) {
 			id:   "generic-update",
 			write: func(store *Store) error {
 				return store.UpdateIn([]string{"tasks"}, "generic-update", update)
-			},
-		},
-		{
-			name: "locked Write",
-			id:   "locked-write",
-			write: func(store *Store) error {
-				return store.WithLock(context.Background(), func(locked *LockedStore) error {
-					return locked.Write("tasks", "locked-write", value)
-				})
-			},
-		},
-		{
-			name: "locked Update",
-			id:   "locked-update",
-			write: func(store *Store) error {
-				return store.WithLock(context.Background(), func(locked *LockedStore) error {
-					return locked.Update("tasks", "locked-update", update)
-				})
 			},
 		},
 		{
@@ -261,7 +178,7 @@ func TestWriteLimitPreservesRecordOnRejectedReplacement(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			store := openStore(t, t.TempDir())
-			if err := store.Write("tasks", test.id, map[string]string{"value": "old"}); err != nil {
+			if err := store.WriteIn([]string{"tasks"}, test.id, map[string]string{"value": "old"}); err != nil {
 				t.Fatal(err)
 			}
 			path := writeLimitPath(store, "tasks", test.id)
@@ -282,7 +199,7 @@ func TestWriteLimitPreservesRecordOnRejectedReplacement(t *testing.T) {
 				t.Fatalf("%s changed the old record: got %d bytes, want %d", test.name, len(after), len(old))
 			}
 			var record map[string]string
-			if err := store.Read("tasks", test.id, &record); err != nil {
+			if err := store.ReadIn([]string{"tasks"}, test.id, &record); err != nil {
 				t.Fatalf("%s left the old record unreadable: %v", test.name, err)
 			}
 			if record["value"] != "old" {
@@ -297,7 +214,7 @@ func TestWriteLimitKeepsEarlierGroupedWrite(t *testing.T) {
 	value := writeLimitRecordValue(t, writeLimitAbove)
 	var writeErr error
 	err := store.WithLock(context.Background(), func(locked *LockedStore) error {
-		if err := locked.Write("tasks", "first", map[string]string{"value": "small"}); err != nil {
+		if err := locked.WriteIn([]string{"tasks"}, "first", map[string]string{"value": "small"}); err != nil {
 			return err
 		}
 		writeErr = locked.WriteIn([]string{"tasks"}, "second", value)
@@ -315,7 +232,7 @@ func TestWriteLimitKeepsEarlierGroupedWrite(t *testing.T) {
 		t.Fatalf("later write made a record at %s: %v", second, statErr)
 	}
 	var first map[string]string
-	if err := store.Read("tasks", "first", &first); err != nil {
+	if err := store.ReadIn([]string{"tasks"}, "first", &first); err != nil {
 		t.Fatalf("earlier write is unreadable: %v", err)
 	}
 	if first["value"] != "small" {
@@ -334,8 +251,8 @@ func TestWriteLimitCountsEncodedEscapesAndUTF8(t *testing.T) {
 		"padding": strings.Repeat("x", padding),
 		"unicode": "\u00e9",
 	}
-	if err := store.Write("tasks", "escaped", value); err != nil {
-		t.Fatalf("Write() rejected %d encoded bytes: %v", writeLimitAt, err)
+	if err := store.WriteIn([]string{"tasks"}, "escaped", value); err != nil {
+		t.Fatalf("WriteIn() rejected %d encoded bytes: %v", writeLimitAt, err)
 	}
 	path := writeLimitPath(store, "tasks", "escaped")
 	old, err := os.ReadFile(path)
@@ -350,21 +267,21 @@ func TestWriteLimitCountsEncodedEscapesAndUTF8(t *testing.T) {
 		t.Fatalf("encoded bytes = %d; want %d", len(old), writeLimitAt)
 	}
 	var record map[string]string
-	if err := store.Read("tasks", "escaped", &record); err != nil {
-		t.Fatalf("Read() rejected the escaped boundary record: %v", err)
+	if err := store.ReadIn([]string{"tasks"}, "escaped", &record); err != nil {
+		t.Fatalf("ReadIn() rejected the escaped boundary record: %v", err)
 	}
 	if record["escape"] != "\x01" {
-		t.Fatalf("Read() escape = %q; want the control byte", record["escape"])
+		t.Fatalf("ReadIn() escape = %q; want the control byte", record["escape"])
 	}
 	if record["unicode"] != "\u00e9" {
-		t.Fatalf("Read() unicode = %q; want the UTF-8 rune", record["unicode"])
+		t.Fatalf("ReadIn() unicode = %q; want the UTF-8 rune", record["unicode"])
 	}
 
 	value["padding"] = strings.Repeat("x", padding+1)
-	err = store.Write("tasks", "escaped", value)
+	err = store.WriteIn([]string{"tasks"}, "escaped", value)
 	wantErr := "record too large: " + path
 	if err == nil || err.Error() != wantErr {
-		t.Fatalf("Write() error = %v; want %q", err, wantErr)
+		t.Fatalf("WriteIn() error = %v; want %q", err, wantErr)
 	}
 	after, err := os.ReadFile(path)
 	if err != nil {

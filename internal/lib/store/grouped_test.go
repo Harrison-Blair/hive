@@ -2,10 +2,8 @@ package store
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"sync"
 	"testing"
 	"time"
@@ -121,23 +119,23 @@ func TestGroupedPartialWriteStays(t *testing.T) {
 	}
 }
 
-func TestGroupedCounterProcesses(t *testing.T) {
+func TestGroupedUpdateProcesses(t *testing.T) {
 	home := t.TempDir()
+	store := openStore(t, home)
+	if err := store.WriteIn([]string{"tasks"}, "shared", map[string]int{"count": 0}); err != nil {
+		t.Fatal(err)
+	}
 	const processes, iterations = 4, 50
-	if err := runStoreHelpers(home, "grouped-counter", processes, iterations); err != nil {
+	if err := runStoreHelpers(home, "grouped-update", processes, iterations); err != nil {
 		t.Fatal(err)
 	}
-	data, err := readRecordFile(filepath.Join(home, "counters", "shared.json"))
-	if err != nil {
+	var record struct {
+		Count int `json:"count"`
+	}
+	if err := store.ReadIn([]string{"tasks"}, "shared", &record); err != nil {
 		t.Fatal(err)
 	}
-	var counter struct {
-		Value uint64 `json:"value"`
-	}
-	if err := json.Unmarshal(data, &counter); err != nil {
-		t.Fatal(err)
-	}
-	if counter.Value != processes*iterations {
-		t.Fatalf("counter = %d; want %d", counter.Value, processes*iterations)
+	if record.Count != processes*iterations {
+		t.Fatalf("count = %d; want %d", record.Count, processes*iterations)
 	}
 }
