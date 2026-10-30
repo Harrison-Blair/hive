@@ -131,13 +131,18 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 	}
 
 	guideArgs := profile.GuideArgs(options.Guide)
+	startOpts := []herdr.Option{herdr.WithLogger(logger)}
+	if len(guideArgs) > 0 {
+		value := guideArgs[len(guideArgs)-1]
+		startOpts = append(startOpts, herdr.WithRedact(value, guide.Placeholder(value)))
+	}
 	argv, err := start(ctx, herdr.AgentStartParams{
 		Name:      options.Name,
 		Kind:      profile.Kind(),
 		PaneID:    paneID,
 		Args:      profile.Args(options.Model, append(extra, guideArgs...)),
 		TimeoutMS: uint64(profile.StartTimeout() / time.Millisecond),
-	}, logger, session)
+	}, startOpts, session)
 	if err != nil {
 		envelope := output.Failed("start", withLabel(fmt.Sprintf("agent start in pane %s: %s", paneID, err)))
 		envelope.Effects = effects
@@ -302,10 +307,10 @@ func waitReady(ctx context.Context, paneID string, timeout time.Duration, logger
 
 // start sends agent.start. A new pane can hold no shell prompt yet, so start
 // tries again while herdr reports the pane busy.
-func start(ctx context.Context, params herdr.AgentStartParams, logger *slog.Logger, session *string) ([]string, error) {
+func start(ctx context.Context, params herdr.AgentStartParams, opts []herdr.Option, session *string) ([]string, error) {
 	deadline := time.Now().Add(busyTimeout)
 	for {
-		started, err := herdr.AgentStart(ctx, params, herdr.WithLogger(logger))
+		started, err := herdr.AgentStart(ctx, params, opts...)
 		if err == nil {
 			keepSession(session, started.Agent.AgentSession)
 			return started.Argv, nil

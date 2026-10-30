@@ -104,3 +104,6 @@ func (l *Log) Event(msg string) map[string]any {
 	}
 	return found
 }
+
+// Text returns each event of the log as JSON lines.
+func (l *Log) Text() string { return l.out.String() }

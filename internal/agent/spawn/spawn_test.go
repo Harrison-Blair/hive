@@ -751,4 +751,7 @@ func TestSpawnStartsTheHarnessWithTheGuide(t *testing.T) {
 			t.Fatalf("agent started argv = %q; want no guide text", argv)
 		}
 	}
+	if text := log.Text(); strings.Contains(text, "line one") || strings.Count(text, "<guide 18 bytes>") < 3 {
+		t.Fatalf("log = %s; want the placeholder in the herdr request, the herdr reply, and agent started, and no guide text", text)
+	}
 }
