@@ -755,3 +755,38 @@ func TestSpawnStartsTheHarnessWithTheGuide(t *testing.T) {
 		t.Fatalf("log = %s; want the placeholder in the herdr request, the herdr reply, and agent started, and no guide text", text)
 	}
 }
+
+// TestSpawnLimitsTheStartLine uses pi with no guide. Its start line is
+// pi '--model' 'MODEL' '--approve', which is 27 bytes plus the model.
+func TestSpawnLimitsTheStartLine(t *testing.T) {
+	t.Run("over the limit", func(t *testing.T) {
+		fake := agenttest.NewHerdr(t)
+		home := agenttest.Home(t)
+		_, callerPane := fake.AddWorkspace("mine", "", false)
+		options := base("kid")
+		options.Model = strings.Repeat("m", 3974)
+		options.CallerPane = callerPane.ID
+		envelope := spawnRun(t, home, options)
+		want := "the start command is 4001 bytes, more than the limit of 4000 bytes: use a shorter --model"
+		if envelope.Outcome != "failed" || envelope.Phase != "validate" || errorText(envelope) != want {
+			t.Fatalf("envelope = %+v; want failed in validate with %q", envelope, want)
+		}
+		if got := fake.RequestCount(); got != 0 {
+			t.Fatalf("herdr requests = %d; want 0", got)
+		}
+		if _, err := agent.Load(home, "kid"); err == nil {
+			t.Fatalf("record kid exists; want none")
+		}
+	})
+	t.Run("at the limit", func(t *testing.T) {
+		fake := agenttest.NewHerdr(t)
+		home := agenttest.Home(t)
+		_, callerPane := fake.AddWorkspace("mine", "", false)
+		options := base("kid")
+		options.Model = strings.Repeat("m", 3973)
+		options.CallerPane = callerPane.ID
+		if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
+			t.Fatalf("envelope = %+v; want ok", envelope)
+		}
+	})
+}

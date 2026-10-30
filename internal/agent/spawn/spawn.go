@@ -68,14 +68,6 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 	if message != "" {
 		return output.Failed("validate", message)
 	}
-	if err := checkName(ctx, home, options.Name, logger); err != nil {
-		return output.Failed("name", err.Error())
-	}
-	parent, err := agent.CallerName(home, options.CallerPane)
-	if err != nil {
-		return output.Failed("caller", err.Error())
-	}
-
 	trust := profile.Trust()
 	var extra []string
 	var env map[string]string
@@ -88,6 +80,18 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 			}
 			env[key] = value
 		}
+	}
+	guideArgs := profile.GuideArgs(options.Guide)
+	args := profile.Args(options.Model, append(extra, guideArgs...))
+	if err := harness.CheckStartLine(profile.Kind(), args); err != nil {
+		return output.Failed("validate", err.Error())
+	}
+	if err := checkName(ctx, home, options.Name, logger); err != nil {
+		return output.Failed("name", err.Error())
+	}
+	parent, err := agent.CallerName(home, options.CallerPane)
+	if err != nil {
+		return output.Failed("caller", err.Error())
 	}
 
 	var place placement
@@ -130,7 +134,6 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		return message + " (also: tab label: " + labelErr + ")"
 	}
 
-	guideArgs := profile.GuideArgs(options.Guide)
 	startOpts := []herdr.Option{herdr.WithLogger(logger)}
 	if len(guideArgs) > 0 {
 		value := guideArgs[len(guideArgs)-1]
@@ -140,7 +143,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		Name:      options.Name,
 		Kind:      profile.Kind(),
 		PaneID:    paneID,
-		Args:      profile.Args(options.Model, append(extra, guideArgs...)),
+		Args:      args,
 		TimeoutMS: uint64(profile.StartTimeout() / time.Millisecond),
 	}, startOpts, session)
 	if err != nil {
