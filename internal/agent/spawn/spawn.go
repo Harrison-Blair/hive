@@ -103,9 +103,9 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 			return output.Failed("project", err.Error())
 		}
 		if options.Worktree == "" {
-			place, phase, err = placeInProject(ctx, home, project, options.Name, env, logger)
+			place, phase, err = placeInProject(ctx, project, options.Name, env, logger)
 		} else {
-			place, phase, err = placeInWorktree(ctx, home, project, options.Worktree, logger)
+			place, phase, err = placeInWorktree(ctx, home, project, options.Worktree, env, logger)
 		}
 	}
 	if err != nil {

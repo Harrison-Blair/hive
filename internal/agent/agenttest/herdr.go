@@ -201,9 +201,12 @@ func (h *Herdr) Requests(method string) []Request {
 	return out
 }
 
-// exportLine matches a shell line that exports one variable with a single
-// quoted value.
-var exportLine = regexp.MustCompile(`^export ([A-Za-z_][A-Za-z0-9_]*)='([^']*)'$`)
+// exportLine matches a shell line that exports one or more variables, each
+// with a single quoted value. exportPair matches one of the variables.
+var (
+	exportLine = regexp.MustCompile(`^export( [A-Za-z_][A-Za-z0-9_]*='[^']*')+$`)
+	exportPair = regexp.MustCompile(` ([A-Za-z_][A-Za-z0-9_]*)='([^']*)'`)
+)
 
 func envParam(params map[string]any) map[string]string {
 	env := map[string]string{}
@@ -422,11 +425,13 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		}
 		// The shell of the pane runs a submitted export line.
 		keys, _ := params["keys"].([]any)
-		if match := exportLine.FindStringSubmatch(text("text")); match != nil && len(keys) == 1 && keys[0] == "enter" {
+		if line := text("text"); exportLine.MatchString(line) && len(keys) == 1 && keys[0] == "enter" {
 			if pane.Env == nil {
 				pane.Env = map[string]string{}
 			}
-			pane.Env[match[1]] = match[2]
+			for _, match := range exportPair.FindAllStringSubmatch(line, -1) {
+				pane.Env[match[1]] = match[2]
+			}
 		}
 		return map[string]any{"type": "ok"}, nil
 	case "agent.start":

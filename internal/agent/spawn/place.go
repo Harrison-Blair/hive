@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"maps"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
@@ -39,8 +41,8 @@ func placeInCaller(ctx context.Context, callerPane, cwd, label string, env map[s
 
 // placeInProject opens a tab with label in the checkout workspace of project,
 // or takes the root pane of the checkout workspace that it makes.
-func placeInProject(ctx context.Context, home string, project records.Project, label string, env map[string]string, logger *slog.Logger) (placement, string, error) {
-	workspace, created, effects, err := checkoutWorkspace(ctx, home, project, logger)
+func placeInProject(ctx context.Context, project records.Project, label string, env map[string]string, logger *slog.Logger) (placement, string, error) {
+	workspace, created, effects, err := checkoutWorkspace(ctx, project, env, logger)
 	if err != nil {
 		return placement{}, "workspace", err
 	}
@@ -51,14 +53,16 @@ func placeInProject(ctx context.Context, home string, project records.Project, l
 }
 
 // placeInWorktree makes a worktree of project from its checkout workspace and
-// takes the root pane of the new worktree workspace.
-func placeInWorktree(ctx context.Context, home string, project records.Project, name string, logger *slog.Logger) (placement, string, error) {
+// takes the root pane of the new worktree workspace. The shell of the root
+// pane exports env. A checkout workspace that it makes gets only HIVE_HOME,
+// because no agent starts in its root pane.
+func placeInWorktree(ctx context.Context, home string, project records.Project, name string, env map[string]string, logger *slog.Logger) (placement, string, error) {
 	path := filepath.Join(home, "projects", project.ID, "worktrees", name)
-	export := exportHome(home)
+	export := exportEnv(env)
 	if err := harness.CheckStartLine(export, nil); err != nil {
-		return placement{}, "validate", fmt.Errorf("home path too long for the worktree shell: %w", err)
+		return placement{}, "validate", fmt.Errorf("environment too long for the worktree shell: %w", err)
 	}
-	workspace, _, effects, err := checkoutWorkspace(ctx, home, project, logger)
+	workspace, _, effects, err := checkoutWorkspace(ctx, project, map[string]string{"HIVE_HOME": home}, logger)
 	if err != nil {
 		return placement{}, "workspace", err
 	}
@@ -73,17 +77,21 @@ func placeInWorktree(ctx context.Context, home string, project records.Project, 
 	}
 	effects = append(effects, output.Effect{Resource: "worktree", Path: path, Action: "created"})
 	// worktree.create takes no env, so the shell of the root pane exports
-	// the home before agent.start types the start line.
+	// env before agent.start types the start line.
 	if err := herdr.PaneRun(ctx, created.RootPane.PaneID, export, herdr.WithLogger(logger)); err != nil {
-		return placement{effects: effects}, "env", fmt.Errorf("export HIVE_HOME in pane %s: %w", created.RootPane.PaneID, err)
+		return placement{effects: effects}, "env", fmt.Errorf("export the environment in pane %s: %w", created.RootPane.PaneID, err)
 	}
 	return placement{pane: created.RootPane, cwd: path, worktree: path, rootPane: true, effects: effects}, "", nil
 }
 
-// exportHome returns the shell line that exports home as HIVE_HOME, with the
-// value in single quotes.
-func exportHome(home string) string {
-	return "export HIVE_HOME='" + strings.ReplaceAll(home, "'", `'\''`) + "'"
+// exportEnv returns one shell line that exports each pair of env, in key
+// order, with each value in single quotes.
+func exportEnv(env map[string]string) string {
+	line := "export"
+	for _, key := range slices.Sorted(maps.Keys(env)) {
+		line += " " + key + "='" + strings.ReplaceAll(env[key], "'", `'\''`) + "'"
+	}
+	return line
 }
 
 // checkoutWorkspace returns the ID of the workspace that herdr has open on the
@@ -91,8 +99,9 @@ func exportHome(home string) string {
 // open_workspace_id of the checkout entry that is not a linked worktree. The
 // workspace.list metadata is absent for a workspace that workspace.create
 // made (herdr 0.9.5), so it is not used. When none is open, checkoutWorkspace
-// makes one with the herdr default label and returns its root pane too.
-func checkoutWorkspace(ctx context.Context, home string, project records.Project, logger *slog.Logger) (string, *herdr.PaneInfo, []output.Effect, error) {
+// makes one with the herdr default label and env, and returns its root pane
+// too.
+func checkoutWorkspace(ctx context.Context, project records.Project, env map[string]string, logger *slog.Logger) (string, *herdr.PaneInfo, []output.Effect, error) {
 	listed, err := herdr.WorktreeList(ctx, herdr.WorktreeListParams{Cwd: project.Path}, herdr.WithLogger(logger))
 	if err != nil {
 		return "", nil, nil, fmt.Errorf("worktree list %s: %w", project.Path, err)
@@ -102,7 +111,7 @@ func checkoutWorkspace(ctx context.Context, home string, project records.Project
 			return tree.OpenWorkspaceID, nil, nil, nil
 		}
 	}
-	created, err := herdr.WorkspaceCreate(ctx, herdr.WorkspaceCreateParams{Cwd: project.Path, Env: map[string]string{"HIVE_HOME": home}}, herdr.WithLogger(logger))
+	created, err := herdr.WorkspaceCreate(ctx, herdr.WorkspaceCreateParams{Cwd: project.Path, Env: env}, herdr.WithLogger(logger))
 	if err != nil {
 		return "", nil, nil, fmt.Errorf("workspace create %s: %w", project.Path, err)
 	}
