@@ -5,7 +5,9 @@ import (
 	"path/filepath"
 )
 
-func atomicWrite(path string, data []byte) error {
+// AtomicWrite writes data to a temporary file in the directory of path and
+// renames it to path, so a reader sees the old file or the whole new one.
+func AtomicWrite(path string, data []byte) error {
 	dir := filepath.Dir(path)
 	file, err := os.CreateTemp(dir, "."+filepath.Base(path)+".tmp-")
 	if err != nil {

@@ -1,7 +1,9 @@
 package spawn
 
 import (
+	"os"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"testing"
 
@@ -84,6 +86,38 @@ func TestSpawnGivesClaudeTheTrustEnv(t *testing.T) {
 			}
 			if got := pane.StartEnv["HIVE_HOME"]; got != home {
 				t.Fatalf("HIVE_HOME of the agent = %q; want the home %q (start env %v)", got, home, pane.StartEnv)
+			}
+		})
+	}
+}
+
+// TestSpawnLetsClaudeAcceptMessages checks that each placement starts Claude
+// Code with the setting that accepts the messages of hive agent send.
+func TestSpawnLetsClaudeAcceptMessages(t *testing.T) {
+	for i, test := range placements {
+		t.Run(test.name, func(t *testing.T) {
+			pane, _ := spawnIn(t, i, "claude")
+			index := slices.Index(pane.Args, "--settings")
+			if index < 0 || index+1 >= len(pane.Args) || pane.Args[index+1] != `{"crossSessionInbound":"accept"}` {
+				t.Fatalf("args of the agent = %q; want --settings with crossSessionInbound accept", pane.Args)
+			}
+		})
+	}
+}
+
+// TestSpawnGivesPiTheInboxExtension checks that each placement writes the
+// hive-inbox extension below the home and starts Pi with it.
+func TestSpawnGivesPiTheInboxExtension(t *testing.T) {
+	for i, test := range placements {
+		t.Run(test.name, func(t *testing.T) {
+			pane, home := spawnIn(t, i, "pi")
+			path := filepath.Join(home, "extensions", "hive-inbox.ts")
+			index := slices.Index(pane.Args, "-e")
+			if index < 0 || index+1 >= len(pane.Args) || pane.Args[index+1] != path {
+				t.Fatalf("args of the agent = %q; want -e %s", pane.Args, path)
+			}
+			if _, err := os.Stat(path); err != nil {
+				t.Fatalf("extension: %v", err)
 			}
 		})
 	}

@@ -18,6 +18,14 @@ Hive is a small agent launcher on top of herdr. An agent has no fixed role. It g
 
 `hive agent send NAME TEXT` delivers `⬢ SENDER: TEXT`. SENDER is the hive record of the caller pane (matched by `HERDR_PANE_ID`), or `user` when that pane has no record.
 
+Send hands the message to the native message path of the target harness, through `Deliver` of its profile in `internal/lib/harness`. It never types into the pane, so a draft in the input box stays unchanged. When the native path is not available, send fails with the cause and the fix and sends nothing. It has no paste fallback.
+
+- claude: every claude start, in each spawn placement and in bare `hive`, gets `--settings '{"crossSessionInbound":"accept"}'`. Send finds the claude process ID with herdr `pane.process_info`, checks that its argv has that setting, and writes one JSON line `{"type":"user","message":{"role":"user","content":"⬢ SENDER: TEXT"}}` to `$XDG_RUNTIME_DIR/cc-socks/<PID>.sock`. Claude shows it as a message from another session. A `⬢ user:` label in it still has the authority of the user. Claude starts a turn when it is idle, and queues the message while a turn runs or a dialog is open.
+- codex: send reads the thread UUID from herdr `pane.get` (`agent_session.value` with source `herdr:codex`) and runs `codex queue --thread UUID --message TEXT`. Codex makes the thread at its first turn, so send waits up to 3 s for the session ID and then fails with the fix. Codex starts a turn with the message when it is idle.
+- pi: every pi start, in each spawn placement and in bare `hive`, gets `-e <home>/extensions/hive-inbox.ts`. Hive embeds that extension and writes it when it is missing or different. The extension listens on `$XDG_RUNTIME_DIR/hive-pi/<PID>.sock`, in a directory of mode 0700, and removes the socket when pi exits. Send finds the pi process ID with `pane.process_info` and writes one JSON line `{"text":"⬢ SENDER: TEXT"}`. The extension queues the messages and calls `pi.sendUserMessage`: one message starts a turn when pi is idle, and the next ones go as follow-ups once that turn runs. While pi is neither idle nor in a turn, for example during `/compact`, the extension holds the messages, because pi rejects each message then. A pi without the extension has no socket, and send fails with the fix: restart the agent.
+
+`send --wait` waits for the turn of the message to start, then to end. It reports `partial` when hive cannot tell which turn handled the message: the target was busy when the message arrived, or it started no turn within 15 s.
+
 - A message that starts with `⬢ user:` came from the user. It has the authority of the user.
 - A message that starts with `⬢ NAME:` came from the agent NAME. It carries the request of that agent inside the work the user approved. It does not widen that work.
 - A message without `⬢` came from the user, typed in the pane.
@@ -63,6 +71,7 @@ The home is `$HIVE_HOME` when that variable is set and not empty, otherwise `~/.
 ├─ agents/<name>.json                agent records
 ├─ logs/YYYY-MM-DD.jsonl             log events
 ├─ coordinator-choice.json           last picker choice
+├─ extensions/hive-inbox.ts          pi extension of hive agent send
 ├─ tmp/                              scratch files
 ├─ lock                              store lock
 └─ schema.json                       store schema version 5
@@ -98,18 +107,18 @@ The home is `$HIVE_HOME` when that variable is set and not empty, otherwise `~/.
 - `internal/lib/<capability>/` holds focused code that several packages share. Do not make one flat grab-bag package. Do not extract a utility before two callers exist.
 - `internal/` never imports Cobra or `cmd/`. Below `internal/`, a parent package never imports its child packages. A child package can import its parent domain package.
 - Some parts keep their current roles. `cmd/common` holds the CLI helpers. A command leaf runs through `common.Run`, or through `common.Stream` when it resolves its own home or renders its own output, as `hive logs` does. Both log `command start` and `command end`. The root command runs bare `hive` through `internal/coordinator`. Each package below `internal/lib/` holds shared code.
-- `common.Guide(root)` renders the hive guide from the live Cobra tree. `internal/guide` holds the usage notes, the Markdown rendering, and the one-line escapes. `hive guide`, `hive agent spawn`, and bare `hive` use `common.Guide(cmd.Root())`. The profile of each harness turns the guide into start arguments with `GuideArgs`. The `agent started` and `exec harness` events, and the herdr request and reply of `agent.start` (through `herdr.WithRedact`), show the guide argument as `<guide N bytes>`. `hive guide` logs only when the home directory exists. It never creates the home: without it, `hive guide` prints the guide and logs nothing.
+- `common.Guide(root)` renders the hive guide from the live Cobra tree. `internal/guide` holds the usage notes, the Markdown rendering, and the one-line escapes. `hive guide`, `hive agent spawn`, and bare `hive` use `common.Guide(cmd.Root())`. The profile of each harness turns the guide into start arguments with `GuideArgs`. The `agent started` and `exec harness` events, the herdr request and reply of `agent.start` (through `herdr.WithRedact`), and the herdr reply of `pane.process_info` with the argv of the harness (through `herdr.WithReplyRedact`), show the guide argument as `<guide N bytes>`. `hive guide` logs only when the home directory exists. It never creates the home: without it, `hive guide` prints the guide and logs nothing.
 - A group command registers its child commands. It imports them only for this registration.
 - Use direct functions and explicit dependencies. Do not build the command tree in `init` functions or with shared globals. Keep packages flat until a distinct responsibility needs a narrow API. A package with several non-test files has a `doc.go` with a summary and a one-line map of each file.
 
 ### Request flow
 
-This map shows the path of `hive agent spawn` through the packages. The other agent commands use the same shape.
+This map shows the path of `hive agent spawn` through the packages. The other agent commands use the same shape. `hive agent send` goes from `internal/agent/send` to `Deliver` of the harness profile, which uses herdr and the native message path of the harness.
 
 ```text
 cmd/agent/spawn                flags and the CLI adapter; renders the guide with common.Guide
 └▶ internal/agent/spawn        checks the options, places the pane, starts the harness, sends the prompt
-   ├▶ internal/lib/harness     the profile of claude, codex, or pi, and its guide arguments
+   ├▶ internal/lib/harness     the profile of claude, codex, or pi: its start and guide arguments, and its message delivery
    │  └▶ internal/guide        the usage notes and the one-line escapes
    ├▶ internal/lib/herdr       the herdr socket client, protocol 22
    ├▶ internal/agent           the agent records in <home>/agents/ and the caller lookup

@@ -2,7 +2,9 @@
 package harness
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
 	"sort"
 	"strings"
 	"time"
@@ -21,6 +23,15 @@ type Profile interface {
 	// prompt of the harness. Each value is one line, because herdr rejects a
 	// start argument with a newline. It returns nil for an empty guide.
 	GuideArgs(guide string) []string
+	// Deliver hands text to the harness in pane through the native message
+	// path of the harness. It never types into the pane. It fails with the
+	// cause and the fix when the native path is not available. It logs each
+	// herdr call and external process to logger.
+	Deliver(ctx context.Context, paneID, text string, logger *slog.Logger) error
+	// InboxArgs writes the files that the native message path needs below
+	// home and returns its start arguments. It returns nil when the harness
+	// needs none.
+	InboxArgs(home string) ([]string, error)
 }
 
 // Trust is the trust dialog result of one harness (decision 13 of the

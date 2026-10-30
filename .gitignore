@@ -6,6 +6,7 @@
 !*.go
 !go.mod
 !go.sum
+!internal/lib/harness/hive-inbox.ts
 
 # Documentation
 !*.md

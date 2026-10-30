@@ -1,6 +1,13 @@
 package harness
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/guide"
@@ -12,7 +19,7 @@ type claudeProfile struct{}
 func (claudeProfile) Kind() string { return "claude" }
 
 func (claudeProfile) Args(model string, extra []string) []string {
-	args := []string{"--dangerously-skip-permissions"}
+	args := []string{"--dangerously-skip-permissions", "--settings", claudeInbound}
 	if model != "" {
 		args = append(args, "--model", model)
 	}
@@ -39,3 +46,41 @@ func (claudeProfile) GuideArgs(text string) []string {
 func (claudeProfile) Trust() Trust {
 	return Trust{Version: "2.1.307", Env: []string{"CLAUDE_CODE_SANDBOXED=1"}}
 }
+
+// Deliver writes text as one user message line to the inbox socket of the
+// Claude Code process in pane. Claude Code shows it as a message from another
+// session. It starts a turn when the session is idle, and it queues the
+// message while a turn runs or a dialog is open.
+func (p claudeProfile) Deliver(ctx context.Context, paneID, text string, logger *slog.Logger) error {
+	process, err := harnessProcess(ctx, p, paneID, logger)
+	if err != nil {
+		return err
+	}
+	if !hasArgPair(process.Argv, "--settings", claudeInbound) {
+		return fmt.Errorf("claude process %d was started without --settings %s: restart the agent", process.PID, claudeInbound)
+	}
+	// Claude Code 2.1.314 binds $XDG_RUNTIME_DIR/cc-socks/<pid>.sock, and
+	// falls back to /tmp/cc-socks-<uid> when it cannot use that directory.
+	path, err := socketPath("cc-socks", process.PID, filepath.Join(os.TempDir(), "cc-socks-"+strconv.Itoa(os.Getuid())))
+	if err != nil {
+		return fmt.Errorf("%w: restart the agent", err)
+	}
+	type message struct {
+		Role    string `json:"role"`
+		Content string `json:"content"`
+	}
+	line, err := json.Marshal(struct {
+		Type    string  `json:"type"`
+		Message message `json:"message"`
+	}{"user", message{"user", text}})
+	if err != nil {
+		return err
+	}
+	if err := writeLine(ctx, path, line); err != nil {
+		return fmt.Errorf("write to the message socket %s: %w", path, err)
+	}
+	return nil
+}
+
+// InboxArgs returns nil: the native message path of Claude Code needs no file.
+func (claudeProfile) InboxArgs(string) ([]string, error) { return nil, nil }

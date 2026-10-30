@@ -1,9 +1,18 @@
 package harness
 
 import (
+	"bytes"
+	"context"
+	_ "embed"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/guide"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 // piProfile is the native profile of Pi.
@@ -49,4 +58,51 @@ func (piProfile) GuideArgs(text string) []string {
 // trusts them for this run only and writes nothing to ~/.pi/agent/trust.json.
 func (piProfile) Trust() Trust {
 	return Trust{Version: "1.3.0", Args: []string{"--approve"}}
+}
+
+// inboxExtension is the Pi extension of the native message path. It listens
+// on $XDG_RUNTIME_DIR/hive-pi/<pid>.sock and passes each line to
+// pi.sendUserMessage: as a new turn when Pi is idle, else as a follow-up.
+//
+//go:embed hive-inbox.ts
+var inboxExtension []byte
+
+// InboxArgs writes the hive-inbox extension to <home>/extensions when it is
+// missing or different, and returns the -e argument that loads it.
+func (piProfile) InboxArgs(home string) ([]string, error) {
+	path := filepath.Join(home, "extensions", "hive-inbox.ts")
+	if current, err := os.ReadFile(path); err != nil || !bytes.Equal(current, inboxExtension) {
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			return nil, err
+		}
+		// Parallel spawns can write at once: a rename never shows a partial
+		// file to a starting pi.
+		if err := store.AtomicWrite(path, inboxExtension); err != nil {
+			return nil, err
+		}
+	}
+	return []string{"-e", path}, nil
+}
+
+// Deliver writes text as one JSON line {"text": TEXT} to the socket of the
+// hive-inbox extension of the Pi process in pane.
+func (p piProfile) Deliver(ctx context.Context, paneID, text string, logger *slog.Logger) error {
+	process, err := harnessProcess(ctx, p, paneID, logger)
+	if err != nil {
+		return err
+	}
+	path, err := socketPath("hive-pi", process.PID, filepath.Join(os.TempDir(), "hive-pi"))
+	if err != nil {
+		return fmt.Errorf("%w: restart the agent, so pi loads the hive-inbox extension", err)
+	}
+	line, err := json.Marshal(struct {
+		Text string `json:"text"`
+	}{text})
+	if err != nil {
+		return err
+	}
+	if err := writeLine(ctx, path, line); err != nil {
+		return fmt.Errorf("write to the message socket %s: %w", path, err)
+	}
+	return nil
 }

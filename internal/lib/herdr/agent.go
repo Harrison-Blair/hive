@@ -113,6 +113,32 @@ func AgentPrompt(ctx context.Context, params AgentPromptParams, opts ...Option) 
 	return agent, nil
 }
 
+// AgentWaitParams are the params of agent.wait.
+type AgentWaitParams struct {
+	Target    string   `json:"target"`
+	Until     []string `json:"until,omitempty"`
+	TimeoutMS uint64   `json:"timeout_ms,omitempty"`
+}
+
+// AgentWait waits until one agent has one of the statuses of params.Until.
+func AgentWait(ctx context.Context, params AgentWaitParams, opts ...Option) (AgentInfo, error) {
+	var result struct {
+		Type  *string         `json:"type"`
+		Agent json.RawMessage `json:"agent"`
+	}
+	if err := Call(ctx, "agent.wait", params, &result, opts...); err != nil {
+		return AgentInfo{}, err
+	}
+	if result.Type == nil || *result.Type != "agent_info" {
+		return AgentInfo{}, fmt.Errorf("bad reply: result type %q, want agent_info", stringValue(result.Type))
+	}
+	agent, err := decodeAgentInfo(result.Agent)
+	if err != nil {
+		return AgentInfo{}, fmt.Errorf("bad reply: %s", err)
+	}
+	return agent, nil
+}
+
 // AgentGet reads one agent.
 func AgentGet(ctx context.Context, target string, opts ...Option) (AgentInfo, error) {
 	var result struct {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -79,8 +80,12 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 			env[key] = value
 		}
 	}
+	inbox, err := profile.InboxArgs(home)
+	if err != nil {
+		return output.Failed("inbox", fmt.Sprintf("message path of %s: %s", profile.Kind(), err))
+	}
 	guideArgs := profile.GuideArgs(options.Guide)
-	args := profile.Args(options.Model, append(extra, guideArgs...))
+	args := profile.Args(options.Model, append(append(slices.Clone(extra), inbox...), guideArgs...))
 	if err := harness.CheckStartLine(profile.Kind(), args); err != nil {
 		return output.Failed("validate", err.Error())
 	}

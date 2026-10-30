@@ -255,7 +255,7 @@ func writeRecordFile(path string, data []byte) error {
 	if !validObject(data) {
 		return fmt.Errorf("record invalid: %s", path)
 	}
-	return atomicWrite(path, data)
+	return AtomicWrite(path, data)
 }
 
 func marshalRecord(value any) ([]byte, error) {

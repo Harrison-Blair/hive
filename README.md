@@ -16,6 +16,7 @@ Hive works from any directory and needs no setup step.
 ├─ agents/<name>.json                agent records
 ├─ logs/YYYY-MM-DD.jsonl             log events
 ├─ coordinator-choice.json           last picker choice
+├─ extensions/hive-inbox.ts          pi extension of hive agent send
 ├─ tmp/                              scratch files
 ├─ lock                              store lock
 └─ schema.json                       home schema version
@@ -94,7 +95,7 @@ result object.
 | `hive agent spawn --name N --harness H --model M [--prompt T \| --prompt-file F]` | Start an agent in a new tab of the caller's workspace, and send it the prompt. |
 | `hive agent spawn ... --project P` | Start the agent in a new tab of the checkout workspace of project P. Hive uses the open workspace on the checkout, or creates one. |
 | `hive agent spawn ... --project P --worktree NAME` | Create the worktree `<home>/projects/P/worktrees/NAME` on branch `NAME` from the base branch of P, and start the agent in its workspace. |
-| `hive agent send N TEXT [--wait]` | Send `⬢ SENDER: TEXT` to agent N. With `--wait`, wait until the agent is idle or done. |
+| `hive agent send N TEXT [--wait]` | Send `⬢ SENDER: TEXT` to agent N through the native message path of its harness. It never types into the pane. With `--wait`, wait until the agent is idle or done. |
 | `hive agent stop N [--remove-worktree]` | Close the pane or the worktree workspace of agent N. The checkout and the branch stay. `--remove-worktree` removes a clean checkout and refuses a dirty one. On an agent without a worktree, it closes the pane, removes the record, and prints `no worktree for N`. |
 | `hive agent list` | List the agent records with their herdr status. |
 | `hive project register PATH [--id ID] [--base BRANCH]` | Register a Git repository as a project. |
