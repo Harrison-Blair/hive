@@ -91,7 +91,7 @@ result object.
 
 | Command | Behavior |
 | --- | --- |
-| `hive` | Pick a harness (claude, codex, or pi) and a model, then run it in this pane and in the current directory as the `coordinator`. The last choice is preselected. Type to filter, or pick `Other…` to type a model. |
+| `hive` | Pick a harness (claude, codex, or pi) and a model, then run it in this pane and in the current directory as the coordinator: `<id>-coordinator` in the checkout of the registered project `<id>`, `coordinator` elsewhere. The last choice is preselected. Type to filter, or pick `Other…` to type a model. |
 | `hive agent spawn --name N --harness H --model M [--prompt T \| --prompt-file F]` | Start an agent in a new tab of the caller's workspace, and send it the prompt. |
 | `hive agent spawn ... --project P` | Start the agent in a new tab of the checkout workspace of project P. Hive uses the open workspace on the checkout, or creates one. |
 | `hive agent spawn ... --project P --worktree NAME` | Create the worktree `<home>/projects/P/worktrees/NAME` on branch `NAME` from the base branch of P, and start the agent in its workspace. |
