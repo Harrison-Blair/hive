@@ -8,10 +8,11 @@ import (
 	"github.com/Harrison-Blair/hive/internal/agent/list"
 )
 
-// The card size of the historical Agents graph, widened so that the elapsed
-// time with seconds fits beside the name.
+// The card size of the historical Agents graph, widened so that a name of 16
+// cells, such as hive-coordinator, and an elapsed time with seconds up to
+// 99h59m59s fit on row 1.
 const (
-	cardWidth    = 28
+	cardWidth    = 32
 	minCardWidth = 16
 	cardHeight   = 4
 )

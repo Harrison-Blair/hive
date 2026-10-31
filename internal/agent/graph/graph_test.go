@@ -114,6 +114,16 @@ func TestCardShowsNameAndElapsedThenHarnessAndModel(t *testing.T) {
 	}
 }
 
+func TestCardKeepsACoordinatorNameWithALongElapsedTime(t *testing.T) {
+	for _, age := range []time.Duration{10 * time.Minute, 26*time.Hour + 4*time.Minute + 3*time.Second} {
+		e := entry("hive-coordinator", "", "idle", "claude", "opus", age)
+		text := screen(loaded(t, []list.Entry{e}, 140, 20))
+		if !strings.Contains(text, " hive-coordinator ") || !strings.Contains(text, " "+elapsed(age)+" ") {
+			t.Errorf("age %v: card row 1 has no full name and elapsed time:\n%s", age, text)
+		}
+	}
+}
+
 func TestElapsedHasSeconds(t *testing.T) {
 	for age, want := range map[time.Duration]string{
 		7 * time.Second:                              "7s",
