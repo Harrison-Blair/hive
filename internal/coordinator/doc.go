@@ -13,6 +13,8 @@
 // discover.go lists the models of each harness from pi and opencode.
 // choice.go reads and writes the last choice at <home>/coordinator-choice.json.
 // picker.go is the Bubble Tea picker.
+// name.go resolves the coordinator name from the registered projects and
+// guards the record of that name.
 // launch.go saves the coordinator record, labels its tab, and starts the harness
 // in this pane.
 package coordinator

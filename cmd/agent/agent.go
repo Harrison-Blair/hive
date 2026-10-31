@@ -2,6 +2,7 @@
 package agent
 
 import (
+	"github.com/Harrison-Blair/hive/cmd/agent/graph"
 	"github.com/Harrison-Blair/hive/cmd/agent/list"
 	"github.com/Harrison-Blair/hive/cmd/agent/send"
 	"github.com/Harrison-Blair/hive/cmd/agent/spawn"
@@ -16,6 +17,6 @@ func New() *cobra.Command {
 		Short: "manage agents in herdr panes",
 		Args:  cobra.NoArgs,
 	}
-	command.AddCommand(spawn.New(), stop.New(), send.New(), list.New())
+	command.AddCommand(spawn.New(), stop.New(), send.New(), list.New(), graph.New())
 	return command
 }

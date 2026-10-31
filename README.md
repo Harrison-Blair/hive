@@ -91,13 +91,14 @@ result object.
 
 | Command | Behavior |
 | --- | --- |
-| `hive` | Pick a harness (claude, codex, or pi) and a model, then run it in this pane and in the current directory as the `coordinator`. The last choice is preselected. Type to filter, or pick `Other…` to type a model. |
+| `hive` | Pick a harness (claude, codex, or pi) and a model, then run it in this pane and in the current directory as the coordinator: `<id>-coordinator` in the checkout of the registered project `<id>`, `coordinator` elsewhere. The last choice is preselected. Type to filter, or pick `Other…` to type a model. |
 | `hive agent spawn --name N --harness H --model M [--prompt T \| --prompt-file F]` | Start an agent in a new tab of the caller's workspace, and send it the prompt. |
 | `hive agent spawn ... --project P` | Start the agent in a new tab of the checkout workspace of project P. Hive uses the open workspace on the checkout, or creates one. |
 | `hive agent spawn ... --project P --worktree NAME` | Create the worktree `<home>/projects/P/worktrees/NAME` on branch `NAME` from the base branch of P, and start the agent in its workspace. |
 | `hive agent send N TEXT [--wait]` | Send `⬢ SENDER: TEXT` to agent N through the native message path of its harness. It never types into the pane. With `--wait`, wait until the agent is idle or done. |
 | `hive agent stop N [--remove-worktree]` | Close the pane or the worktree workspace of agent N. The checkout and the branch stay. `--remove-worktree` removes a clean checkout and refuses a dirty one. On an agent without a worktree, it closes the pane, removes the record, and prints `no worktree for N`. |
 | `hive agent list` | List the agent records with their herdr status. |
+| `hive agent graph` | Show a live graph of the agents in project and home pods. With `--json`, print one snapshot, the same as `hive agent list --json`. |
 | `hive project register PATH [--id ID] [--base BRANCH]` | Register a Git repository as a project. |
 | `hive project list` | List the registered projects. |
 | `hive logs` | Read the daily log files in `<home>/logs/`. |

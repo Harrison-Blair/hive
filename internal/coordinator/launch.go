@@ -18,7 +18,8 @@ import (
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 )
 
-// Name is the agent name of the coordinator record.
+// Name is the agent name of the coordinator record outside a registered
+// project. In the checkout of project ID the name is ID-coordinator.
 const Name = "coordinator"
 
 // Options holds the inputs of one bare hive run.
@@ -28,6 +29,8 @@ type Options struct {
 	// Dir is the working directory of the hive process. The harness runs in
 	// it.
 	Dir string
+	// Name is the agent name of the coordinator record. ResolveName gives it.
+	Name string
 	// Pane is the herdr pane ID of this process (HERDR_PANE_ID).
 	Pane string
 	// Pick shows the picker with the last choice. ok is false when the user
@@ -55,11 +58,16 @@ func Main(home, dir, guideText string, in io.Reader, out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	name, err := ResolveName(home, dir)
+	if err != nil {
+		logger.Warn("project lookup failed", "command", "hive", "agent_id", name, "cwd", dir, "error", err.Error())
+	}
 	return Run(Options{
 		Home:   home,
 		Dir:    dir,
+		Name:   name,
 		Pane:   os.Getenv("HERDR_PANE_ID"),
-		Pick:   NewPick(in, out, ExecRunner, logger.With("command", "hive", "agent_id", Name)),
+		Pick:   NewPick(in, out, ExecRunner, logger.With("command", "hive", "agent_id", name)),
 		Exec:   ExecHarness,
 		Guide:  guideText,
 		Now:    time.Now,
@@ -68,11 +76,15 @@ func Main(home, dir, guideText string, in io.Reader, out io.Writer) error {
 }
 
 // Run shows the picker, saves the choice and the coordinator record, labels
-// the tab of the pane coordinator, and then replaces this process with the
-// harness. A quit returns nil and writes
-// nothing.
+// the tab of the pane with the coordinator name, and then replaces this
+// process with the harness. It fails before the picker when a live agent in
+// another pane has the name. A quit returns nil and writes nothing.
 func Run(opts Options) error {
-	logger := opts.Logger.With("command", "hive", "agent_id", Name)
+	logger := opts.Logger.With("command", "hive", "agent_id", opts.Name)
+	if err := checkName(opts.Home, opts.Name, opts.Pane, logger); err != nil {
+		logger.Error("coordinator name taken", "error", err.Error())
+		return err
+	}
 	last, hasLast, err := LoadChoice(opts.Home)
 	if err != nil {
 		logger.Warn("last choice unreadable", "error", err.Error())
@@ -96,7 +108,7 @@ func Run(opts Options) error {
 		return err
 	}
 	record := agent.Record{
-		Name:      Name,
+		Name:      opts.Name,
 		Pane:      opts.Pane,
 		Harness:   choice.Harness,
 		Model:     choice.Model,
@@ -108,8 +120,9 @@ func Run(opts Options) error {
 		return err
 	}
 	logger.Info("coordinator record saved", "pane", record.Pane, "harness", record.Harness, "model", record.Model)
+	removeOldCoordinators(opts.Home, opts.Name, opts.Pane, logger)
 	if opts.Pane != "" {
-		labelTab(opts.Pane, logger)
+		labelTab(opts.Pane, opts.Name, logger)
 	}
 	binary := profile.ProcessNames()[0]
 	inbox, err := profile.InboxArgs(opts.Home)
@@ -127,16 +140,16 @@ func Run(opts Options) error {
 	return nil
 }
 
-// labelTab renames the tab of pane to the coordinator name. A failure only
-// logs a warning, because the harness can run without the label.
-func labelTab(pane string, logger *slog.Logger) {
+// labelTab renames the tab of pane to name. A failure only logs a warning,
+// because the harness can run without the label.
+func labelTab(pane, name string, logger *slog.Logger) {
 	ctx := context.Background()
 	info, err := herdr.PaneGet(ctx, pane, herdr.WithLogger(logger))
 	if err != nil {
 		logger.Warn("coordinator tab label failed", "pane", pane, "error", err.Error())
 		return
 	}
-	if err := herdr.TabRename(ctx, info.TabID, Name, herdr.WithLogger(logger)); err != nil {
+	if err := herdr.TabRename(ctx, info.TabID, name, herdr.WithLogger(logger)); err != nil {
 		logger.Warn("coordinator tab label failed", "pane", pane, "tab", info.TabID, "error", err.Error())
 		return
 	}
