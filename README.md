@@ -98,6 +98,7 @@ result object.
 | `hive agent send N TEXT [--wait]` | Send `⬢ SENDER: TEXT` to agent N through the native message path of its harness. It never types into the pane. With `--wait`, wait until the agent is idle or done. |
 | `hive agent stop N [--remove-worktree]` | Close the pane or the worktree workspace of agent N. The checkout and the branch stay. `--remove-worktree` removes a clean checkout and refuses a dirty one. On an agent without a worktree, it closes the pane, removes the record, and prints `no worktree for N`. |
 | `hive agent list` | List the agent records with their herdr status. |
+| `hive agent graph` | Show a live graph of the agents in project and home pods. With `--json`, print one snapshot, the same as `hive agent list --json`. |
 | `hive project register PATH [--id ID] [--base BRANCH]` | Register a Git repository as a project. |
 | `hive project list` | List the registered projects. |
 | `hive logs` | Read the daily log files in `<home>/logs/`. |
