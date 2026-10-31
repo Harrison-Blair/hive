@@ -11,6 +11,8 @@
 # Documentation
 !*.md
 !LICENSE
+!docs/screenshots/agent-graph-wide.png
+!docs/screenshots/agent-graph-narrow.png
 
 # Herdr reference captures kept by reference/herdr/RESYNC.md
 !reference/herdr/raw/schema.json
