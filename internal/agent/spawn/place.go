@@ -4,15 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"maps"
-	"path/filepath"
-	"slices"
-	"strings"
 
-	"github.com/Harrison-Blair/hive/internal/lib/harness"
+	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
-	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/worktree"
 )
 
 // placement is the pane of a new agent and the facts that the record keeps.
@@ -30,7 +26,7 @@ type placement struct {
 // placeInCaller opens a tab with label in the workspace of the caller pane.
 func placeInCaller(ctx context.Context, callerPane, cwd, label string, env map[string]string, logger *slog.Logger) (placement, string, error) {
 	if callerPane == "" {
-		return placement{}, "caller", fmt.Errorf("HERDR_PANE_ID is not set: run hive agent spawn in a herdr pane, or pass --project")
+		return placement{}, "caller", fmt.Errorf("HERDR_PANE_ID is not set: run hive agent spawn in a herdr pane, or pass --branch or --directory")
 	}
 	caller, err := herdr.PaneGet(ctx, callerPane, herdr.WithLogger(logger))
 	if err != nil {
@@ -39,84 +35,69 @@ func placeInCaller(ctx context.Context, callerPane, cwd, label string, env map[s
 	return openTab(ctx, caller.WorkspaceID, cwd, label, env, logger, nil)
 }
 
-// placeInProject opens a tab with label in the checkout workspace of project,
-// or takes the root pane of the checkout workspace that it makes.
-func placeInProject(ctx context.Context, project records.Project, label string, env map[string]string, logger *slog.Logger) (placement, string, error) {
-	workspace, created, effects, err := checkoutWorkspace(ctx, project, env, logger)
+// placeInBranch finds or makes the checkout of options.Branch in the Git
+// repository of options.Cwd, and places the agent in it.
+func placeInBranch(ctx context.Context, home string, options Options, env map[string]string, logger *slog.Logger) (placement, string, error) {
+	checkout, err := worktree.Ensure(ctx, home, options.Cwd, options.Branch, options.Base, logger)
+	effects := worktree.Effects(checkout)
 	if err != nil {
-		return placement{}, "workspace", err
+		return placement{effects: effects}, "worktree", err
 	}
-	if created != nil {
-		return placement{pane: *created, cwd: project.Path, rootPane: true, effects: effects}, "", nil
-	}
-	return openTab(ctx, workspace, project.Path, label, env, logger, effects)
+	place, phase, err := placeInDirectory(ctx, home, checkout.Path, options.Name, env, logger, effects)
+	place.worktree = checkout.Path
+	return place, phase, err
 }
 
-// placeInWorktree makes a worktree of project from its checkout workspace and
-// takes the root pane of the new worktree workspace. The shell of the root
-// pane exports env. A checkout workspace that it makes gets only HIVE_HOME,
-// because no agent starts in its root pane.
-func placeInWorktree(ctx context.Context, home string, project records.Project, name string, env map[string]string, logger *slog.Logger) (placement, string, error) {
-	path := filepath.Join(home, "projects", project.ID, "worktrees", name)
-	export := exportEnv(env)
-	if err := harness.CheckStartLine(export, nil); err != nil {
-		return placement{}, "validate", fmt.Errorf("environment too long for the worktree shell: %w", err)
-	}
-	workspace, _, effects, err := checkoutWorkspace(ctx, project, map[string]string{"HIVE_HOME": home}, logger)
+// placeInDirectory places the agent in dir. It opens a tab in the herdr
+// workspace of dir: the workspace that herdr has open on the checkout at dir,
+// or else the workspace of a pane whose shell is in dir. When dir has no
+// workspace, it takes the root pane of a new workspace on dir.
+func placeInDirectory(ctx context.Context, home, dir, label string, env map[string]string, logger *slog.Logger, effects []output.Effect) (placement, string, error) {
+	workspace, err := workspaceOf(ctx, dir, logger)
 	if err != nil {
-		return placement{}, "workspace", err
+		return placement{effects: effects}, "workspace", err
 	}
-	created, err := herdr.WorktreeCreate(ctx, herdr.WorktreeCreateParams{
-		WorkspaceID: workspace,
-		Branch:      name,
-		Base:        project.Base,
-		Path:        path,
-	}, herdr.WithLogger(logger))
+	if workspace != "" {
+		return openTab(ctx, workspace, dir, label, env, logger, effects)
+	}
+	created, err := herdr.WorkspaceCreate(ctx, herdr.WorkspaceCreateParams{Cwd: dir, Env: env}, herdr.WithLogger(logger))
 	if err != nil {
-		return placement{effects: effects}, "worktree", fmt.Errorf("worktree create %s: %w", path, err)
+		return placement{effects: effects}, "workspace", fmt.Errorf("workspace create %s: %w", dir, err)
 	}
-	effects = append(effects, output.Effect{Resource: "worktree", Path: path, Action: "created"})
-	// worktree.create takes no env, so the shell of the root pane exports
-	// env before agent.start types the start line.
-	if err := herdr.PaneRun(ctx, created.RootPane.PaneID, export, herdr.WithLogger(logger)); err != nil {
-		return placement{effects: effects}, "env", fmt.Errorf("export the environment in pane %s: %w", created.RootPane.PaneID, err)
-	}
-	return placement{pane: created.RootPane, cwd: path, worktree: path, rootPane: true, effects: effects}, "", nil
+	effects = append(effects, output.Effect{Resource: "workspace", Path: created.Workspace.WorkspaceID, Action: "created"})
+	return placement{pane: created.RootPane, cwd: dir, rootPane: true, effects: effects}, "", nil
 }
 
-// exportEnv returns one shell line that exports each pair of env, in key
-// order, with each value in single quotes.
-func exportEnv(env map[string]string) string {
-	line := "export"
-	for _, key := range slices.Sorted(maps.Keys(env)) {
-		line += " " + key + "='" + strings.ReplaceAll(env[key], "'", `'\''`) + "'"
-	}
-	return line
-}
-
-// checkoutWorkspace returns the ID of the workspace that herdr has open on the
-// registered checkout of project. herdr worktree.list gives it as the
-// open_workspace_id of the checkout entry that is not a linked worktree. The
-// workspace.list metadata is absent for a workspace that workspace.create
-// made (herdr 0.9.5), so it is not used. When none is open, checkoutWorkspace
-// makes one with the herdr default label and env, and returns its root pane
-// too.
-func checkoutWorkspace(ctx context.Context, project records.Project, env map[string]string, logger *slog.Logger) (string, *herdr.PaneInfo, []output.Effect, error) {
-	listed, err := herdr.WorktreeList(ctx, herdr.WorktreeListParams{Cwd: project.Path}, herdr.WithLogger(logger))
-	if err != nil {
-		return "", nil, nil, fmt.Errorf("worktree list %s: %w", project.Path, err)
-	}
-	for _, tree := range listed.Worktrees {
-		if !tree.IsLinkedWorktree && tree.OpenWorkspaceID != "" && samePath(tree.Path, project.Path) {
-			return tree.OpenWorkspaceID, nil, nil, nil
+// workspaceOf returns the ID of the workspace of dir, or an empty string.
+// herdr worktree.list gives the workspace open on a checkout as the
+// open_workspace_id of its entry, also for a workspace that workspace.create
+// made (herdr 0.9.5). A directory outside Git, or below the root of a
+// checkout, has no entry. Then the workspace of the first pane whose shell is
+// in dir is the workspace of dir: the root pane of a workspace on dir, or the
+// pane of an agent in dir.
+func workspaceOf(ctx context.Context, dir string, logger *slog.Logger) (string, error) {
+	listed, err := herdr.WorktreeList(ctx, herdr.WorktreeListParams{Cwd: dir}, herdr.WithLogger(logger))
+	switch {
+	case agent.IsCode(err, herdr.CodeNotGitWorktree):
+	case err != nil:
+		return "", fmt.Errorf("worktree list %s: %w", dir, err)
+	default:
+		for _, tree := range listed.Worktrees {
+			if tree.OpenWorkspaceID != "" && worktree.SamePath(tree.Path, dir) {
+				return tree.OpenWorkspaceID, nil
+			}
 		}
 	}
-	created, err := herdr.WorkspaceCreate(ctx, herdr.WorkspaceCreateParams{Cwd: project.Path, Env: env}, herdr.WithLogger(logger))
+	panes, err := herdr.PaneList(ctx, "", herdr.WithLogger(logger))
 	if err != nil {
-		return "", nil, nil, fmt.Errorf("workspace create %s: %w", project.Path, err)
+		return "", fmt.Errorf("pane list: %w", err)
 	}
-	effects := []output.Effect{{Resource: "workspace", Path: created.Workspace.WorkspaceID, Action: "created"}}
-	return created.Workspace.WorkspaceID, &created.RootPane, effects, nil
+	for _, pane := range panes {
+		if worktree.SamePath(pane.Cwd, dir) {
+			return pane.WorkspaceID, nil
+		}
+	}
+	return "", nil
 }
 
 func openTab(ctx context.Context, workspace, cwd, label string, env map[string]string, logger *slog.Logger, effects []output.Effect) (placement, string, error) {
@@ -126,17 +107,4 @@ func openTab(ctx context.Context, workspace, cwd, label string, env map[string]s
 	}
 	effects = append(effects, output.Effect{Resource: "tab", Path: created.Tab.TabID, Action: "created"})
 	return placement{pane: created.RootPane, cwd: cwd, effects: effects}, "", nil
-}
-
-func samePath(a, b string) bool {
-	if a == "" || b == "" {
-		return false
-	}
-	if resolved, err := filepath.EvalSymlinks(a); err == nil {
-		a = resolved
-	}
-	if resolved, err := filepath.EvalSymlinks(b); err == nil {
-		b = resolved
-	}
-	return filepath.Clean(a) == filepath.Clean(b)
 }

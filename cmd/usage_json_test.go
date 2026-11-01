@@ -14,10 +14,10 @@ func TestUsageErrorsUnderJSONPrintOneEnvelope(t *testing.T) {
 	}{
 		{"unknown command", []string{"--json", "bogus"}, `unknown command \"bogus\" for \"hive\"`},
 		{"missing arguments", []string{"agent", "send", "--json"}, "accepts 2 arg(s), received 0"},
-		{"missing argument of register", []string{"project", "register", "--json"}, "accepts 1 arg(s), received 0"},
+		{"missing argument of worktree create", []string{"worktree", "create", "--json"}, "accepts 1 arg(s), received 0"},
 		{"extra argument", []string{"agent", "stop", "--json=true", "a", "b"}, "accepts 1 arg(s), received 2"},
 		{"unknown flag", []string{"agent", "spawn", "--bogus", "--json"}, "unknown flag: --bogus"},
-		{"empty register path", []string{"--json", "project", "register", ""}, "PATH requires a value"},
+		{"empty branch", []string{"--json", "worktree", "create", ""}, "BRANCH requires a value"},
 		{"last json flag true", []string{"--json=false", "--json", "bogus"}, `unknown command \"bogus\" for \"hive\"`},
 		{"removed init", []string{"--json", "init"}, `unknown command \"init\" for \"hive\"`},
 	}
@@ -44,7 +44,7 @@ func TestUsageErrorsWithoutJSONPrintOneLine(t *testing.T) {
 		{"json false", []string{"--json=false", "bogus"}, `unknown command "bogus" for "hive"`},
 		{"removed init", []string{"init"}, `unknown command "init" for "hive"`},
 		{"json after the terminator", []string{"agent", "stop", "--", "a", "--json"}, "accepts 1 arg(s), received 2"},
-		{"empty register path", []string{"project", "register", ""}, "PATH requires a value"},
+		{"empty branch", []string{"worktree", "remove", ""}, "BRANCH requires a value"},
 		{"last json flag false", []string{"--json", "--json=false", "bogus"}, `unknown command "bogus" for "hive"`},
 		{"last json flag invalid", []string{"--json", "--json=x", "bogus"}, `invalid argument "x" for "--json" flag: strconv.ParseBool: parsing "x": invalid syntax`},
 	}

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"syscall"
 )
 
 const (
@@ -176,7 +177,10 @@ func (s *Store) checkList(dir string, collection []string) error {
 }
 
 func (s *Store) checkLock() error {
-	path := s.lockPath()
+	return checkLockFile(s.lockPath())
+}
+
+func checkLockFile(path string) error {
 	info, err := os.Lstat(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
@@ -291,4 +295,26 @@ func validateComponent(kind, value string) error {
 		return fmt.Errorf("invalid store %s: %q", kind, value)
 	}
 	return nil
+}
+
+// RemoveIn deletes one record of a nested collection under the store lock,
+// and then the directory of the collection when it is empty. A missing record
+// is not an error.
+func (s *Store) RemoveIn(collection []string, id string) error {
+	path, err := s.recordPathIn(collection, id)
+	if err != nil {
+		return err
+	}
+	return s.withLock(defaultLockWait, func() error {
+		if err := s.checkRead(path, collection); err != nil {
+			return err
+		}
+		if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		if err := os.Remove(filepath.Dir(path)); err != nil && !errors.Is(err, os.ErrNotExist) && !errors.Is(err, syscall.ENOTEMPTY) && !errors.Is(err, syscall.EEXIST) {
+			return err
+		}
+		return nil
+	})
 }

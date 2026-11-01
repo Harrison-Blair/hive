@@ -48,7 +48,7 @@ func worktreeAgent(t *testing.T) (*agenttest.Herdr, string, string, string, agen
 	home := agenttest.Home(t)
 	repo := agenttest.GitRepo(t)
 	fake.AddWorkspace("", repo, false)
-	path := filepath.Join(home, "projects", "p1", "worktrees", "feat")
+	path := filepath.Join(home, "worktrees", "repo", "feat")
 	git(t, "-C", repo, "worktree", "add", "-q", "-b", "feat", path, "main")
 	ws, pane := fake.AddWorkspace("", path, true)
 	fake.AddPane(ws.ID, path)
@@ -126,22 +126,26 @@ func TestStopGonePaneRemovesRecord(t *testing.T) {
 	}
 }
 
-func TestStopWorktreeAgentClosesWorkspaceAndKeepsCheckout(t *testing.T) {
+func TestStopWorktreeAgentClosesOnlyItsPane(t *testing.T) {
 	fake, home, repo, wsID, record := worktreeAgent(t)
+	other := fake.AddPane(wsID, record.Worktree)
+	if err := agent.Save(home, agent.Record{Name: "peer", Pane: other.ID, Cwd: record.Worktree, Worktree: record.Worktree}); err != nil {
+		t.Fatal(err)
+	}
 	if envelope := stopRun(t, home, Options{Name: "wt"}); envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %+v", envelope)
 	}
-	closes := fake.Requests("workspace.close")
-	if len(closes) != 1 || closes[0].Params["workspace_id"] != wsID {
-		t.Fatalf("workspace.close = %+v, want %s", closes, wsID)
+	if got := len(fake.Requests("workspace.close")); got != 0 {
+		t.Fatalf("workspace.close calls = %d, want 0", got)
 	}
-	for _, ws := range fake.Workspaces() {
-		if ws.ID == wsID {
-			t.Fatalf("worktree workspace still open")
-		}
+	if _, ok := fake.Pane(record.Pane); ok {
+		t.Fatalf("pane %s still open", record.Pane)
 	}
-	if len(fake.Workspaces()) != 1 {
-		t.Fatalf("workspaces = %+v, want the checkout workspace kept", fake.Workspaces())
+	if _, ok := fake.Pane(other.ID); !ok {
+		t.Fatalf("pane %s of the other agent closed", other.ID)
+	}
+	if _, err := agent.Load(home, "peer"); err != nil {
+		t.Fatalf("record of the other agent: %v", err)
 	}
 	if _, err := os.Stat(record.Worktree); err != nil {
 		t.Fatalf("checkout removed: %v", err)
@@ -154,83 +158,9 @@ func TestStopWorktreeAgentClosesWorkspaceAndKeepsCheckout(t *testing.T) {
 	}
 }
 
-func TestStopRemoveWorktreeRefusesDirtyCheckout(t *testing.T) {
-	fake, home, _, _, record := worktreeAgent(t)
-	if err := os.WriteFile(filepath.Join(record.Worktree, "new.txt"), []byte("x"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	envelope := stopRun(t, home, Options{Name: "wt", RemoveWorktree: true})
-	if envelope.Outcome != "failed" || !strings.Contains(errorText(envelope), "dirty") || !strings.Contains(errorText(envelope), record.Worktree) {
-		t.Fatalf("envelope = %+v", envelope)
-	}
-	if _, ok := fake.Pane(record.Pane); !ok {
-		t.Fatalf("pane closed")
-	}
-	if got := len(fake.Requests("workspace.close")) + len(fake.Requests("pane.close")); got != 0 {
-		t.Fatalf("close calls = %d, want 0", got)
-	}
-	if _, err := os.Stat(filepath.Join(record.Worktree, "new.txt")); err != nil {
-		t.Fatalf("checkout changed: %v", err)
-	}
-	if _, err := agent.Load(home, "wt"); err != nil {
-		t.Fatalf("record removed: %v", err)
-	}
-}
-
-func TestStopRemoveWorktreeRemovesCleanCheckoutAndKeepsBranch(t *testing.T) {
-	fake, home, repo, wsID, record := worktreeAgent(t)
-	if envelope := stopRun(t, home, Options{Name: "wt", RemoveWorktree: true}); envelope.Outcome != "ok" {
-		t.Fatalf("envelope = %+v", envelope)
-	}
-	if got := fake.Requests("workspace.close"); len(got) != 1 || got[0].Params["workspace_id"] != wsID {
-		t.Fatalf("workspace.close = %+v", got)
-	}
-	if _, err := os.Stat(record.Worktree); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("checkout still at %s: %v", record.Worktree, err)
-	}
-	if strings.Contains(git(t, "-C", repo, "worktree", "list"), record.Worktree) {
-		t.Fatalf("git still lists the worktree")
-	}
-	if !strings.Contains(git(t, "-C", repo, "branch", "--list", "feat"), "feat") {
-		t.Fatalf("branch feat removed")
-	}
-	if _, err := agent.Load(home, "wt"); !errors.Is(err, agent.ErrNotFound) {
-		t.Fatalf("record err = %v, want not found", err)
-	}
-}
-
-func TestStopRemoveWorktreeWithoutWorktreeClosesPane(t *testing.T) {
-	fake := agenttest.NewHerdr(t)
-	home := agenttest.Home(t)
-	fake.AddWorkspace("mine", "", false)
-	pane := fake.AddPane("w1", "")
-	if err := agent.Save(home, agent.Record{Name: "kid", Pane: pane.ID}); err != nil {
-		t.Fatal(err)
-	}
-	envelope := stopRun(t, home, Options{Name: "kid", RemoveWorktree: true})
-	if envelope.Outcome != "ok" || envelope.Error != nil {
-		t.Fatalf("envelope = %+v", envelope)
-	}
-	if _, ok := fake.Pane(pane.ID); ok {
-		t.Fatalf("pane %s still open", pane.ID)
-	}
-	if _, err := agent.Load(home, "kid"); !errors.Is(err, agent.ErrNotFound) {
-		t.Fatalf("record err = %v, want not found", err)
-	}
-	if text := Text(envelope); !strings.Contains(text, "no worktree for kid\n") {
-		t.Fatalf("text = %q, want the line no worktree for kid", text)
-	}
-}
-
-func TestStopRemoveWorktreeWithoutWorktreeHasNoWorktreeEffect(t *testing.T) {
-	fake := agenttest.NewHerdr(t)
-	home := agenttest.Home(t)
-	fake.AddWorkspace("mine", "", false)
-	pane := fake.AddPane("w1", "")
-	if err := agent.Save(home, agent.Record{Name: "kid", Pane: pane.ID}); err != nil {
-		t.Fatal(err)
-	}
-	envelope := stopRun(t, home, Options{Name: "kid", RemoveWorktree: true})
+func TestStopEffectsAreThePaneAndTheRecord(t *testing.T) {
+	_, home, _, _, record := worktreeAgent(t)
+	envelope := stopRun(t, home, Options{Name: "wt"})
 	data, err := json.Marshal(envelope)
 	if err != nil {
 		t.Fatal(err)
@@ -242,8 +172,8 @@ func TestStopRemoveWorktreeWithoutWorktreeHasNoWorktreeEffect(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := []output.Effect{
-		{Resource: "pane", Path: pane.ID, Action: "closed"},
-		{Resource: "record", Path: "agents/kid.json", Action: "removed"},
+		{Resource: "pane", Path: record.Pane, Action: "closed"},
+		{Resource: "record", Path: "agents/wt.json", Action: "removed"},
 	}
 	if !slices.Equal(got.Effects, want) {
 		t.Fatalf("effects = %+v, want %+v", got.Effects, want)

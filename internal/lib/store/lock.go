@@ -21,11 +21,13 @@ func (s *Store) withLock(wait time.Duration, fn func() error) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
-		_ = file.Close()
-	}()
+	defer unlock(file)
 	return fn()
+}
+
+func unlock(file *os.File) {
+	_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+	_ = file.Close()
 }
 
 // acquireLock waits for the lock in the kernel, so the lock goes to a waiter

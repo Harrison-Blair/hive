@@ -16,19 +16,19 @@ func TestCommandRequestIDAndLogsRequestFilter(t *testing.T) {
 	home := requestTestHome(t)
 	t.Setenv("HIVE_HOME", home)
 	var output strings.Builder
-	if err := ExecuteWithArgs([]string{"project", "list"}, strings.NewReader(""), &output); err != nil {
-		t.Fatalf("project list: %v\n%s", err, output.String())
+	if err := ExecuteWithArgs([]string{"agent", "list"}, strings.NewReader(""), &output); err != nil {
+		t.Fatalf("agent list: %v\n%s", err, output.String())
 	}
 
 	events := requestTestEvents(t, home)
-	requestID := commandRequestID(t, events, "project list", []string{"command start", "command end"})
+	requestID := commandRequestID(t, events, "agent list", []string{"command start", "agent list", "command end"})
 	output.Reset()
 	if err := ExecuteWithArgs([]string{"logs", "--json", "--request", requestID}, strings.NewReader(""), &output); err != nil {
 		t.Fatalf("logs --request: %v\n%s", err, output.String())
 	}
 	lines := strings.Split(strings.TrimSpace(output.String()), "\n")
-	if len(lines) != 2 {
-		t.Fatalf("request filter returned %d events; want only start and end:\n%s", len(lines), output.String())
+	if len(lines) != 3 {
+		t.Fatalf("request filter returned %d events; want only the three agent list events:\n%s", len(lines), output.String())
 	}
 	for _, line := range lines {
 		var event map[string]any

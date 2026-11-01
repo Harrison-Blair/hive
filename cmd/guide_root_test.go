@@ -20,7 +20,7 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 	text := stdout.String()
 	for _, command := range []string{
 		"hive", "hive agent", "hive agent graph", "hive agent list", "hive agent send NAME TEXT", "hive agent spawn", "hive agent stop NAME",
-		"hive guide", "hive logs", "hive project", "hive project list", "hive project register PATH", "hive version",
+		"hive guide", "hive logs", "hive version", "hive worktree", "hive worktree create BRANCH", "hive worktree remove BRANCH",
 	} {
 		if !strings.Contains(text, "\n"+command+": ") {
 			t.Errorf("guide has no command %q", command)
@@ -30,9 +30,10 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 		"  --json bool: write JSON output",
 		"  --harness string: harness: claude, codex, or pi (required)",
 		"  --prompt-file string: file with the first prompt text",
-		"  --worktree string: worktree and branch name: start in a new worktree of --project",
+		"  --branch string: start in the checkout of the branch; make one if none",
+		"  --directory string: start in this existing directory",
+		"  --base string: start commit of a new branch (default: HEAD)",
 		"  --wait bool: wait until the agent is idle or done again",
-		"  --remove-worktree bool: also remove the clean worktree checkout; the branch stays",
 		"  --limit int=200: maximum matches to print",
 		"  --agent string: agent name: matches agent_id or target",
 	} {
@@ -40,7 +41,7 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 			t.Errorf("guide has no flag line %q", flag)
 		}
 	}
-	for _, absent := range []string{"\nhive completion", "\nhive help"} {
+	for _, absent := range []string{"\nhive completion", "\nhive help", "\nhive project", "--project", "--worktree", "--remove-worktree"} {
 		if strings.Contains(text, absent) {
 			t.Errorf("guide has %q", absent)
 		}

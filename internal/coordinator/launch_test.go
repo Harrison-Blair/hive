@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -300,8 +301,8 @@ func TestRunUsesItsNameEverywhere(t *testing.T) {
 }
 
 // TestRunReplacesTheOldCoordinatorRecordOfItsPane proves that a coordinator
-// record of an earlier run in the same pane does not keep the pane, while the
-// record of a worktree agent stays for agent stop.
+// record of an earlier run in the same pane does not keep the pane, with or
+// without a worktree, while the record of another agent of the pane stays.
 func TestRunReplacesTheOldCoordinatorRecordOfItsPane(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
@@ -310,7 +311,9 @@ func TestRunReplacesTheOldCoordinatorRecordOfItsPane(t *testing.T) {
 	for _, record := range []agent.Record{
 		{Name: "coordinator", Pane: opts.Pane, Harness: "pi", Model: "old"},
 		{Name: "web-coordinator", Pane: opts.Pane, Harness: "pi", Model: "old"},
-		{Name: "a-coordinator", Pane: opts.Pane, Harness: "pi", Model: "old", Worktree: "/wt/a"},
+		{Name: "a-2-coordinator", Pane: opts.Pane, Harness: "pi", Model: "old", Worktree: "/wt/a"},
+		{Name: "coordinator-3", Pane: opts.Pane, Harness: "pi", Model: "old"},
+		{Name: "reviewer", Pane: opts.Pane, Harness: "pi", Model: "old"},
 	} {
 		if err := agent.Save(home, record); err != nil {
 			t.Fatal(err)
@@ -319,12 +322,12 @@ func TestRunReplacesTheOldCoordinatorRecordOfItsPane(t *testing.T) {
 	if err := Run(opts); err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"coordinator", "web-coordinator"} {
+	for _, name := range []string{"coordinator", "web-coordinator", "a-2-coordinator", "coordinator-3"} {
 		if _, err := agent.Load(home, name); !errors.Is(err, agent.ErrNotFound) {
 			t.Errorf("Load(%s) = %v; want the old record of the pane removed", name, err)
 		}
 	}
-	for _, name := range []string{"a-coordinator"} {
+	for _, name := range []string{"reviewer"} {
 		if _, err := agent.Load(home, name); err != nil {
 			t.Errorf("Load(%s) = %v; want the record kept", name, err)
 		}
@@ -350,47 +353,57 @@ func TestRunKeepsAnOldCoordinatorOfAnotherPane(t *testing.T) {
 	}
 }
 
-// TestRunRefusesTheNameOfALiveAgent proves that bare hive does not take the
-// record of an agent whose pane herdr still has, and replaces the record of a
-// pane that is gone.
-func TestRunRefusesTheNameOfALiveAgent(t *testing.T) {
-	for _, name := range []string{"coordinator", "hive-coordinator"} {
-		t.Run(name, func(t *testing.T) {
-			home := t.TempDir()
-			var calls []execCall
-			picked := false
-			opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { picked = true; return Choice{"pi", "a/b"}, true, nil }, &calls)
-			fake := agenttest.NewHerdr(t)
-			ws, mine := fake.AddWorkspace("w", home, false)
-			other := fake.AddPane(ws.ID, home)
-			opts.Pane = mine.ID
-			opts.Name = name
-			live := agent.Record{Name: name, Pane: other.ID, Harness: "claude", Model: "m", Worktree: "/wt/x"}
-			if err := agent.Save(home, live); err != nil {
-				t.Fatal(err)
-			}
-			err := Run(opts)
-			if err == nil || !strings.Contains(err.Error(), other.ID) {
-				t.Fatalf("Run = %v; want an error that names pane %s", err, other.ID)
-			}
-			if picked || len(calls) != 0 {
-				t.Fatalf("picked %v, exec calls %+v; want no picker and no exec", picked, calls)
-			}
-			if got, _ := agent.Load(home, name); got != live {
-				t.Fatalf("record = %+v; want %+v unchanged", got, live)
-			}
-			if got, _ := fake.Pane(mine.ID); got.TabLabel != "" {
-				t.Fatalf("tab label = %q; want none", got.TabLabel)
-			}
+// TestRunTakesTheNextNameWhenTheNameIsLiveBeforeThePicker proves that a
+// launch whose resolved name another launch takes before Run checks it gets
+// the next free name, and does not fail or touch the record of the live
+// agent. A record of a pane that is gone gives its name back.
+func TestRunTakesTheNextNameWhenTheNameIsLiveBeforeThePicker(t *testing.T) {
+	home := t.TempDir()
+	dir := filepath.Join(t.TempDir(), "app")
+	if err := os.Mkdir(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	var calls []execCall
+	picked := false
+	opts := launchOptions(t, home, dir, func(Choice, bool) (Choice, bool, error) { picked = true; return Choice{"pi", "a/b"}, true, nil }, &calls)
+	fake := agenttest.NewHerdr(t)
+	ws, mine := fake.AddWorkspace("w", dir, false)
+	other := fake.AddPane(ws.ID, dir)
+	opts.Pane = mine.ID
+	name, err := ResolveName(home, dir, mine.ID, opts.Logger)
+	if err != nil || name != "app-coordinator" {
+		t.Fatalf("ResolveName = %q, %v; want app-coordinator", name, err)
+	}
+	opts.Name = name
+	live := agent.Record{Name: name, Pane: other.ID, Harness: "claude", Model: "m"}
+	if err := agent.Save(home, live); err != nil {
+		t.Fatal(err)
+	}
+	if err := Run(opts); err != nil {
+		t.Fatalf("Run = %v; want nil", err)
+	}
+	if !picked || len(calls) != 1 {
+		t.Fatalf("picked %v, exec calls %d; want the picker and one exec", picked, len(calls))
+	}
+	if got, _ := agent.Load(home, name); got != live {
+		t.Fatalf("record %s = %+v; want %+v unchanged", name, got, live)
+	}
+	if got, err := agent.Load(home, "app-2-coordinator"); err != nil || got.Pane != mine.ID {
+		t.Fatalf("record app-2-coordinator = %+v, %v; want pane %s", got, err, mine.ID)
+	}
+	if got, _ := fake.Pane(mine.ID); got.TabLabel != "app-2-coordinator" {
+		t.Fatalf("tab label = %q; want app-2-coordinator", got.TabLabel)
+	}
 
-			fake.ClosePane(other.ID)
-			if err := Run(opts); err != nil {
-				t.Fatalf("Run after the pane closed = %v; want nil", err)
-			}
-			if got, err := agent.Load(home, name); err != nil || got.Pane != mine.ID {
-				t.Fatalf("record = %+v, %v; want pane %s", got, err, mine.ID)
-			}
-		})
+	fake.ClosePane(other.ID)
+	if err := Run(opts); err != nil {
+		t.Fatalf("Run after the pane closed = %v; want nil", err)
+	}
+	if got, err := agent.Load(home, name); err != nil || got.Pane != mine.ID {
+		t.Fatalf("record = %+v, %v; want pane %s", got, err, mine.ID)
+	}
+	if _, err := agent.Load(home, "app-2-coordinator"); !errors.Is(err, agent.ErrNotFound) {
+		t.Fatalf("Load(app-2-coordinator) = %v; want the old record of the pane removed", err)
 	}
 }
 
@@ -409,5 +422,64 @@ func TestRunReplacesItsOwnRecordOnARerun(t *testing.T) {
 	}
 	if got, err := agent.Load(home, opts.Name); err != nil || got.Model != "new/model" || len(calls) != 1 {
 		t.Fatalf("record = %+v, %v, exec calls %d; want model new/model and one exec", got, err, len(calls))
+	}
+}
+
+// TestConcurrentLaunchesInOneDirectoryGetTwoNames proves that two bare hive
+// launches in directories of one base name, with both pickers open at the
+// same time, save two records with two names, so neither overwrites the
+// other.
+func TestConcurrentLaunchesInOneDirectoryGetTwoNames(t *testing.T) {
+	home := t.TempDir()
+	dir := filepath.Join(t.TempDir(), "app")
+	if err := os.Mkdir(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	fake := agenttest.NewHerdr(t)
+	_, one := fake.AddWorkspace("one", dir, false)
+	_, two := fake.AddWorkspace("two", dir, false)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	var picking sync.WaitGroup
+	picking.Add(2)
+	errs := make(chan error, 2)
+	for _, pane := range []string{one.ID, two.ID} {
+		name, err := ResolveName(home, dir, pane, logger)
+		if err != nil || name != "app-coordinator" {
+			t.Fatalf("ResolveName = %q, %v; want app-coordinator before both pickers", name, err)
+		}
+		go func() {
+			errs <- Run(Options{
+				Home: home, Dir: dir, Name: name, Pane: pane,
+				Pick: func(Choice, bool) (Choice, bool, error) {
+					picking.Done()
+					picking.Wait()
+					return Choice{"pi", "a/b"}, true, nil
+				},
+				Exec:   func(string, string, []string, []string) error { return nil },
+				Now:    time.Now,
+				Logger: logger,
+			})
+		}()
+	}
+	for range 2 {
+		if err := <-errs; err != nil {
+			t.Fatalf("Run = %v", err)
+		}
+	}
+	records, err := agent.List(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	panes := map[string]string{}
+	for _, record := range records {
+		panes[record.Name] = record.Pane
+	}
+	if len(panes) != 2 || panes["app-coordinator"] == "" || panes["app-2-coordinator"] == "" || panes["app-coordinator"] == panes["app-2-coordinator"] {
+		t.Fatalf("records = %v; want app-coordinator and app-2-coordinator in two panes", panes)
+	}
+	for name, pane := range panes {
+		if got, _ := fake.Pane(pane); got.TabLabel != name {
+			t.Fatalf("tab of pane %s = %q; want %s", pane, got.TabLabel, name)
+		}
 	}
 }

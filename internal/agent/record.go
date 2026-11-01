@@ -26,15 +26,16 @@ type Record struct {
 	StartedAt time.Time `json:"started_at"`
 }
 
-const maxNameLen = 64
+// MaxNameLen is the longest agent name in bytes.
+const MaxNameLen = 64
 
 // ValidateName returns an error unless name is 1 to 64 characters of [a-z0-9_-].
 func ValidateName(name string) error {
 	if name == "" {
 		return errors.New("agent name is empty")
 	}
-	if len(name) > maxNameLen {
-		return fmt.Errorf("agent name %q is longer than %d characters", name, maxNameLen)
+	if len(name) > MaxNameLen {
+		return fmt.Errorf("agent name %q is longer than %d characters", name, MaxNameLen)
 	}
 	for _, r := range name {
 		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '_' && r != '-' {

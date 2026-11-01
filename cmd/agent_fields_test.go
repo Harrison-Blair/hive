@@ -11,7 +11,7 @@ func TestCommandsWithoutAnAgentLogTheCallerAndNoTarget(t *testing.T) {
 	home := requestTestHome(t)
 	t.Setenv("HIVE_HOME", home)
 	t.Setenv("HERDR_PANE_ID", "")
-	for _, args := range [][]string{{"project", "list"}, {"logs"}} {
+	for _, args := range [][]string{{"agent", "list"}, {"logs"}} {
 		var output strings.Builder
 		if err := ExecuteWithArgs(args, strings.NewReader(""), &output); err != nil {
 			t.Fatalf("%v: %v\n%s", args, err, output.String())

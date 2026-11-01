@@ -8,13 +8,9 @@ import (
 	"net"
 	"os/exec"
 	"path/filepath"
-	"regexp"
+	"strings"
 	"sync"
 	"testing"
-
-	"github.com/Harrison-Blair/hive/internal/lib/records"
-	"github.com/Harrison-Blair/hive/internal/lib/store"
-	"github.com/Harrison-Blair/hive/internal/project"
 )
 
 // Request is one request that the fake received.
@@ -43,11 +39,13 @@ type Pane struct {
 	// TabLabel is the explicit label of the tab of the pane, or empty.
 	TabLabel string
 	Cwd      string
-	Status   string
-	Name     string
-	Kind     string
-	Args     []string
-	Env      map[string]string
+	// ForegroundCwd is the directory of the foreground process, or empty.
+	ForegroundCwd string
+	Status        string
+	Name          string
+	Kind          string
+	Args          []string
+	Env           map[string]string
 	// StartEnv is a copy of Env when agent.start ran in the pane.
 	StartEnv map[string]string
 	Prompts  []string
@@ -73,6 +71,8 @@ type Herdr struct {
 	panes      []*Pane
 	requests   []Request
 	failures   map[string][]failure
+	before     map[string]func()
+	after      map[string]func()
 	nextWS     int
 	nextPane   int
 	// StartStatus is the status that agent.wait gives after agent.start.
@@ -102,7 +102,7 @@ func NewHerdr(t testing.TB) *Herdr {
 	if err != nil {
 		t.Fatalf("listen: %v", err)
 	}
-	fake := &Herdr{t: t, listener: listener, path: path, failures: map[string][]failure{}, StartStatus: "idle", WaitStatus: "idle"}
+	fake := &Herdr{t: t, listener: listener, path: path, failures: map[string][]failure{}, before: map[string]func(){}, after: map[string]func(){}, StartStatus: "idle", WaitStatus: "idle"}
 	t.Setenv("HERDR_SOCKET_PATH", path)
 	go fake.serve()
 	t.Cleanup(func() { _ = listener.Close() })
@@ -129,6 +129,13 @@ func (h *Herdr) SetStatus(paneID, status string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	h.pane(paneID).Status = status
+}
+
+// SetForegroundCwd sets the directory of the foreground process of one pane.
+func (h *Herdr) SetForegroundCwd(paneID, cwd string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.pane(paneID).ForegroundCwd = cwd
 }
 
 // StartAgent puts a named agent of kind with status in one pane.
@@ -167,6 +174,22 @@ func (h *Herdr) Fail(method, code, message string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	h.failures[method] = append(h.failures[method], failure{code, message})
+}
+
+// Before makes each later call of method run fn first, outside the lock of
+// the fake, so fn can call the fake or hive.
+func (h *Herdr) Before(method string, fn func()) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.before[method] = fn
+}
+
+// After makes each later call of method run fn after the fake handles it
+// and before the fake replies, outside the lock of the fake.
+func (h *Herdr) After(method string, fn func()) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.after[method] = fn
 }
 
 // Workspaces returns a copy of each workspace.
@@ -214,13 +237,6 @@ func (h *Herdr) Requests(method string) []Request {
 	}
 	return out
 }
-
-// exportLine matches a shell line that exports one or more variables, each
-// with a single quoted value. exportPair matches one of the variables.
-var (
-	exportLine = regexp.MustCompile(`^export( [A-Za-z_][A-Za-z0-9_]*='[^']*')+$`)
-	exportPair = regexp.MustCompile(` ([A-Za-z_][A-Za-z0-9_]*)='([^']*)'`)
-)
 
 func envParam(params map[string]any) map[string]string {
 	env := map[string]string{}
@@ -335,6 +351,12 @@ func (h *Herdr) handle(conn net.Conn) {
 		return
 	}
 	result, failed := h.dispatch(request.Method, request.Params)
+	h.mu.Lock()
+	after := h.after[request.Method]
+	h.mu.Unlock()
+	if after != nil {
+		after()
+	}
 	reply := map[string]any{"id": request.ID}
 	if failed != nil {
 		reply["error"] = map[string]string{"code": failed.code, "message": failed.message}
@@ -348,6 +370,12 @@ func (h *Herdr) handle(conn net.Conn) {
 func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverError) {
 	if method == "ping" {
 		return map[string]any{"type": "pong", "version": "0.9.5", "protocol": 22}, nil
+	}
+	h.mu.Lock()
+	before := h.before[method]
+	h.mu.Unlock()
+	if before != nil {
+		before()
 	}
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -392,25 +420,13 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 			}
 		}
 		return nil, &serverError{"tab_not_found", "tab " + text("tab_id") + " not found"}
-	case "worktree.create":
-		source := h.workspace(text("workspace_id"))
-		if source == nil {
-			return nil, &serverError{"workspace_not_found", "workspace not found"}
-		}
-		if source.Linked {
-			return nil, &serverError{"linked_worktree_source", "linked source"}
-		}
-		out, err := exec.Command("git", "-C", source.Checkout, "worktree", "add", "-b", text("branch"), text("path"), text("base")).CombinedOutput()
-		if err != nil {
-			return nil, &serverError{"worktree_create_failed", string(out)}
-		}
-		ws, pane := h.addWorkspace(text("label"), text("path"), true)
-		return map[string]any{
-			"type": "worktree_created", "workspace": h.workspaceInfo(ws), "tab": tabInfo(pane), "root_pane": paneInfo(pane),
-			"worktree": map[string]any{"path": text("path"), "label": ws.Label, "branch": text("branch"), "is_bare": false, "is_detached": false, "is_prunable": false, "is_linked_worktree": true, "open_workspace_id": ws.ID},
-		}, nil
 	case "worktree.list":
-		cwd := text("cwd")
+		// Like herdr, the entry is the root of the work tree of cwd.
+		out, err := exec.Command("git", "-C", text("cwd"), "rev-parse", "--show-toplevel").Output()
+		if err != nil {
+			return nil, &serverError{"not_git_worktree", text("cwd") + " is not inside a git work tree"}
+		}
+		cwd := strings.TrimSpace(string(out))
 		entry := map[string]any{"path": cwd, "label": filepath.Base(cwd), "branch": "main", "is_bare": false, "is_detached": false, "is_prunable": false, "is_linked_worktree": false}
 		source := map[string]any{"repo_key": cwd + "/.git", "repo_name": filepath.Base(cwd), "repo_root": cwd, "source_checkout_path": cwd}
 		for _, ws := range h.workspaces {
@@ -427,6 +443,17 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 			return nil, failed
 		}
 		return map[string]any{"type": "pane_info", "pane": paneInfo(pane)}, nil
+	case "pane.list":
+		if text("workspace_id") != "" && h.workspace(text("workspace_id")) == nil {
+			return nil, &serverError{"workspace_not_found", "workspace " + text("workspace_id") + " not found"}
+		}
+		panes := []any{}
+		for _, pane := range h.panes {
+			if text("workspace_id") == "" || pane.WorkspaceID == text("workspace_id") {
+				panes = append(panes, paneInfo(pane))
+			}
+		}
+		return map[string]any{"type": "pane_list", "panes": panes}, nil
 	case "pane.process_info":
 		pane, failed := paneOf()
 		if failed != nil {
@@ -445,22 +472,6 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 			return nil, failed
 		}
 		h.closePane(text("pane_id"))
-		return map[string]any{"type": "ok"}, nil
-	case "pane.send_input":
-		pane, failed := paneOf()
-		if failed != nil {
-			return nil, failed
-		}
-		// The shell of the pane runs a submitted export line.
-		keys, _ := params["keys"].([]any)
-		if line := text("text"); exportLine.MatchString(line) && len(keys) == 1 && keys[0] == "enter" {
-			if pane.Env == nil {
-				pane.Env = map[string]string{}
-			}
-			for _, match := range exportPair.FindAllStringSubmatch(line, -1) {
-				pane.Env[match[1]] = match[2]
-			}
-		}
 		return map[string]any{"type": "ok"}, nil
 	case "agent.start":
 		pane, failed := paneOf()
@@ -574,6 +585,9 @@ func paneInfo(pane *Pane) map[string]any {
 		"pane_id": pane.ID, "terminal_id": "term_" + pane.ID, "workspace_id": pane.WorkspaceID, "tab_id": pane.TabID,
 		"focused": false, "agent_status": pane.Status, "revision": 0, "cwd": pane.Cwd,
 	}
+	if pane.ForegroundCwd != "" {
+		info["foreground_cwd"] = pane.ForegroundCwd
+	}
 	if pane.Kind != "" {
 		info["agent"] = pane.Kind
 	}
@@ -624,18 +638,6 @@ func Home(t testing.TB) string {
 		t.Fatal(err)
 	}
 	return home
-}
-
-// RegisterProject writes one project record in the home.
-func RegisterProject(t testing.TB, home, id, path, base string) {
-	t.Helper()
-	registry, err := store.Open(home)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := project.Write(registry, records.Project{ID: id, Path: path, Base: base}); err != nil {
-		t.Fatal(err)
-	}
 }
 
 // RequestCount returns the number of requests that the fake received.

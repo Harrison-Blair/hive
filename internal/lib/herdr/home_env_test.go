@@ -16,19 +16,3 @@ func TestWorkspaceCreatePassesEnvironment(t *testing.T) {
 		t.Fatalf("workspace.create params = %#v; want the environment", requests)
 	}
 }
-
-func TestPaneRunSendsTextAndEnter(t *testing.T) {
-	server := newFakeServer(t)
-	server.scriptResult("pane.send_input", `{"type":"ok"}`)
-	if err := PaneRun(context.Background(), "w1:p2", "export HIVE_HOME='/tmp/h'"); err != nil {
-		t.Fatalf("PaneRun(): %v", err)
-	}
-	requests := server.recorded("pane.send_input")
-	if len(requests) != 1 || requests[0].Params != `{"pane_id":"w1:p2","text":"export HIVE_HOME='/tmp/h'","keys":["enter"]}` {
-		t.Fatalf("pane.send_input params = %#v; want text and the enter key", requests)
-	}
-	server.scriptResult("pane.send_input", `{"type":"pane_info"}`)
-	if err := PaneRun(context.Background(), "w1:p2", "true"); err == nil {
-		t.Fatal("PaneRun() wrong type error = nil")
-	}
-}

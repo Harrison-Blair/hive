@@ -14,6 +14,7 @@ func (e *Error) Error() string {
 // The error codes that hive checks. reference/herdr/errors.md lists every
 // code that the server can send.
 const (
-	CodePaneNotFound = "pane_not_found"
-	CodeAgentBlocked = "agent_blocked"
+	CodePaneNotFound   = "pane_not_found"
+	CodeAgentBlocked   = "agent_blocked"
+	CodeNotGitWorktree = "not_git_worktree"
 )

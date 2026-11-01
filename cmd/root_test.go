@@ -84,20 +84,13 @@ func TestBareHiveInHomeCtrlCQuitsWithNoRecord(t *testing.T) {
 }
 
 func TestRootListsOnlyKeptCommands(t *testing.T) {
-	want := []string{"agent", "completion", "guide", "help", "logs", "project", "version"}
+	want := []string{"agent", "completion", "guide", "help", "logs", "version", "worktree"}
 	var stdout, stderr bytes.Buffer
 	if status := executeWithStreams([]string{"--help"}, strings.NewReader(""), &stdout, &stderr); status != 0 {
 		t.Fatalf("status = %d; stderr %q", status, stderr.String())
 	}
 	if got := helpCommands(stdout.String()); strings.Join(got, " ") != strings.Join(want, " ") {
 		t.Fatalf("commands = %v; want %v", got, want)
-	}
-	stdout.Reset()
-	if status := executeWithStreams([]string{"project", "--help"}, strings.NewReader(""), &stdout, &stderr); status != 0 {
-		t.Fatalf("status = %d; stderr %q", status, stderr.String())
-	}
-	if got := helpCommands(stdout.String()); strings.Join(got, " ") != "help list register" && strings.Join(got, " ") != "list register" {
-		t.Fatalf("project commands = %v; want list register", got)
 	}
 }
 
@@ -148,4 +141,12 @@ func TestBareHiveWithoutUserHomeFailsWithNoPicker(t *testing.T) {
 	if stdout.Len() != 0 {
 		t.Fatalf("stdout = %q; want no picker output", stdout.String())
 	}
+}
+
+// testHome sets HIVE_HOME to a new empty home and returns it.
+func testHome(t *testing.T) string {
+	t.Helper()
+	home := t.TempDir()
+	t.Setenv("HIVE_HOME", home)
+	return home
 }

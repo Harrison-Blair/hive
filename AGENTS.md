@@ -9,7 +9,7 @@
 Hive is a small agent launcher on top of herdr. An agent has no fixed role. It gets its work from its spawn prompt.
 
 - Bare `hive` shows a harness and model picker. Enter saves the coordinator record and runs the chosen harness in that pane, in the working directory of `hive`. That session is the coordinator. The user talks to it.
-- The coordinator name is `<id>-coordinator` when the working directory is in the checkout of the registered project `<id>`, for example `hive-coordinator`, and `coordinator` elsewhere. Hive compares the paths with symlinks resolved, and the innermost checkout wins. When two projects have that same checkout, or the registry is unreadable, the name is `coordinator` and hive logs a warning. The record, the tab label, `agent_id`, and the `Parent` of each child agent use that one name. Bare `hive` fails before the picker when a record of the name belongs to another pane that herdr still has. It removes each other coordinator record of its own pane that has no worktree, so the pane has one record.
+- The coordinator name comes from the base name of the working directory: lowercase, each run of characters outside `[a-z0-9_-]` as one hyphen, hyphens trimmed at both ends, then `-coordinator`, at most 64 bytes in all (`agent.Slug`). For example `~/src/Hive` gives `hive-coordinator`. An empty result gives `coordinator`. When a record of the name belongs to another pane that herdr still has, hive tries `<dir>-2-coordinator`, `<dir>-3-coordinator`, and so on (`coordinator-2` for an empty result), and cuts the directory part so the name fits. Hive resolves the name before the picker and checks it again under the layout lock after the picker. When another bare `hive` took it in the meantime, the record gets the next free name. The record, the tab label, `agent_id`, and the `Parent` of each child agent use that one name. Bare `hive` removes each other coordinator record of its own pane, so the pane has one record.
 - Any agent can start another agent with `hive agent spawn`. The `--prompt` or `--prompt-file` text is the whole brief of the new agent. Hive sends it unchanged and adds no role text.
 - Each agent that hive starts, the coordinator too, gets the hive guide in its system prompt: each command with its flags, and the usage notes of `internal/guide/usage.md`. `hive guide` prints the same text. Hive reads and writes no file for the guide. Herdr rejects a start argument with a newline, so the guide goes as one line: claude and pi get `--append-system-prompt` with each newline as the two characters `\n`; codex gets `-c developer_instructions="…"` with the guide as one TOML basic string. Herdr types the start command line into the pane shell, and a shell in canonical mode can cut a line at 4095 bytes. So the full start line, each argument in single quotes, must be at most 4000 bytes (`harness.MaxStartLine`). `guide_budget_test.go` fails when the guide with a long model goes above that. Spawn checks the real line before it calls herdr, and fails in phase `validate` when the line is too long, for example with a long `--model`. Keep the guide dense.
 - A session with no spawn prompt and no coordinator record for its pane has no role. It tells the user so and takes no work from its working directory.
@@ -67,14 +67,15 @@ The home is `$HIVE_HOME` when that variable is set and not empty, otherwise `~/.
 
 ```text
 <home>/
-├─ projects/<id>/project.json        project record
-├─ projects/<id>/worktrees/<name>/   agent worktree of spawn --worktree
+├─ worktrees/<key>/worktree.json     ownership record of a checkout that hive made
+├─ worktrees/<key>/<branch>/         that checkout
 ├─ agents/<name>.json                agent records
 ├─ logs/YYYY-MM-DD.jsonl             log events
 ├─ coordinator-choice.json           last picker choice
 ├─ extensions/hive-inbox.ts          pi extension of hive agent send
 ├─ tmp/                              scratch files
 ├─ lock                              store lock
+├─ layout.lock                       lock of spawn, stop, worktree, and coordinator names
 └─ schema.json                       store schema version 5
 ```
 
@@ -84,13 +85,16 @@ The home is `$HIVE_HOME` when that variable is set and not empty, otherwise `~/.
 
 ## herdr layout
 
-- The checkout workspace of a project is a normal herdr workspace open on the registered repository checkout. Hive finds it with `worktree.list` (`open_workspace_id`), in any position and with any label. If none is open, hive creates one with the checkout as `cwd` and the herdr default label, and the first agent takes its root pane. Hive never renames a workspace and never makes a second checkout workspace. Hive uses no `hive:` labels.
-- `spawn` without `--project` opens a new tab in the workspace of the caller. With `--project P` it opens a new tab in the checkout workspace of P.
-- `spawn --project P --worktree NAME` calls `worktree.create` from the checkout workspace with path `<home>/projects/P/worktrees/NAME`, branch `NAME`, and the base branch of P. The new workspace nests under the checkout workspace. The agent starts in its root pane.
-- Each agent that spawn starts gets `HIVE_HOME` set to the resolved home of the caller, so its own hive commands use the same home, and the trust env of its harness (`harness.Trust().Env`, for claude `CLAUDE_CODE_SANDBOXED=1`). A new tab gets the env through the `tab.create` `env`, and the root pane of a new checkout workspace through the `workspace.create` `env`. `worktree.create` and `agent.start` take no `env`, so in a worktree root pane spawn types one line `export HIVE_HOME='…' CLAUDE_CODE_SANDBOXED='1'` with `pane.send_input` before `agent.start`. That line must also fit `harness.MaxStartLine`. The trust args (pi `--approve`) go on the start line in each placement. Bare `hive` execs the harness with `HIVE_HOME` set to the home.
-- Spawn labels the tab of the agent with the agent name. A new tab gets the name through the `tab.create` label. A root pane of a new workspace or worktree gets it through `tab.rename` before the harness starts. When `tab.rename` fails, spawn still starts the harness and sends the prompt, and the outcome is `partial`.
+- `spawn` without `--branch` and `--directory` opens a new tab in the workspace of the caller, in the working directory of the caller.
+- `spawn --branch B` uses the checkout of branch B in the Git repository of the working directory of the caller (`internal/worktree`). When no checkout has B, hive makes one with `git worktree add` at `<home>/worktrees/<key>/<branch>`. The key is the slug of the repository name and a hash of the common Git directory and the full branch name, so each repository and branch gets its own path. A new branch starts at `--base`, or at the current commit of the working directory. `--base` fails for a branch that exists. Hive writes the ownership record `worktree.json` beside the checkout. When `git worktree add` fails, hive reads what it left: a checkout at the path, for example after a failing post-checkout hook, keeps its record and shows as `worktree created`; a new branch shows as `branch created`. `hive worktree create` is then `partial`, and spawn fails in phase `worktree`. Ownership needs that record to name the repository, the branch, and the path of the checkout. A path below the home alone is no proof.
+- `spawn --directory D` uses the existing directory D. A relative D starts at the working directory of the caller.
+- The agents of one checkout or directory share one herdr workspace. Spawn finds it with `worktree.list` (`open_workspace_id` of the entry at that path), in any position and with any label, and else as the workspace of the first pane of `pane.list` whose shell `cwd` is that directory. It opens a new tab there. When there is none, hive creates a workspace with that `cwd` and the herdr default label, and the agent takes its root pane. Hive never renames a workspace. Hive uses no `hive:` labels.
+- Spawn, `hive worktree create`, `hive worktree remove`, `agent stop`, and bare `hive` after its picker hold the layout lock `<home>/layout.lock` (`agent.Hold`) while they check a name, a checkout, or a workspace and act on it. Spawn holds it from the name check until the record exists, so a remove or a spawn at the same time sees the agent. A second holder waits up to 2 minutes.
+- `hive worktree create B` prints the checkout of B and makes it as `spawn --branch` does. It opens no workspace. `hive worktree remove B` removes only a checkout that hive owns, when `git status --porcelain --ignored` is empty and no live agent record has its `cwd` or `worktree` in it. Paths compare with each symlink resolved. The workspaces of the checkout are the workspace open on it and each workspace with a pane whose `cwd` or `foreground_cwd` is in it. Remove refuses when a pane of such a workspace runs an agent or has its `cwd` or `foreground_cwd` outside the checkout, so the close stops no unrelated process. It refuses too when such a workspace holds the caller pane (`HERDR_PANE_ID`), because the close would end the remove. It closes the workspaces of the checkout, runs the `git status` check again, runs `git worktree remove`, and removes the ownership record. `git worktree remove` deletes ignored files. Hive expects each other writer of the checkout to be stopped: a file that a process outside hive writes after the second check and before git ends can be lost. The branch stays. A failure after the close keeps the checkout, so a second remove finishes. When the record removal fails after `git worktree remove`, the outcome is `partial`, and a second remove of the branch, which now has no checkout, removes the record that names it when nothing is at its path.
+- Each agent that spawn starts gets `HIVE_HOME` set to the resolved home of the caller, so its own hive commands use the same home, and the trust env of its harness (`harness.Trust().Env`, for claude `CLAUDE_CODE_SANDBOXED=1`). A new tab gets the env through the `tab.create` `env`, and the root pane of a new workspace through the `workspace.create` `env`. The trust args (pi `--approve`) go on the start line in each placement. Bare `hive` execs the harness with `HIVE_HOME` set to the home.
+- Spawn labels the tab of the agent with the agent name. A new tab gets the name through the `tab.create` label. A root pane of a new workspace gets it through `tab.rename` before the harness starts. When `tab.rename` fails, spawn still starts the harness and sends the prompt, and the outcome is `partial`.
 - Spawn waits for the harness to be ready, then sends the prompt. The trust env and args skip the trust dialog of claude and pi in each placement. A dialog that still shows, for example the Codex folder trust dialog in a Git repository with no saved trust, makes spawn report outcome `partial` with status `blocked` and the pane ID. Spawn then sends no prompt.
-- Hive closes what it made. `agent stop` closes the pane of the agent, or the worktree workspace. It keeps the checkout and the branch. `--remove-worktree` also removes a clean checkout and refuses a dirty one. Hive acts only on agents that have a hive record.
+- `agent stop` closes only the pane of the agent and removes its record, so the other agents of the workspace keep running. It never closes a workspace and never removes a checkout. Hive acts only on agents that have a hive record.
 - Bare `hive` renames only its own tab, to the coordinator name. It changes no workspace.
 
 ## Development
@@ -123,8 +127,8 @@ cmd/agent/spawn                flags and the CLI adapter; renders the guide with
    │  └▶ internal/guide        the usage notes and the one-line escapes
    ├▶ internal/lib/herdr       the herdr socket client, protocol 22
    ├▶ internal/agent           the agent records in <home>/agents/ and the caller lookup
-   └▶ internal/lib/store       locked, atomic JSON files below the home
-      └▶ internal/lib/records  the record types
+   └▶ internal/worktree        the checkout of --branch: git worktree add and the ownership record
+      └▶ internal/lib/store    locked, atomic JSON files below the home
 
 bare hive ─▶ internal/coordinator: picker ─▶ coordinator record ─▶ harness replaces the process in the working directory
 ```
@@ -163,7 +167,7 @@ Use the standard library first. The picker can use Bubble Tea, Bubbles, and Lip 
 
 - Each hive process writes log events with `log/slog` as JSON lines to `<home>/logs/YYYY-MM-DD.jsonl`. Level debug is always on.
 - Log each herdr request and reply, each state change, each external process, each user action in the picker, and each error.
-- Each event carries the fields that apply: `component`, `command`, `request_id`, `project_id`, `agent_id`, `target`, `duration_ms`, and `error`.
+- Each event carries the fields that apply: `component`, `command`, `request_id`, `agent_id`, `target`, `duration_ms`, and `error`.
 - `agent_id` is the caller: the hive record name of `HERDR_PANE_ID`, or `user` when that pane has no record. Bare `hive` logs the coordinator name as `agent_id`, for example `agent_id=hive-coordinator`. `target` is the agent that the command acts on. A command with no agent argument has no `target`. Each command sets both fields on its logger before its first event, so each `herdr request`, `herdr reply`, `command start`, and `command end` carries them. `hive logs --agent NAME` prints an event when `agent_id` or `target` is NAME.
 - An event with an `outcome` field uses DEBUG for `ok`, WARN for `partial`, and ERROR for `failed`. An event without an `outcome` keeps the level that the code gives it, for example the INFO, WARN, and ERROR events of the picker. When the outcome is not `ok`, `command end` carries `error`.
 - Cap a body at 4 KiB and set `truncated` to true. Never log a secret.
@@ -173,7 +177,7 @@ Use the standard library first. The picker can use Bubble Tea, Bubbles, and Lip 
 
 A command prints text for people by default. With `--json` it prints one JSON object with `outcome`, `phase`, `effects`, `error`, and `result`. Known effects are separate from errors. The exit status is 0 only on success. `hive logs --json` prints each log event as one JSON line, because it streams. It is the one exception. Each diagnostic of `hive logs` on stderr is one `hive: MESSAGE` line, also with `--json`.
 
-A usage error exits with status 2. A usage error is an invalid invocation: missing or extra arguments, an unknown flag, an unknown command, an empty `PATH` for `hive project register`, or a bad `--limit` or `--since` value for `hive logs`. Without `--json`, hive writes one line `hive: MESSAGE` to stderr. With `--json` before any `--`, hive writes one envelope to stdout and nothing to stderr: `{"outcome":"failed","phase":"usage","effects":[],"error":"MESSAGE","result":null}`. The root command renders each usage error. Build an envelope and its outcome with `internal/lib/output`: `output.Failed` and the `Outcome` constants.
+A usage error exits with status 2. A usage error is an invalid invocation: missing or extra arguments, an unknown flag, an unknown command, an empty `BRANCH` for `hive worktree create` or `hive worktree remove`, or a bad `--limit` or `--since` value for `hive logs`. Without `--json`, hive writes one line `hive: MESSAGE` to stderr. With `--json` before any `--`, hive writes one envelope to stdout and nothing to stderr: `{"outcome":"failed","phase":"usage","effects":[],"error":"MESSAGE","result":null}`. The root command renders each usage error. Build an envelope and its outcome with `internal/lib/output`: `output.Failed` and the `Outcome` constants.
 
 ### Git
 
