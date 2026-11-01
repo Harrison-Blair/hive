@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/agent/agenttest"
 )
 
@@ -28,10 +29,35 @@ func TestRootAgentListJSONEnvelope(t *testing.T) {
 
 func TestRootAgentCommandsAreRegistered(t *testing.T) {
 	root := NewRootCmd()
-	for _, path := range [][]string{{"agent", "spawn"}, {"agent", "stop"}, {"agent", "send"}, {"agent", "list"}} {
+	for _, path := range [][]string{{"agent", "spawn"}, {"agent", "stop"}, {"agent", "send"}, {"agent", "list"}, {"agent", "graph"}} {
 		found, _, err := root.Find(path)
 		if err != nil || found.Name() != path[1] {
 			t.Fatalf("hive %s: found %v, err %v", strings.Join(path, " "), found, err)
 		}
+	}
+}
+
+func TestRootAgentGraphJSONIsTheListSnapshot(t *testing.T) {
+	home := testHome(t)
+	fake := agenttest.NewHerdr(t)
+	fake.AddWorkspace("mine", "", false)
+	pane := fake.AddPane("w1", "")
+	fake.StartAgent(pane.ID, "hive-coordinator", "claude", "working")
+	if err := agent.Save(home, agent.Record{Name: "hive-coordinator", Pane: pane.ID, Harness: "claude", Model: "opus"}); err != nil {
+		t.Fatal(err)
+	}
+	run := func(args ...string) string {
+		var stdout, stderr bytes.Buffer
+		if status := executeWithStreams(args, strings.NewReader(""), &stdout, &stderr); status != 0 {
+			t.Fatalf("hive %v: status = %d, stderr = %q; want 0", args, status, stderr.String())
+		}
+		return stdout.String()
+	}
+	graph, list := run("--json", "agent", "graph"), run("--json", "agent", "list")
+	if graph != list {
+		t.Fatalf("graph --json = %s; want the list snapshot %s", graph, list)
+	}
+	if !strings.Contains(graph, `"status":"working"`) {
+		t.Fatalf("graph --json = %s; want the live status", graph)
 	}
 }

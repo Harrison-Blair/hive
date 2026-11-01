@@ -29,6 +29,7 @@ func launchOptions(t *testing.T, home, dir string, pick func(Choice, bool) (Choi
 	return Options{
 		Home: home,
 		Dir:  dir,
+		Name: Name,
 		Pane: pane.ID,
 		Pick: pick,
 		Exec: func(dir, binary string, args, env []string) error {
@@ -260,5 +261,153 @@ func TestRunGivesTheHarnessTheHome(t *testing.T) {
 	}
 	if !slices.ContainsFunc(calls[0].env, func(pair string) bool { return strings.HasPrefix(pair, "PATH=") }) {
 		t.Fatalf("harness environment = %q; want the process environment kept", calls[0].env)
+	}
+}
+
+// TestRunUsesItsNameEverywhere proves that a project coordinator saves its
+// record, labels its tab, logs as itself, and is the caller of its pane under
+// one name.
+func TestRunUsesItsNameEverywhere(t *testing.T) {
+	home := t.TempDir()
+	var calls []execCall
+	var logs strings.Builder
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	fake := agenttest.NewHerdr(t)
+	_, pane := fake.AddWorkspace("w", home, false)
+	opts.Pane = pane.ID
+	opts.Name = "hive-coordinator"
+	opts.Logger = slog.New(slog.NewJSONHandler(&logs, nil))
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	if record, err := agent.Load(home, "hive-coordinator"); err != nil || record.Pane != pane.ID {
+		t.Fatalf("record = %+v, %v; want hive-coordinator in pane %s", record, err, pane.ID)
+	}
+	if _, err := agent.Load(home, "coordinator"); !errors.Is(err, agent.ErrNotFound) {
+		t.Fatalf("Load(coordinator) = %v; want ErrNotFound", err)
+	}
+	if got, _ := fake.Pane(pane.ID); got.TabLabel != "hive-coordinator" {
+		t.Fatalf("tab label = %q; want hive-coordinator", got.TabLabel)
+	}
+	if caller, err := agent.CallerName(home, pane.ID); err != nil || caller != "hive-coordinator" {
+		t.Fatalf("CallerName = %q, %v; want hive-coordinator", caller, err)
+	}
+	for _, line := range strings.Split(strings.TrimSpace(logs.String()), "\n") {
+		if !strings.Contains(line, `"agent_id":"hive-coordinator"`) {
+			t.Fatalf("log event %s; want agent_id hive-coordinator", line)
+		}
+	}
+}
+
+// TestRunReplacesTheOldCoordinatorRecordOfItsPane proves that a coordinator
+// record of an earlier run in the same pane does not keep the pane, while the
+// record of a worktree agent stays for agent stop.
+func TestRunReplacesTheOldCoordinatorRecordOfItsPane(t *testing.T) {
+	home := t.TempDir()
+	var calls []execCall
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts.Name = "hive-coordinator"
+	for _, record := range []agent.Record{
+		{Name: "coordinator", Pane: opts.Pane, Harness: "pi", Model: "old"},
+		{Name: "web-coordinator", Pane: opts.Pane, Harness: "pi", Model: "old"},
+		{Name: "a-coordinator", Pane: opts.Pane, Harness: "pi", Model: "old", Worktree: "/wt/a"},
+	} {
+		if err := agent.Save(home, record); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"coordinator", "web-coordinator"} {
+		if _, err := agent.Load(home, name); !errors.Is(err, agent.ErrNotFound) {
+			t.Errorf("Load(%s) = %v; want the old record of the pane removed", name, err)
+		}
+	}
+	for _, name := range []string{"a-coordinator"} {
+		if _, err := agent.Load(home, name); err != nil {
+			t.Errorf("Load(%s) = %v; want the record kept", name, err)
+		}
+	}
+}
+
+// TestRunKeepsAnOldCoordinatorOfAnotherPane proves that the coordinator
+// record of another pane stays, so agent stop can still close that pane.
+func TestRunKeepsAnOldCoordinatorOfAnotherPane(t *testing.T) {
+	home := t.TempDir()
+	var calls []execCall
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts.Name = "hive-coordinator"
+	old := agent.Record{Name: "coordinator", Pane: "w9:p9", Harness: "pi", Model: "old"}
+	if err := agent.Save(home, old); err != nil {
+		t.Fatal(err)
+	}
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := agent.Load(home, "coordinator"); err != nil || got.Pane != old.Pane {
+		t.Fatalf("Load(coordinator) = %+v, %v; want the record of pane w9:p9 kept", got, err)
+	}
+}
+
+// TestRunRefusesTheNameOfALiveAgent proves that bare hive does not take the
+// record of an agent whose pane herdr still has, and replaces the record of a
+// pane that is gone.
+func TestRunRefusesTheNameOfALiveAgent(t *testing.T) {
+	for _, name := range []string{"coordinator", "hive-coordinator"} {
+		t.Run(name, func(t *testing.T) {
+			home := t.TempDir()
+			var calls []execCall
+			picked := false
+			opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { picked = true; return Choice{"pi", "a/b"}, true, nil }, &calls)
+			fake := agenttest.NewHerdr(t)
+			ws, mine := fake.AddWorkspace("w", home, false)
+			other := fake.AddPane(ws.ID, home)
+			opts.Pane = mine.ID
+			opts.Name = name
+			live := agent.Record{Name: name, Pane: other.ID, Harness: "claude", Model: "m", Worktree: "/wt/x"}
+			if err := agent.Save(home, live); err != nil {
+				t.Fatal(err)
+			}
+			err := Run(opts)
+			if err == nil || !strings.Contains(err.Error(), other.ID) {
+				t.Fatalf("Run = %v; want an error that names pane %s", err, other.ID)
+			}
+			if picked || len(calls) != 0 {
+				t.Fatalf("picked %v, exec calls %+v; want no picker and no exec", picked, calls)
+			}
+			if got, _ := agent.Load(home, name); got != live {
+				t.Fatalf("record = %+v; want %+v unchanged", got, live)
+			}
+			if got, _ := fake.Pane(mine.ID); got.TabLabel != "" {
+				t.Fatalf("tab label = %q; want none", got.TabLabel)
+			}
+
+			fake.ClosePane(other.ID)
+			if err := Run(opts); err != nil {
+				t.Fatalf("Run after the pane closed = %v; want nil", err)
+			}
+			if got, err := agent.Load(home, name); err != nil || got.Pane != mine.ID {
+				t.Fatalf("record = %+v, %v; want pane %s", got, err, mine.ID)
+			}
+		})
+	}
+}
+
+// TestRunReplacesItsOwnRecordOnARerun proves that bare hive starts again in
+// the pane that holds the record of its name.
+func TestRunReplacesItsOwnRecordOnARerun(t *testing.T) {
+	home := t.TempDir()
+	var calls []execCall
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "new/model"}, true, nil }, &calls)
+	opts.Name = "hive-coordinator"
+	if err := agent.Save(home, agent.Record{Name: opts.Name, Pane: opts.Pane, Harness: "pi", Model: "old/model"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := Run(opts); err != nil {
+		t.Fatalf("Run = %v; want nil", err)
+	}
+	if got, err := agent.Load(home, opts.Name); err != nil || got.Model != "new/model" || len(calls) != 1 {
+		t.Fatalf("record = %+v, %v, exec calls %d; want model new/model and one exec", got, err, len(calls))
 	}
 }

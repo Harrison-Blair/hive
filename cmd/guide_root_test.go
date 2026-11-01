@@ -19,7 +19,7 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 	}
 	text := stdout.String()
 	for _, command := range []string{
-		"hive", "hive agent", "hive agent list", "hive agent send NAME TEXT", "hive agent spawn", "hive agent stop NAME",
+		"hive", "hive agent", "hive agent graph", "hive agent list", "hive agent send NAME TEXT", "hive agent spawn", "hive agent stop NAME",
 		"hive guide", "hive logs", "hive project", "hive project list", "hive project register PATH", "hive version",
 	} {
 		if !strings.Contains(text, "\n"+command+": ") {
