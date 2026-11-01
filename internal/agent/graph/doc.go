@@ -7,6 +7,7 @@
 //
 //   - pods.go groups the entries into pods of card trees.
 //   - card.go draws one card on a canvas: glyphs, palette, and spinner frames.
+//   - checkout.go reads the Git state of an agent's start directory.
 //   - layout.go draws the pods and the tree joins in rows that fit the width.
 //   - model.go is the Bubble Tea model: keys, refresh, clock, and spinner.
 //   - run.go runs the model on the terminal with live entries.

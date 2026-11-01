@@ -43,7 +43,7 @@ func podHeight(p Pod) int {
 // drawBoard draws the pods in rows that fit width. Each card narrows down to
 // minCardWidth to fit one pod in the width. A pod that is still too wide is
 // cut at the right edge of the screen.
-func drawBoard(pods []Pod, width int, now time.Time, selected string, frame int) board {
+func drawBoard(pods []Pod, width int, now time.Time, selected string, frame int, checkouts map[string]string) board {
 	deepest := 0
 	for _, p := range pods {
 		deepest = max(deepest, depth(p.Roots))
@@ -63,7 +63,7 @@ func drawBoard(pods []Pod, width int, now time.Time, selected string, frame int)
 		total += h
 	}
 	c := newCanvas(columns*(podWidth+1)-1, total)
-	d := drawer{c: c, now: now, selected: selected, frame: frame, cw: cw, cards: map[string]span{}}
+	d := drawer{c: c, now: now, selected: selected, frame: frame, cw: cw, cards: map[string]span{}, checkouts: checkouts}
 	y := 0
 	for row, h := range rowHeights {
 		for col := range columns {
@@ -80,12 +80,13 @@ func drawBoard(pods []Pod, width int, now time.Time, selected string, frame int)
 }
 
 type drawer struct {
-	c        *canvas
-	now      time.Time
-	selected string
-	frame    int
-	cw       int
-	cards    map[string]span
+	c         *canvas
+	now       time.Time
+	selected  string
+	frame     int
+	cw        int
+	cards     map[string]span
+	checkouts map[string]string
 }
 
 func (d *drawer) pod(p Pod, x, y, w, h int) {
@@ -102,7 +103,7 @@ func (d *drawer) pod(p Pod, x, y, w, h int) {
 // column to the right, joined to n by a trunk in column x.
 func (d *drawer) tree(n *Node, x, y int) {
 	selected := n.Entry.Name == d.selected
-	drawCard(d.c, x, y, d.cw, n.Entry, d.now, selected, d.frame)
+	drawCard(d.c, x, y, d.cw, n.Entry, d.now, selected, d.frame, d.checkouts[n.Entry.Name])
 	d.cards[n.Entry.Name] = span{top: y, status: n.Entry.Status}
 	if len(n.Children) == 0 {
 		return
@@ -113,7 +114,7 @@ func (d *drawer) tree(n *Node, x, y int) {
 	} else if n.Entry.Status == "working" {
 		cornerStyle = styleWorking
 	}
-	d.c.set(x, y+3, corner, cornerStyle)
+	d.c.set(x, y+cardHeight-1, corner, cornerStyle)
 	row := y + cardHeight
 	for i, child := range n.Children {
 		last := i == len(n.Children)-1

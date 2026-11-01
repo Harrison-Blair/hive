@@ -27,7 +27,9 @@ func Run(home string, logger *slog.Logger, in io.Reader, out io.Writer) error {
 		}
 		return entries, nil
 	}
-	model := New(Options{Fetch: fetch, Now: time.Now})
+	model := New(Options{Fetch: fetch, Now: time.Now, Checkout: func(ctx context.Context, dir string) string {
+		return checkout(ctx, dir, logger)
+	}})
 	_, err := tea.NewProgram(model, tea.WithInput(in), tea.WithOutput(out)).Run()
 	return err
 }

@@ -14,7 +14,7 @@ import (
 const (
 	cardWidth    = 32
 	minCardWidth = 16
-	cardHeight   = 4
+	cardHeight   = 5
 )
 
 // The SGR parameters of the historical palette. Each state also has a glyph
@@ -81,9 +81,10 @@ func since(e list.Entry, now time.Time) string {
 }
 
 // drawCard draws the card of e at x, y with width w. Row 1 has the status
-// glyph, the name, and the elapsed time. Row 2 has the harness and the model.
+// glyph, the name, and the elapsed time. Row 2 has the checkout, and row 3
+// has the harness and the model.
 // A selected card has a heavy border.
-func drawCard(c *canvas, x, y, w int, e list.Entry, now time.Time, selected bool, frame int) {
+func drawCard(c *canvas, x, y, w int, e list.Entry, now time.Time, selected bool, frame int, checkout string) {
 	border, edge := styleBorder, "╭╮╰╯─│"
 	switch {
 	case selected:
@@ -110,17 +111,18 @@ func drawCard(c *canvas, x, y, w int, e list.Entry, now time.Time, selected bool
 		nameStyle = styleDim
 	}
 	c.text(x+4, y+1, clip(e.Name, room), nameStyle, room)
+	c.text(x+2, y+2, clip(checkout, inner), styleDim, inner)
 	sub := e.Harness
 	if e.Model != "" {
 		sub += " · " + e.Model
 	}
-	c.text(x+2, y+2, clip(sub, inner), styleDim, inner)
+	c.text(x+2, y+3, clip(sub, inner), styleDim, inner)
 }
 
 // cardLines renders one card alone.
 func cardLines(e list.Entry, now time.Time, selected bool, frame, w int) []string {
 	c := newCanvas(w, cardHeight)
-	drawCard(c, 0, 0, w, e, now, selected, frame)
+	drawCard(c, 0, 0, w, e, now, selected, frame, "")
 	return c.lines()
 }
 

@@ -24,13 +24,16 @@ const (
 type Options struct {
 	// Fetch returns the current entries, as hive agent list does.
 	Fetch func(context.Context) ([]list.Entry, error)
+	// Checkout reads the current checkout for an agent's start directory.
+	Checkout func(context.Context, string) string
 	// Now returns the time of the clock and of the elapsed times.
 	Now func() time.Time
 }
 
 type fetchedMsg struct {
-	entries []list.Entry
-	err     error
+	entries   []list.Entry
+	checkouts map[string]string
+	err       error
 }
 
 type clockMsg time.Time
@@ -42,6 +45,7 @@ type Model struct {
 	options Options
 
 	entries   []list.Entry
+	checkouts map[string]string
 	pods      []Pod
 	loaded    bool
 	fetchedAt time.Time
@@ -83,7 +87,13 @@ func (m Model) fetch() tea.Cmd {
 		ctx, cancel := context.WithTimeout(context.Background(), fetchTimeout)
 		defer cancel()
 		entries, err := fetch(ctx)
-		return fetchedMsg{entries: entries, err: err}
+		checkouts := make(map[string]string, len(entries))
+		if err == nil && m.options.Checkout != nil {
+			for _, entry := range entries {
+				checkouts[entry.Name] = m.options.Checkout(ctx, entry.Cwd)
+			}
+		}
+		return fetchedMsg{entries: entries, checkouts: checkouts, err: err}
 	}
 }
 
@@ -109,7 +119,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 		m.err, m.loaded, m.fetchedAt = "", true, m.now
-		m.entries, m.pods = msg.entries, Pods(msg.entries)
+		m.entries, m.pods, m.checkouts = msg.entries, Pods(msg.entries), msg.checkouts
 		if _, ok := m.find(m.selected); !ok {
 			m.selected = ""
 			if order := m.order(); len(order) > 0 {
@@ -212,7 +222,7 @@ func (m Model) area() int {
 }
 
 func (m Model) board() board {
-	return drawBoard(m.pods, m.screenWidth(), m.now, m.selected, m.frame)
+	return drawBoard(m.pods, m.screenWidth(), m.now, m.selected, m.frame, m.checkouts)
 }
 
 // follow scrolls the pod area so that the selected card shows.

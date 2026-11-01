@@ -95,17 +95,24 @@ func TestPodsSurviveAParentCycle(t *testing.T) {
 	}
 }
 
-func TestCardShowsNameAndElapsedThenHarnessAndModel(t *testing.T) {
-	lines := cardLines(entry("hive-coordinator", "", "idle", "claude", "opus", 4*time.Minute+5*time.Second), clock, false, 0, 28)
-	if len(lines) != 4 {
-		t.Fatalf("card has %d lines; want 4", len(lines))
+func TestCardShowsNameCheckoutThenHarnessAndModel(t *testing.T) {
+	e := entry("hive-coordinator", "", "idle", "claude", "opus", 4*time.Minute+5*time.Second)
+	m := loaded(t, []list.Entry{e}, 80, 20)
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}, checkouts: map[string]string{e.Name: "feature-branch"}})
+	text := screen(m)
+	if !strings.Contains(text, "feature-branch") || strings.Index(text, "feature-branch") > strings.Index(text, "claude · opus") {
+		t.Fatalf("checkout must appear before harness and model:\n%s", text)
 	}
-	row1, row2 := ansi.Strip(lines[1]), ansi.Strip(lines[2])
+	lines := cardLines(e, clock, false, 0, 28)
+	if len(lines) != 5 {
+		t.Fatalf("card has %d lines; want 5", len(lines))
+	}
+	row1, row3 := ansi.Strip(lines[1]), ansi.Strip(lines[3])
 	if !strings.HasPrefix(row1, "│ ◐ hive-coordinator") || !strings.HasSuffix(row1, " 4m05s │") {
 		t.Errorf("row 1 = %q; want the idle glyph, the name, and 4m05s", row1)
 	}
-	if row2 != "│ claude · opus"+strings.Repeat(" ", 12)+"│" {
-		t.Errorf("row 2 = %q; want harness · model and no status", row2)
+	if row3 != "│ claude · opus"+strings.Repeat(" ", 12)+"│" {
+		t.Errorf("row 3 = %q; want harness · model and no status", row3)
 	}
 	for _, line := range lines {
 		if w := ansi.StringWidth(line); w != 28 {
