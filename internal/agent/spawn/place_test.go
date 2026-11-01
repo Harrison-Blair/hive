@@ -46,7 +46,7 @@ func paneOf(t *testing.T, fake *agenttest.Herdr, home, name string) (agent.Recor
 	return record, pane
 }
 
-func TestSpawnBranchMakesTheCheckoutAndANewWorkspaceOnIt(t *testing.T) {
+func TestSpawnBranchMakesTheCheckoutAndAGroupedWorkspace(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	home := agenttest.Home(t)
 	repo := agenttest.GitRepo(t)
@@ -70,11 +70,15 @@ func TestSpawnBranchMakesTheCheckoutAndANewWorkspaceOnIt(t *testing.T) {
 		t.Fatalf("HEAD = %s; want the current commit %s", got, want)
 	}
 	creates := fake.Requests("workspace.create")
-	if len(creates) != 1 || creates[0].Params["cwd"] != path {
-		t.Fatalf("workspace.create = %+v; want one with cwd %s", creates, path)
+	if len(creates) != 0 {
+		t.Fatalf("workspace.create = %+v; want branch placement through worktree.open", creates)
 	}
-	if pane.WorkspaceID == callerWS.ID || pane.TabID != pane.WorkspaceID+":t1" {
-		t.Fatalf("pane = %+v; want the root pane of a new workspace, not the caller workspace %s", pane, callerWS.ID)
+	opens := fake.Requests("worktree.open")
+	if len(opens) != 2 || opens[0].Params["cwd"] != repo || opens[0].Params["path"] != repo || opens[1].Params["cwd"] != repo || opens[1].Params["path"] != path {
+		t.Fatalf("worktree.open = %+v; want parent then linked checkout from repo parent", opens)
+	}
+	if pane.WorkspaceID == callerWS.ID {
+		t.Fatalf("pane = %+v; want the branch workspace separate from caller workspace %s", pane, callerWS.ID)
 	}
 	if !hasEffect(envelope, output.Effect{Resource: "worktree", Path: path, Action: "created"}) {
 		t.Fatalf("effects = %+v; want worktree created %s", envelope.Effects, path)
@@ -97,12 +101,12 @@ func TestSpawnBranchSharesTheCheckoutAndItsWorkspace(t *testing.T) {
 	}
 	oneRecord, one := paneOf(t, fake, home, "one")
 	twoRecord, two := paneOf(t, fake, home, "two")
-	if got := len(fake.Requests("workspace.create")); got != 1 {
-		t.Fatalf("workspace.create calls = %d; want 1", got)
+	if got := len(fake.Requests("workspace.create")); got != 0 {
+		t.Fatalf("workspace.create calls = %d; want 0", got)
 	}
 	tabs := fake.Requests("tab.create")
-	if len(tabs) != 1 || tabs[0].Params["workspace_id"] != one.WorkspaceID || tabs[0].Params["cwd"] != oneRecord.Worktree {
-		t.Fatalf("tab.create = %+v; want one tab in %s with cwd %s", tabs, one.WorkspaceID, oneRecord.Worktree)
+	if len(tabs) != 2 || tabs[1].Params["workspace_id"] != one.WorkspaceID || tabs[1].Params["cwd"] != oneRecord.Worktree {
+		t.Fatalf("tab.create = %+v; want two agent tabs in %s with cwd %s", tabs, one.WorkspaceID, oneRecord.Worktree)
 	}
 	if two.WorkspaceID != one.WorkspaceID || one.ID == two.ID || twoRecord.Worktree != oneRecord.Worktree {
 		t.Fatalf("panes %+v and %+v; want two panes of one workspace on one checkout", one, two)
@@ -283,5 +287,130 @@ func TestSpawnBranchReportsTheCheckoutThatAFailedHookLeft(t *testing.T) {
 	}
 	if got := len(fake.Requests("agent.start")); got != 0 {
 		t.Fatalf("agent.start calls = %d; want 0", got)
+	}
+}
+
+func TestSpawnBranchFromLinkedCheckoutUsesParentSource(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home, repo := agenttest.Home(t), agenttest.GitRepo(t)
+	linked := filepath.Join(t.TempDir(), "linked")
+	gitOut(t, "-C", repo, "worktree", "add", "-b", "linked", linked)
+	options := base("kid")
+	options.Cwd, options.Branch = linked, "child"
+	if envelope := spawnRun(t, home, options); envelope.Outcome != output.OutcomeOK {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	opens := fake.Requests("worktree.open")
+	if len(opens) != 2 {
+		t.Fatalf("opens = %+v; want parent and child", opens)
+	}
+	for _, request := range opens {
+		if request.Params["cwd"] != repo {
+			t.Fatalf("request = %+v; want parent cwd %s", request, repo)
+		}
+	}
+}
+
+func TestSpawnBranchAdoptsPlainWorkspaceAndPreservesItsPane(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home, repo := agenttest.Home(t), agenttest.GitRepo(t)
+	linked := filepath.Join(t.TempDir(), "linked")
+	gitOut(t, "-C", repo, "worktree", "add", "-b", "linked", linked)
+	ws, original := fake.AddWorkspace("personal", linked, true)
+	ws.NoMetadata = true
+	fake.StartAgent(original.ID, "existing", "pi", "working")
+	options := base("kid")
+	options.Cwd, options.Branch = repo, "linked"
+	envelope := spawnRun(t, home, options)
+	if envelope.Outcome != output.OutcomeOK {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	_, pane := paneOf(t, fake, home, "kid")
+	if pane.WorkspaceID != ws.ID || pane.ID == original.ID {
+		t.Fatalf("pane = %+v; want new tab of %s", pane, ws.ID)
+	}
+	for _, got := range fake.Workspaces() {
+		if got.ID == ws.ID && (got.NoMetadata || !got.Linked || got.Label != "personal") {
+			t.Fatalf("workspace = %+v; want linked metadata and preserved label", got)
+		}
+	}
+	if got, ok := fake.Pane(original.ID); !ok || got.Kind != "pi" || got.Name != "existing" {
+		t.Fatalf("existing pane = %+v, %v", got, ok)
+	}
+}
+
+func TestSpawnBranchOpenFailureKeepsCheckoutAndStartsNothing(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home, repo := agenttest.Home(t), agenttest.GitRepo(t)
+	fake.Fail("worktree.open", "worktree_list_failed", "open failed")
+	options := base("kid")
+	options.Cwd, options.Branch = repo, "feat"
+	envelope := spawnRun(t, home, options)
+	if envelope.Outcome != output.OutcomeFailed || envelope.Phase != "workspace" || !strings.Contains(errorText(envelope), "open failed") {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if len(fake.Requests("agent.start")) != 0 || len(envelope.Effects) != 2 || envelope.Effects[1].Resource != "worktree" {
+		t.Fatalf("effects = %+v, starts = %+v; want retained branch and checkout, no start", envelope.Effects, fake.Requests("agent.start"))
+	}
+}
+
+func TestSpawnBranchTargetOpenFailureReportsParentAndCheckout(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home, repo := agenttest.Home(t), agenttest.GitRepo(t)
+	opens := 0
+	fake.Before("worktree.open", func() {
+		opens++
+		if opens == 2 {
+			fake.Fail("worktree.open", "worktree_list_failed", "target failed")
+		}
+	})
+	options := base("kid")
+	options.Cwd, options.Branch = repo, "feat"
+	envelope := spawnRun(t, home, options)
+	if envelope.Outcome != output.OutcomeFailed || envelope.Phase != "workspace" || !strings.Contains(errorText(envelope), "target failed") {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	workspaces := fake.Workspaces()
+	if len(workspaces) != 1 || workspaces[0].Checkout != repo || !hasEffect(envelope, output.Effect{Resource: "workspace", Path: workspaces[0].ID, Action: "created"}) {
+		t.Fatalf("workspaces = %+v, effects = %+v; want retained parent workspace", workspaces, envelope.Effects)
+	}
+	if len(fake.Requests("agent.start")) != 0 || len(fake.Requests("pane.close")) != 0 {
+		t.Fatal("target failure must start and close no panes")
+	}
+}
+
+func TestSpawnBranchTabFailurePreservesInitialPane(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home, repo := agenttest.Home(t), agenttest.GitRepo(t)
+	fake.Fail("tab.create", "workspace_not_found", "tab failed")
+	options := base("kid")
+	options.Cwd, options.Branch = repo, "feat"
+	envelope := spawnRun(t, home, options)
+	if envelope.Outcome != output.OutcomeFailed || envelope.Phase != "tab" || !strings.Contains(errorText(envelope), "tab failed") {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if len(fake.Workspaces()) != 2 || len(fake.Requests("pane.close")) != 0 || len(fake.Requests("agent.start")) != 0 {
+		t.Fatal("tab failure must preserve both workspaces and their initial panes, and start no agent")
+	}
+}
+
+func TestSpawnBranchInitialPaneCloseFailureReportsBothTabs(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home, repo := agenttest.Home(t), agenttest.GitRepo(t)
+	fake.Fail("pane.close", "pane_not_found", "close failed")
+	options := base("kid")
+	options.Cwd, options.Branch = repo, "feat"
+	envelope := spawnRun(t, home, options)
+	if envelope.Outcome != output.OutcomeFailed || envelope.Phase != "pane" || !strings.Contains(errorText(envelope), "close failed") {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	tabs := fake.Requests("tab.create")
+	if len(tabs) != 1 || len(fake.Requests("agent.start")) != 0 {
+		t.Fatal("close failure must keep the new tab and start no agent")
+	}
+	for _, effect := range envelope.Effects {
+		if effect.Resource == "pane" && effect.Action == "closed" {
+			t.Fatalf("effects = %+v; failed close must not be reported as closed", envelope.Effects)
+		}
 	}
 }

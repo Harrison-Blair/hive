@@ -43,9 +43,53 @@ func placeInBranch(ctx context.Context, home string, options Options, env map[st
 	if err != nil {
 		return placement{effects: effects}, "worktree", err
 	}
-	place, phase, err := placeInDirectory(ctx, home, checkout.Path, options.Name, env, logger, effects)
+	failed := func(err error) (placement, string, error) {
+		return placement{effects: effects}, "workspace", err
+	}
+	listed, err := herdr.WorktreeList(ctx, herdr.WorktreeListParams{Cwd: checkout.Path}, herdr.WithLogger(logger))
+	if err != nil {
+		return failed(fmt.Errorf("worktree list %s: %w", checkout.Path, err))
+	}
+	// A caller can itself be in a linked checkout. Open requests must start
+	// from the repository parent, and that parent must have a workspace for
+	// herdr to group the linked workspace beneath it.
+	root := listed.Source.RepoRoot
+	open := func(path string) (herdr.WorktreeOpened, error) {
+		opened, err := herdr.WorktreeOpen(ctx, herdr.WorktreeOpenParams{Cwd: root, Path: path}, herdr.WithLogger(logger))
+		if err != nil {
+			return opened, fmt.Errorf("worktree open %s: %w", path, err)
+		}
+		action := "opened"
+		if !opened.AlreadyOpen {
+			action = "created"
+		}
+		effects = append(effects, output.Effect{Resource: "workspace", Path: opened.Workspace.WorkspaceID, Action: action})
+		return opened, nil
+	}
+	opened, err := open(root)
+	if err != nil {
+		return failed(err)
+	}
+	if !worktree.SamePath(root, checkout.Path) {
+		opened, err = open(checkout.Path)
+		if err != nil {
+			return failed(err)
+		}
+	}
+	// worktree.open has no env parameter. Give the agent a fresh tab with
+	// its home and harness trust environment. Never start in an existing pane.
+	place, phase, err := openTab(ctx, opened.Workspace.WorkspaceID, checkout.Path, options.Name, env, logger, effects)
 	place.worktree = checkout.Path
-	return place, phase, err
+	if err != nil {
+		return place, phase, err
+	}
+	if !opened.AlreadyOpen {
+		if err := herdr.PaneClose(ctx, opened.RootPane.PaneID, herdr.WithLogger(logger)); err != nil {
+			return place, "pane", fmt.Errorf("close initial pane %s: %w", opened.RootPane.PaneID, err)
+		}
+		place.effects = append(place.effects, output.Effect{Resource: "pane", Path: opened.RootPane.PaneID, Action: "closed"})
+	}
+	return place, "", nil
 }
 
 // placeInDirectory places the agent in dir. It opens a tab in the herdr
