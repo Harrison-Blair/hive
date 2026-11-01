@@ -381,9 +381,9 @@ func TestSpawnLabelsTheAgentTabWithTheAgentName(t *testing.T) {
 		{"directory root pane", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
 			options.Directory = t.TempDir()
 		}, true},
-		{"branch root pane", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
+		{"branch agent tab", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
 			options.Cwd, options.Branch = agenttest.GitRepo(t), "feat-x"
-		}, true},
+		}, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			fake := agenttest.NewHerdr(t)

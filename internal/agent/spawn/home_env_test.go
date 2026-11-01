@@ -25,7 +25,7 @@ var placements = []struct {
 		fake.AddWorkspace("any", repo, false)
 		options.Cwd, options.Branch = repo, "main"
 	}},
-	{"root pane of the new checkout of a branch", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
+	{"agent tab of the new checkout of a branch", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
 		options.Cwd, options.Branch = agenttest.GitRepo(t), "feat-x"
 	}},
 	{"root pane of a new workspace of a directory", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {

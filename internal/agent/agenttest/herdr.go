@@ -421,22 +421,40 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		}
 		return nil, &serverError{"tab_not_found", "tab " + text("tab_id") + " not found"}
 	case "worktree.list":
-		// Like herdr, the entry is the root of the work tree of cwd.
-		out, err := exec.Command("git", "-C", text("cwd"), "rev-parse", "--show-toplevel").Output()
-		if err != nil {
-			return nil, &serverError{"not_git_worktree", text("cwd") + " is not inside a git work tree"}
+		source, entries, failed := h.listWorktrees(text("cwd"))
+		if failed != nil {
+			return nil, failed
 		}
-		cwd := strings.TrimSpace(string(out))
-		entry := map[string]any{"path": cwd, "label": filepath.Base(cwd), "branch": "main", "is_bare": false, "is_detached": false, "is_prunable": false, "is_linked_worktree": false}
-		source := map[string]any{"repo_key": cwd + "/.git", "repo_name": filepath.Base(cwd), "repo_root": cwd, "source_checkout_path": cwd}
-		for _, ws := range h.workspaces {
-			if ws.Checkout == cwd && !ws.Linked {
-				entry["open_workspace_id"] = ws.ID
-				source["source_workspace_id"] = ws.ID
-				break
+		return map[string]any{"type": "worktree_list", "source": source, "worktrees": entries}, nil
+	case "worktree.open":
+		source, entries, failed := h.listWorktrees(text("cwd"))
+		if failed != nil {
+			return nil, failed
+		}
+		if source["source_checkout_path"] != source["repo_root"] {
+			return nil, &serverError{"linked_worktree_source", "start from repo parent workspace"}
+		}
+		for _, entry := range entries {
+			if entry["path"] != text("path") {
+				continue
 			}
+			ws := h.workspace(stringField(entry, "open_workspace_id"))
+			already := ws != nil
+			var pane *Pane
+			if ws == nil {
+				ws, pane = h.addWorkspace("", text("path"), entry["is_linked_worktree"] == true)
+			} else {
+				for _, candidate := range h.panes {
+					if candidate.WorkspaceID == ws.ID {
+						pane = candidate
+						break
+					}
+				}
+			}
+			ws.NoMetadata = false
+			return map[string]any{"type": "worktree_opened", "workspace": h.workspaceInfo(ws), "tab": tabInfo(pane), "root_pane": paneInfo(pane), "worktree": entry, "already_open": already}, nil
 		}
-		return map[string]any{"type": "worktree_list", "source": source, "worktrees": []any{entry}}, nil
+		return nil, &serverError{"worktree_not_found", "worktree path not found"}
 	case "pane.get":
 		pane, failed := paneOf()
 		if failed != nil {
@@ -645,4 +663,50 @@ func (h *Herdr) RequestCount() int {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	return len(h.requests)
+}
+
+// listWorktrees models Git checkout discovery, including linked sources and
+// plain workspaces that herdr can adopt with worktree.open.
+func (h *Herdr) listWorktrees(cwd string) (map[string]any, []map[string]any, *serverError) {
+	out, err := exec.Command("git", "-C", cwd, "rev-parse", "--show-toplevel").Output()
+	if err != nil {
+		return nil, nil, &serverError{"not_git_worktree", cwd + " is not inside a git work tree"}
+	}
+	checkout := strings.TrimSpace(string(out))
+	out, err = exec.Command("git", "-C", cwd, "worktree", "list", "--porcelain").Output()
+	if err != nil {
+		return nil, nil, &serverError{"worktree_list_failed", err.Error()}
+	}
+	var entries []map[string]any
+	for _, block := range strings.Split(strings.TrimSpace(string(out)), "\n\n") {
+		entry := map[string]any{"is_bare": false, "is_detached": false, "is_prunable": false, "is_linked_worktree": len(entries) > 0}
+		for _, line := range strings.Split(block, "\n") {
+			if path, ok := strings.CutPrefix(line, "worktree "); ok {
+				entry["path"], entry["label"] = path, filepath.Base(path)
+			}
+			if branch, ok := strings.CutPrefix(line, "branch refs/heads/"); ok {
+				entry["branch"] = branch
+			}
+		}
+		for _, ws := range h.workspaces {
+			if ws.Checkout == entry["path"] {
+				entry["open_workspace_id"] = ws.ID
+				break
+			}
+		}
+		entries = append(entries, entry)
+	}
+	root := stringField(entries[0], "path")
+	source := map[string]any{"repo_key": root + "/.git", "repo_name": filepath.Base(root), "repo_root": root, "source_checkout_path": checkout}
+	for _, entry := range entries {
+		if entry["path"] == checkout && entry["open_workspace_id"] != nil {
+			source["source_workspace_id"] = entry["open_workspace_id"]
+		}
+	}
+	return source, entries, nil
+}
+
+func stringField(fields map[string]any, key string) string {
+	value, _ := fields[key].(string)
+	return value
 }
