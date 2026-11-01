@@ -67,3 +67,34 @@ func TestPaneClose(t *testing.T) {
 		t.Fatalf("PaneClose error = %v; want pane_not_found", err)
 	}
 }
+
+func TestPaneListRequestAndReply(t *testing.T) {
+	server := newFakeServer(t)
+	server.scriptResult("pane.list", `{"type":"pane_list","panes":[`+
+		`{"pane_id":"w2:p1","terminal_id":"term_a","workspace_id":"w2","tab_id":"w2:t1","focused":false,"agent_status":"blocked","revision":1,"agent":"claude","cwd":"/p"},`+
+		`{"pane_id":"w2:p2","terminal_id":"term_b","workspace_id":"w2","tab_id":"w2:t2","focused":false,"agent_status":"unknown","revision":0}]}`)
+	panes, err := PaneList(context.Background(), "w2")
+	if err != nil {
+		t.Fatalf("PaneList error = %v", err)
+	}
+	if len(panes) != 2 || panes[0].PaneID != "w2:p1" || panes[0].Agent != "claude" || panes[1].Agent != "" {
+		t.Fatalf("panes = %+v", panes)
+	}
+	requests := server.recorded("pane.list")
+	if len(requests) != 1 || requests[0].Params != `{"workspace_id":"w2"}` {
+		t.Fatalf("pane.list requests = %+v; want one with workspace_id w2", requests)
+	}
+	server.scriptResult("pane.list", `{"type":"pane_list","panes":[]}`)
+	if _, err := PaneList(context.Background(), ""); err != nil {
+		t.Fatalf("PaneList(all) error = %v", err)
+	}
+	if requests := server.recorded("pane.list"); len(requests) != 2 || requests[1].Params != `{}` {
+		t.Fatalf("pane.list requests = %+v; want the second with no workspace_id", requests)
+	}
+	for _, reply := range []string{`{"type":"pane_info","panes":[]}`, `{"type":"pane_list","panes":[{"pane_id":""}]}`} {
+		server.scriptResult("pane.list", reply)
+		if _, err := PaneList(context.Background(), "w2"); err == nil {
+			t.Fatalf("PaneList(%s) error = nil; want an error", reply)
+		}
+	}
+}

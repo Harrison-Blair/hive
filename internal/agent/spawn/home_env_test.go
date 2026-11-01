@@ -2,7 +2,6 @@ package spawn
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -11,32 +10,26 @@ import (
 	"github.com/Harrison-Blair/hive/internal/agent/agenttest"
 )
 
-// placements are the four places of a spawn. Each setup registers the
-// project and opens workspaces, and returns the caller pane, the project, and
-// the worktree of the spawn.
+// placements are the places of a spawn. Each setup opens workspaces and sets
+// the placement options.
 var placements = []struct {
 	name  string
-	setup func(t *testing.T, fake *agenttest.Herdr, home string) (caller, project, worktree string)
+	setup func(t *testing.T, fake *agenttest.Herdr, home string, options *Options)
 }{
-	{"new tab in the caller workspace", func(t *testing.T, fake *agenttest.Herdr, home string) (string, string, string) {
+	{"new tab in the caller workspace", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
 		_, pane := fake.AddWorkspace("mine", "", false)
-		return pane.ID, "", ""
+		options.CallerPane = pane.ID
 	}},
-	{"new tab in the checkout workspace", func(t *testing.T, fake *agenttest.Herdr, home string) (string, string, string) {
+	{"new tab in the open workspace of a checkout", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
 		repo := agenttest.GitRepo(t)
-		agenttest.RegisterProject(t, home, "p1", repo, "main")
 		fake.AddWorkspace("any", repo, false)
-		return "", "p1", ""
+		options.Cwd, options.Branch = repo, "main"
 	}},
-	{"root pane of a new checkout workspace", func(t *testing.T, fake *agenttest.Herdr, home string) (string, string, string) {
-		agenttest.RegisterProject(t, home, "p1", agenttest.GitRepo(t), "main")
-		return "", "p1", ""
+	{"root pane of the new checkout of a branch", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
+		options.Cwd, options.Branch = agenttest.GitRepo(t), "feat-x"
 	}},
-	{"root pane of a new worktree", func(t *testing.T, fake *agenttest.Herdr, home string) (string, string, string) {
-		repo := agenttest.GitRepo(t)
-		agenttest.RegisterProject(t, home, "p1", repo, "main")
-		fake.AddWorkspace("any", repo, false)
-		return "", "p1", "feat-x"
+	{"root pane of a new workspace of a directory", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
+		options.Directory = t.TempDir()
 	}},
 }
 
@@ -48,7 +41,7 @@ func spawnIn(t *testing.T, test int, harness string) (agenttest.Pane, string) {
 	home := agenttest.Home(t)
 	options := base("kid")
 	options.Harness = harness
-	options.CallerPane, options.Project, options.Worktree = placements[test].setup(t, fake, home)
+	placements[test].setup(t, fake, home, &options)
 	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %+v", envelope)
 	}
@@ -75,7 +68,7 @@ func TestSpawnGivesTheAgentTheHome(t *testing.T) {
 }
 
 // TestSpawnGivesClaudeTheTrustEnv checks that each placement, the root pane
-// of a new workspace or worktree too, starts Claude Code with
+// of a new workspace too, starts Claude Code with
 // CLAUDE_CODE_SANDBOXED=1, so Claude shows no trust dialog.
 func TestSpawnGivesClaudeTheTrustEnv(t *testing.T) {
 	for i, test := range placements {
@@ -133,15 +126,5 @@ func TestSpawnGivesPiTheTrustArgs(t *testing.T) {
 				t.Fatalf("args of the agent = %q; want --approve", pane.Args)
 			}
 		})
-	}
-}
-
-func TestExportEnvKeepsEachValueInAShell(t *testing.T) {
-	for _, home := range []string{"/home/u/.hive", "/tmp/it's here/$HOME `x` \\n"} {
-		env := map[string]string{"HIVE_HOME": home, "CLAUDE_CODE_SANDBOXED": "1"}
-		out, err := exec.Command("sh", "-c", exportEnv(env)+`; printf '%s|%s' "$HIVE_HOME" "$CLAUDE_CODE_SANDBOXED"`).Output()
-		if want := home + "|1"; err != nil || string(out) != want {
-			t.Fatalf("shell HIVE_HOME|CLAUDE_CODE_SANDBOXED = %q, %v; want %q", out, err, want)
-		}
 	}
 }

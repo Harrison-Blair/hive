@@ -46,7 +46,9 @@ func TestSpawnRequiresNameHarnessAndModel(t *testing.T) {
 		{"no model", Options{Name: "a", Harness: "pi"}, "--model"},
 		{"bad harness", Options{Name: "a", Harness: "vim", Model: "m"}, "unknown harness"},
 		{"both prompts", Options{Name: "a", Harness: "pi", Model: "m", Prompt: "x", PromptFile: "f"}, "--prompt"},
-		{"worktree without project", Options{Name: "a", Harness: "pi", Model: "m", Worktree: "x"}, "--worktree needs --project"},
+		{"branch and directory", Options{Name: "a", Harness: "pi", Model: "m", Branch: "x", Directory: "/tmp"}, "at most one of --branch and --directory"},
+		{"base without branch", Options{Name: "a", Harness: "pi", Model: "m", Base: "main"}, "--base needs --branch"},
+		{"missing directory", Options{Name: "a", Harness: "pi", Model: "m", Directory: "/no/such/dir"}, "--directory"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			envelope := spawnRun(t, home, tc.options)
@@ -60,7 +62,7 @@ func TestSpawnRequiresNameHarnessAndModel(t *testing.T) {
 	}
 }
 
-func TestSpawnWithoutProjectOpensTabInCallerWorkspace(t *testing.T) {
+func TestSpawnWithoutBranchOrDirectoryOpensTabInCallerWorkspace(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	home := agenttest.Home(t)
 	callerWS, callerPane := fake.AddWorkspace("mine", "", false)
@@ -132,219 +134,12 @@ func TestSpawnWithoutCallerRecordHasNoParent(t *testing.T) {
 	}
 }
 
-func TestSpawnWithoutProjectNeedsCallerPane(t *testing.T) {
+func TestSpawnWithoutBranchOrDirectoryNeedsCallerPane(t *testing.T) {
 	agenttest.NewHerdr(t)
 	home := agenttest.Home(t)
 	envelope := spawnRun(t, home, base("kid"))
 	if envelope.Outcome != "failed" || !strings.Contains(errorText(envelope), "HERDR_PANE_ID") {
 		t.Fatalf("envelope = %+v", envelope)
-	}
-}
-
-func TestSpawnProjectCreatesOneCheckoutWorkspace(t *testing.T) {
-	fake := agenttest.NewHerdr(t)
-	home := agenttest.Home(t)
-	repo := agenttest.GitRepo(t)
-	agenttest.RegisterProject(t, home, "p1", repo, "main")
-
-	first := base("one")
-	first.Project = "p1"
-	if envelope := spawnRun(t, home, first); envelope.Outcome != "ok" {
-		t.Fatalf("first = %+v", envelope)
-	}
-	creates := fake.Requests("workspace.create")
-	if len(creates) != 1 || creates[0].Params["cwd"] != repo || creates[0].Params["label"] != nil {
-		t.Fatalf("workspace.create = %+v, want one with cwd %s and no label", creates, repo)
-	}
-	workspaces := fake.Workspaces()
-	if len(workspaces) != 1 {
-		t.Fatalf("workspaces = %+v", workspaces)
-	}
-	one, _ := agent.Load(home, "one")
-	if pane, _ := fake.Pane(one.Pane); pane.WorkspaceID != workspaces[0].ID || pane.TabID != workspaces[0].ID+":t1" {
-		t.Fatalf("first agent pane = %+v, want the root pane of %s", pane, workspaces[0].ID)
-	}
-	if one.Cwd != repo {
-		t.Fatalf("cwd = %q, want %q", one.Cwd, repo)
-	}
-
-	second := base("two")
-	second.Project = "p1"
-	if envelope := spawnRun(t, home, second); envelope.Outcome != "ok" {
-		t.Fatalf("second = %+v", envelope)
-	}
-	if got := len(fake.Requests("workspace.create")); got != 1 {
-		t.Fatalf("workspace.create calls = %d, want 1", got)
-	}
-	tabs := fake.Requests("tab.create")
-	if len(tabs) != 1 || tabs[0].Params["workspace_id"] != workspaces[0].ID || tabs[0].Params["cwd"] != repo {
-		t.Fatalf("tab.create = %+v", tabs)
-	}
-	if got := len(fake.Workspaces()); got != 1 {
-		t.Fatalf("workspaces = %d, want 1", got)
-	}
-}
-
-func TestSpawnProjectUsesExistingCheckoutWorkspaceWithAnyLabel(t *testing.T) {
-	fake := agenttest.NewHerdr(t)
-	home := agenttest.Home(t)
-	repo := agenttest.GitRepo(t)
-	agenttest.RegisterProject(t, home, "p1", repo, "main")
-	fake.AddWorkspace("other", agenttest.GitRepo(t), false)
-	fake.AddWorkspace("linked", filepath.Join(home, "elsewhere"), true)
-	userWS, _ := fake.AddWorkspace("my label", repo, false)
-
-	options := base("one")
-	options.Project = "p1"
-	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
-		t.Fatalf("envelope = %+v", envelope)
-	}
-	if got := len(fake.Requests("workspace.create")); got != 0 {
-		t.Fatalf("workspace.create calls = %d, want 0", got)
-	}
-	tabs := fake.Requests("tab.create")
-	if len(tabs) != 1 || tabs[0].Params["workspace_id"] != userWS.ID {
-		t.Fatalf("tab.create = %+v, want a tab in %s", tabs, userWS.ID)
-	}
-	for _, ws := range fake.Workspaces() {
-		if ws.ID == userWS.ID && ws.Label != "my label" {
-			t.Fatalf("label = %q, want it unchanged", ws.Label)
-		}
-	}
-}
-
-func TestSpawnLinkedWorkspaceOnCheckoutIsNotTheCheckoutWorkspace(t *testing.T) {
-	fake := agenttest.NewHerdr(t)
-	home := agenttest.Home(t)
-	repo := agenttest.GitRepo(t)
-	agenttest.RegisterProject(t, home, "p1", repo, "main")
-	fake.AddWorkspace("odd", repo, true)
-
-	options := base("one")
-	options.Project = "p1"
-	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
-		t.Fatalf("envelope = %+v", envelope)
-	}
-	if got := len(fake.Requests("workspace.create")); got != 1 {
-		t.Fatalf("workspace.create calls = %d, want 1", got)
-	}
-}
-
-func TestSpawnUnknownProject(t *testing.T) {
-	agenttest.NewHerdr(t)
-	home := agenttest.Home(t)
-	options := base("one")
-	options.Project = "nope"
-	envelope := spawnRun(t, home, options)
-	if envelope.Outcome != "failed" || !strings.Contains(errorText(envelope), "nope") {
-		t.Fatalf("envelope = %+v", envelope)
-	}
-}
-
-func TestSpawnInvalidProjectIDUsesTheProjectRule(t *testing.T) {
-	agenttest.NewHerdr(t)
-	home := agenttest.Home(t)
-	options := base("one")
-	options.Project = "Repo_One"
-	envelope := spawnRun(t, home, options)
-	const want = "invalid project id: Repo_One: an ID matches ^[a-z0-9]+(-[a-z0-9]+)*$ and has at most 18 characters"
-	if envelope.Outcome != output.OutcomeFailed || envelope.Phase != "project" || errorText(envelope) != want {
-		t.Fatalf("envelope = %+v; want failed project phase with %q", envelope, want)
-	}
-}
-
-func TestSpawnWorktreeNestsUnderCheckoutWorkspace(t *testing.T) {
-	fake := agenttest.NewHerdr(t)
-	home := agenttest.Home(t)
-	repo := agenttest.GitRepo(t)
-	agenttest.RegisterProject(t, home, "p1", repo, "main")
-	checkoutWS, _ := fake.AddWorkspace("any", repo, false)
-
-	options := base("wt-agent")
-	options.Project = "p1"
-	options.Worktree = "feat-x"
-	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
-		t.Fatalf("envelope = %+v", envelope)
-	}
-	path := filepath.Join(home, "projects", "p1", "worktrees", "feat-x")
-	creates := fake.Requests("worktree.create")
-	if len(creates) != 1 {
-		t.Fatalf("worktree.create = %+v", creates)
-	}
-	params := creates[0].Params
-	if params["workspace_id"] != checkoutWS.ID || params["path"] != path || params["branch"] != "feat-x" || params["base"] != "main" {
-		t.Fatalf("worktree.create params = %+v", params)
-	}
-	if _, has := params["cwd"]; has {
-		t.Fatalf("worktree.create params = %+v, want no cwd", params)
-	}
-	if info, err := os.Stat(filepath.Join(path, ".git")); err != nil || info.IsDir() {
-		t.Fatalf("worktree checkout missing at %s: %v", path, err)
-	}
-	record, _ := agent.Load(home, "wt-agent")
-	pane, _ := fake.Pane(record.Pane)
-	var linked agenttest.Workspace
-	for _, ws := range fake.Workspaces() {
-		if ws.Linked {
-			linked = ws
-		}
-	}
-	if pane.WorkspaceID != linked.ID || pane.TabID != linked.ID+":t1" {
-		t.Fatalf("agent pane = %+v, want the root pane of %s", pane, linked.ID)
-	}
-	if record.Worktree != path || record.Cwd != path {
-		t.Fatalf("record = %+v, want worktree and cwd %s", record, path)
-	}
-	if got := len(fake.Requests("workspace.create")); got != 0 {
-		t.Fatalf("workspace.create calls = %d, want 0", got)
-	}
-}
-
-func TestSpawnWorktreeCreatesCheckoutWorkspaceWhenNoneIsOpen(t *testing.T) {
-	fake := agenttest.NewHerdr(t)
-	home := agenttest.Home(t)
-	repo := agenttest.GitRepo(t)
-	agenttest.RegisterProject(t, home, "p1", repo, "main")
-
-	options := base("wt-agent")
-	options.Project = "p1"
-	options.Worktree = "feat-x"
-	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
-		t.Fatalf("envelope = %+v", envelope)
-	}
-	creates := fake.Requests("workspace.create")
-	if len(creates) != 1 || creates[0].Params["cwd"] != repo {
-		t.Fatalf("workspace.create = %+v", creates)
-	}
-	var checkout string
-	for _, ws := range fake.Workspaces() {
-		if !ws.Linked {
-			checkout = ws.ID
-		}
-	}
-	if got := fake.Requests("worktree.create"); len(got) != 1 || got[0].Params["workspace_id"] != checkout {
-		t.Fatalf("worktree.create = %+v, want source %s", got, checkout)
-	}
-}
-
-func TestSpawnWorktreeFailureReportsTheCreatedCheckoutWorkspace(t *testing.T) {
-	fake := agenttest.NewHerdr(t)
-	home := agenttest.Home(t)
-	repo := agenttest.GitRepo(t)
-	agenttest.RegisterProject(t, home, "p1", repo, "main")
-	fake.Fail("worktree.create", "worktree_create_failed", "create boom")
-
-	options := base("wt-agent")
-	options.Project = "p1"
-	options.Worktree = "feat-x"
-	envelope := spawnRun(t, home, options)
-	workspaces := fake.Workspaces()
-	if len(workspaces) != 1 {
-		t.Fatalf("workspaces = %+v; want the one checkout workspace", workspaces)
-	}
-	want := []output.Effect{{Resource: "workspace", Path: workspaces[0].ID, Action: "created"}}
-	if envelope.Outcome != output.OutcomeFailed || envelope.Phase != "worktree" || !slices.Equal(envelope.Effects, want) {
-		t.Fatalf("envelope = %+v; want failed worktree phase with effects %+v", envelope, want)
 	}
 }
 
@@ -578,22 +373,16 @@ func TestSpawnLabelsTheAgentTabWithTheAgentName(t *testing.T) {
 			_, callerPane := fake.AddWorkspace("mine", "", false)
 			options.CallerPane = callerPane.ID
 		}, false},
-		{"project tab", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
+		{"checkout tab", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
 			repo := agenttest.GitRepo(t)
-			agenttest.RegisterProject(t, home, "p1", repo, "main")
 			fake.AddWorkspace("any", repo, false)
-			options.Project = "p1"
+			options.Cwd, options.Branch = repo, "main"
 		}, false},
-		{"project root pane", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
-			agenttest.RegisterProject(t, home, "p1", agenttest.GitRepo(t), "main")
-			options.Project = "p1"
+		{"directory root pane", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
+			options.Directory = t.TempDir()
 		}, true},
-		{"worktree root pane", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
-			repo := agenttest.GitRepo(t)
-			agenttest.RegisterProject(t, home, "p1", repo, "main")
-			fake.AddWorkspace("any", repo, false)
-			options.Project = "p1"
-			options.Worktree = "feat-x"
+		{"branch root pane", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
+			options.Cwd, options.Branch = agenttest.GitRepo(t), "feat-x"
 		}, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -633,10 +422,9 @@ func TestSpawnLabelsTheAgentTabWithTheAgentName(t *testing.T) {
 func TestSpawnTabRenameFailureIsPartialAndStillPrompts(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	home := agenttest.Home(t)
-	agenttest.RegisterProject(t, home, "p1", agenttest.GitRepo(t), "main")
 	fake.Fail("tab.rename", "internal_error", "rename boom")
 	options := base("kid")
-	options.Project = "p1"
+	options.Directory = t.TempDir()
 
 	envelope := spawnRun(t, home, options)
 	if envelope.Outcome != "partial" || envelope.Phase != "label" || !strings.Contains(errorText(envelope), "rename boom") {
@@ -674,11 +462,10 @@ func TestSpawnTabRenameFailureJoinsALaterFailure(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fake := agenttest.NewHerdr(t)
 			home := agenttest.Home(t)
-			agenttest.RegisterProject(t, home, "p1", agenttest.GitRepo(t), "main")
 			fake.Fail("tab.rename", "internal_error", "rename boom")
 			tc.setup(fake)
 			options := base("kid")
-			options.Project = "p1"
+			options.Directory = t.TempDir()
 
 			envelope := spawnRun(t, home, options)
 			message := errorText(envelope)
@@ -696,7 +483,6 @@ func TestSpawnTabRenameFailureJoinsALaterFailure(t *testing.T) {
 func TestSpawnRecordFailureKeepsTheTabRenameError(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	home := agenttest.Home(t)
-	agenttest.RegisterProject(t, home, "p1", agenttest.GitRepo(t), "main")
 	fake.Fail("tab.rename", "internal_error", "rename boom")
 	// A read-only agents directory lets the name check pass and the record
 	// write fail.
@@ -706,7 +492,7 @@ func TestSpawnRecordFailureKeepsTheTabRenameError(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = os.Chmod(agents, 0o755) })
 	options := base("kid")
-	options.Project = "p1"
+	options.Directory = t.TempDir()
 
 	envelope := spawnRun(t, home, options)
 	message := errorText(envelope)

@@ -16,11 +16,9 @@ func New() *cobra.Command {
 		Short: "stop an agent that has a hive record",
 		Args:  cobra.ExactArgs(1),
 	}
-	command.Flags().Bool("remove-worktree", false, "also remove the clean worktree checkout; the branch stays")
 	command.RunE = func(cmd *cobra.Command, args []string) error {
 		return common.Run(cmd, "agent stop", args[0], func(home string, logger *slog.Logger) (output.Envelope, string, error) {
-			remove, _ := cmd.Flags().GetBool("remove-worktree")
-			envelope := agentstop.Run(cmd.Context(), home, agentstop.Options{Name: args[0], RemoveWorktree: remove, Logger: logger})
+			envelope := agentstop.Run(cmd.Context(), home, agentstop.Options{Name: args[0], Logger: logger})
 			return envelope, agentstop.Text(envelope), nil
 		})
 	}

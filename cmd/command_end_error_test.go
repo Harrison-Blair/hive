@@ -15,7 +15,7 @@ func TestCommandEndCarriesTheErrorOfAFailure(t *testing.T) {
 		want    string
 	}{
 		{"failed envelope", []string{"agent", "spawn", "--name", "a", "--model", "m"}, "agent spawn", "--harness"},
-		{"usage error", []string{"project", "register", ""}, "project register", "PATH requires a value"},
+		{"usage error", []string{"worktree", "create", ""}, "worktree create", "BRANCH requires a value"},
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
@@ -43,10 +43,10 @@ func TestCommandEndHasNoErrorOnSuccess(t *testing.T) {
 	home := requestTestHome(t)
 	t.Setenv("HIVE_HOME", home)
 	var output strings.Builder
-	if err := ExecuteWithArgs([]string{"project", "list"}, strings.NewReader(""), &output); err != nil {
-		t.Fatalf("project list: %v\n%s", err, output.String())
+	if err := ExecuteWithArgs([]string{"agent", "list"}, strings.NewReader(""), &output); err != nil {
+		t.Fatalf("agent list: %v\n%s", err, output.String())
 	}
-	for _, event := range agenttest.CommandEvents(t, home, "project list") {
+	for _, event := range agenttest.CommandEvents(t, home, "agent list") {
 		if _, ok := event["error"]; ok && event["msg"] == "command end" {
 			t.Fatalf("command end = %v; want no error", event)
 		}

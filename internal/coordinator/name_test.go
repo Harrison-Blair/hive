@@ -1,137 +1,120 @@
 package coordinator
 
 import (
-	"os"
+	"io"
+	"log/slog"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/agent/agenttest"
 )
 
-// registerProject writes the record of project id with path, as
-// hive project register writes it.
-func registerProject(t *testing.T, home, id, path string) {
-	t.Helper()
-	dir := filepath.Join(home, "projects", id)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	record := `{"id":"` + id + `","path":"` + path + `","base":"main","registered_at":"2026-10-30T00:00:00Z"}`
-	if err := os.WriteFile(filepath.Join(dir, "project.json"), []byte(record), 0o644); err != nil {
-		t.Fatal(err)
-	}
-}
+func discard() *slog.Logger { return slog.New(slog.NewTextHandler(io.Discard, nil)) }
 
-func mkdir(t *testing.T, parts ...string) string {
+// resolve returns the name that ResolveName gives for dir and pane, and fails
+// the test on an error.
+func resolve(t *testing.T, home, dir, pane string) string {
 	t.Helper()
-	dir := filepath.Join(parts...)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	return dir
-}
-
-// nameOf returns the name that ResolveName gives and fails the test on an
-// error.
-func nameOf(t *testing.T, home, dir string) string {
-	t.Helper()
-	name, err := ResolveName(home, dir)
+	name, err := ResolveName(home, dir, pane, discard())
 	if err != nil {
 		t.Fatalf("ResolveName(%s) error = %v; want none", dir, err)
 	}
 	return name
 }
 
-func TestResolveNameUsesTheProjectOfTheCheckout(t *testing.T) {
+func TestResolveNameUsesTheNormalizedDirectoryName(t *testing.T) {
+	agenttest.NewHerdr(t)
 	home := t.TempDir()
-	src := t.TempDir()
-	repo := mkdir(t, src, "hive")
-	registerProject(t, home, "hive", repo)
-	registerProject(t, home, "other", mkdir(t, src, "other"))
-	for _, dir := range []string{repo, mkdir(t, repo, "internal", "coordinator"), repo + "/./internal/../"} {
-		if got := nameOf(t, home, dir); got != "hive-coordinator" {
-			t.Errorf("ResolveName(%s) = %q; want hive-coordinator", dir, got)
+	cases := []struct{ dir, want string }{
+		{"/src/hive", "hive-coordinator"},
+		{"/src/hive/", "hive-coordinator"},
+		{"/src/My Repo", "my-repo-coordinator"},
+		{"/src/ror.desktop", "ror-desktop-coordinator"},
+		{"/src/__x__", "__x__-coordinator"},
+		{"/src/--App--", "app-coordinator"},
+		{"/src/日本", "coordinator"},
+		{"/", "coordinator"},
+	}
+	for _, test := range cases {
+		if got := resolve(t, home, test.dir, "w1:p1"); got != test.want {
+			t.Errorf("ResolveName(%s) = %q; want %q", test.dir, got, test.want)
 		}
 	}
 }
 
-func TestResolveNameFollowsSymlinks(t *testing.T) {
+func TestResolveNameFitsTheAgentNameLimit(t *testing.T) {
+	agenttest.NewHerdr(t)
 	home := t.TempDir()
-	src := t.TempDir()
-	repo := mkdir(t, src, "real", "hive")
-	mkdir(t, repo, "sub")
-	link := filepath.Join(src, "link")
-	if err := os.Symlink(filepath.Join(src, "real"), link); err != nil {
-		t.Fatal(err)
-	}
-	// The record holds the link path, and the start is below the real path.
-	registerProject(t, home, "hive", filepath.Join(link, "hive"))
-	if got := nameOf(t, home, filepath.Join(repo, "sub")); got != "hive-coordinator" {
-		t.Errorf("ResolveName(real path) = %q; want hive-coordinator", got)
-	}
-	// The start is below the link, and the record holds the real path.
-	home2 := t.TempDir()
-	registerProject(t, home2, "hive", repo)
-	if got := nameOf(t, home2, filepath.Join(link, "hive", "sub")); got != "hive-coordinator" {
-		t.Errorf("ResolveName(link path) = %q; want hive-coordinator", got)
+	dir := filepath.Join("/src", strings.Repeat("a", 100))
+	got := resolve(t, home, dir, "w1:p1")
+	if len(got) != 64 || !strings.HasSuffix(got, "-coordinator") || agent.ValidateName(got) != nil {
+		t.Fatalf("ResolveName = %q (%d bytes); want a valid 64 byte name with -coordinator", got, len(got))
 	}
 }
 
-func TestResolveNameFallsBackOutsideAProject(t *testing.T) {
+// TestResolveNameAddsANumberWhenALiveAgentHasTheName proves that a name of a
+// record in another live pane gets the next free number before -coordinator,
+// while a record of a gone pane or of the own pane leaves the name free.
+func TestResolveNameAddsANumberWhenALiveAgentHasTheName(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
 	home := t.TempDir()
-	src := t.TempDir()
-	registerProject(t, home, "hive", mkdir(t, src, "hive"))
-	for name, dir := range map[string]string{
-		"unrelated":      t.TempDir(),
-		"sibling prefix": mkdir(t, src, "hive-old", "sub"),
-		"parent":         src,
-	} {
-		if got := nameOf(t, home, dir); got != Name {
-			t.Errorf("%s: ResolveName(%s) = %q; want %s", name, dir, got, Name)
+	ws, mine := fake.AddWorkspace("w", home, false)
+	other := fake.AddPane(ws.ID, home)
+	third := fake.AddPane(ws.ID, home)
+	save := func(name, pane string) {
+		t.Helper()
+		if err := agent.Save(home, agent.Record{Name: name, Pane: pane}); err != nil {
+			t.Fatal(err)
 		}
 	}
-	if got := nameOf(t, t.TempDir(), src); got != Name {
-		t.Errorf("no projects: ResolveName = %q; want %s", got, Name)
+	save("app-coordinator", other.ID)
+	if got := resolve(t, home, "/src/app", mine.ID); got != "app-2-coordinator" {
+		t.Fatalf("ResolveName = %q; want app-2-coordinator", got)
+	}
+	save("app-2-coordinator", third.ID)
+	if got := resolve(t, home, "/src/app", mine.ID); got != "app-3-coordinator" {
+		t.Fatalf("ResolveName = %q; want app-3-coordinator", got)
+	}
+	save("app-3-coordinator", "w9:p9")
+	if got := resolve(t, home, "/src/app", mine.ID); got != "app-3-coordinator" {
+		t.Fatalf("ResolveName = %q; want app-3-coordinator, the record of a gone pane", got)
+	}
+	save("app-coordinator", mine.ID)
+	if got := resolve(t, home, "/src/app", mine.ID); got != "app-coordinator" {
+		t.Fatalf("ResolveName = %q; want app-coordinator, the record of the own pane", got)
+	}
+	save("coordinator", other.ID)
+	if got := resolve(t, home, "/", mine.ID); got != "coordinator-2" {
+		t.Fatalf("ResolveName(/) = %q; want coordinator-2", got)
 	}
 }
 
-func TestResolveNamePicksTheInnermostProject(t *testing.T) {
+func TestResolveNameKeepsTheNumberedNameInTheLimit(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
 	home := t.TempDir()
-	outer := mkdir(t, t.TempDir(), "outer")
-	inner := mkdir(t, outer, "vendor", "inner")
-	registerProject(t, home, "outer", outer)
-	registerProject(t, home, "inner", inner)
-	if got := nameOf(t, home, mkdir(t, inner, "x")); got != "inner-coordinator" {
-		t.Errorf("ResolveName(inner) = %q; want inner-coordinator", got)
-	}
-	if got := nameOf(t, home, mkdir(t, outer, "vendor")); got != "outer-coordinator" {
-		t.Errorf("ResolveName(outer) = %q; want outer-coordinator", got)
-	}
-}
-
-func TestResolveNameFallsBackWhenAmbiguous(t *testing.T) {
-	home := t.TempDir()
-	src := t.TempDir()
-	repo := mkdir(t, src, "repo")
-	link := filepath.Join(src, "alias")
-	if err := os.Symlink(repo, link); err != nil {
+	ws, mine := fake.AddWorkspace("w", home, false)
+	other := fake.AddPane(ws.ID, home)
+	dir := filepath.Join("/src", strings.Repeat("a", 100))
+	first := resolve(t, home, dir, mine.ID)
+	if err := agent.Save(home, agent.Record{Name: first, Pane: other.ID}); err != nil {
 		t.Fatal(err)
 	}
-	// Two records name the same checkout through different paths.
-	registerProject(t, home, "alpha", repo)
-	registerProject(t, home, "beta", link)
-	got, err := ResolveName(home, repo)
-	if got != Name || err == nil || !strings.Contains(err.Error(), "alpha") || !strings.Contains(err.Error(), "beta") {
-		t.Fatalf("ResolveName = %q, %v; want %s and an error that names both projects", got, err, Name)
+	got := resolve(t, home, dir, mine.ID)
+	if len(got) > 64 || !strings.HasSuffix(got, "-2-coordinator") || agent.ValidateName(got) != nil {
+		t.Fatalf("ResolveName = %q (%d bytes); want a valid name of at most 64 bytes with -2-coordinator", got, len(got))
 	}
 }
 
-func TestResolveNameFallsBackWhenTheRegistryIsUnreadable(t *testing.T) {
+func TestResolveNameFailsWhenHerdrFails(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
 	home := t.TempDir()
-	dir := mkdir(t, home, "projects", "broken")
-	if err := os.WriteFile(filepath.Join(dir, "project.json"), []byte("{"), 0o644); err != nil {
+	if err := agent.Save(home, agent.Record{Name: "app-coordinator", Pane: "w1:p1"}); err != nil {
 		t.Fatal(err)
 	}
-	if got, err := ResolveName(home, t.TempDir()); got != Name || err == nil {
-		t.Fatalf("ResolveName = %q, %v; want %s and an error", got, err, Name)
+	fake.Fail("pane.get", "internal", "boom")
+	if _, err := ResolveName(home, "/src/app", "w2:p2", discard()); err == nil || !strings.Contains(err.Error(), "boom") {
+		t.Fatalf("ResolveName error = %v; want the herdr error", err)
 	}
 }

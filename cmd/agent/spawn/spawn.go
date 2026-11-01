@@ -24,8 +24,9 @@ func New() *cobra.Command {
 	flags.String("model", "", "model name (required)")
 	flags.String("prompt", "", "first prompt text")
 	flags.String("prompt-file", "", "file with the first prompt text")
-	flags.String("project", "", "project ID: start in the checkout workspace of the project")
-	flags.String("worktree", "", "worktree and branch name: start in a new worktree of --project")
+	flags.String("branch", "", "start in the checkout of the branch; make one if none")
+	flags.String("base", "", "start commit of a new branch (default: HEAD)")
+	flags.String("directory", "", "start in this existing directory")
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		value := func(name string) string { text, _ := cmd.Flags().GetString(name); return text }
 		return common.Run(cmd, "agent spawn", value("name"), func(home string, logger *slog.Logger) (output.Envelope, string, error) {
@@ -39,8 +40,9 @@ func New() *cobra.Command {
 				Model:      value("model"),
 				Prompt:     value("prompt"),
 				PromptFile: value("prompt-file"),
-				Project:    value("project"),
-				Worktree:   value("worktree"),
+				Branch:     value("branch"),
+				Base:       value("base"),
+				Directory:  value("directory"),
 				CallerPane: os.Getenv("HERDR_PANE_ID"),
 				Cwd:        cwd,
 				Guide:      common.Guide(cmd.Root()),

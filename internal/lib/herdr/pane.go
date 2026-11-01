@@ -50,32 +50,39 @@ func PaneGet(ctx context.Context, paneID string, opts ...Option) (PaneInfo, erro
 	return pane, nil
 }
 
+// PaneList lists the panes of one workspace, or of each workspace when
+// workspaceID is empty.
+func PaneList(ctx context.Context, workspaceID string, opts ...Option) ([]PaneInfo, error) {
+	params := struct {
+		WorkspaceID string `json:"workspace_id,omitempty"`
+	}{workspaceID}
+	var result struct {
+		Type  *string           `json:"type"`
+		Panes []json.RawMessage `json:"panes"`
+	}
+	if err := Call(ctx, "pane.list", params, &result, opts...); err != nil {
+		return nil, err
+	}
+	if result.Type == nil || *result.Type != "pane_list" {
+		return nil, fmt.Errorf("bad reply: result type %q, want pane_list", stringValue(result.Type))
+	}
+	panes := make([]PaneInfo, 0, len(result.Panes))
+	for _, raw := range result.Panes {
+		pane, err := decodePaneInfo(raw)
+		if err != nil {
+			return nil, fmt.Errorf("bad reply: %s", err)
+		}
+		panes = append(panes, pane)
+	}
+	return panes, nil
+}
+
 // PaneClose closes one pane.
 func PaneClose(ctx context.Context, paneID string, opts ...Option) error {
 	var result struct {
 		Type *string `json:"type"`
 	}
 	if err := Call(ctx, "pane.close", PaneTarget{PaneID: paneID}, &result, opts...); err != nil {
-		return err
-	}
-	if result.Type == nil || *result.Type != "ok" {
-		return fmt.Errorf("bad reply: result type %q, want ok", stringValue(result.Type))
-	}
-	return nil
-}
-
-// PaneRun types command into the shell of a pane and presses Enter. Success
-// means that herdr accepted the input, not that the command ran.
-func PaneRun(ctx context.Context, paneID, command string, opts ...Option) error {
-	params := struct {
-		PaneID string   `json:"pane_id"`
-		Text   string   `json:"text"`
-		Keys   []string `json:"keys"`
-	}{paneID, command, []string{"enter"}}
-	var result struct {
-		Type *string `json:"type"`
-	}
-	if err := Call(ctx, "pane.send_input", params, &result, opts...); err != nil {
 		return err
 	}
 	if result.Type == nil || *result.Type != "ok" {

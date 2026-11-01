@@ -18,8 +18,8 @@ import (
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 )
 
-// Name is the agent name of the coordinator record outside a registered
-// project. In the checkout of project ID the name is ID-coordinator.
+// Name is the agent name of the coordinator record when the start directory
+// gives no name. In directory DIR the name is DIR-coordinator.
 const Name = "coordinator"
 
 // Options holds the inputs of one bare hive run.
@@ -58,15 +58,17 @@ func Main(home, dir, guideText string, in io.Reader, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	name, err := ResolveName(home, dir)
+	pane := os.Getenv("HERDR_PANE_ID")
+	name, err := ResolveName(home, dir, pane, logger.With("command", "hive"))
 	if err != nil {
-		logger.Warn("project lookup failed", "command", "hive", "agent_id", name, "cwd", dir, "error", err.Error())
+		logger.Error("coordinator name failed", "command", "hive", "cwd", dir, "error", err.Error())
+		return err
 	}
 	return Run(Options{
 		Home:   home,
 		Dir:    dir,
 		Name:   name,
-		Pane:   os.Getenv("HERDR_PANE_ID"),
+		Pane:   pane,
 		Pick:   NewPick(in, out, ExecRunner, logger.With("command", "hive", "agent_id", name)),
 		Exec:   ExecHarness,
 		Guide:  guideText,
@@ -77,14 +79,12 @@ func Main(home, dir, guideText string, in io.Reader, out io.Writer) error {
 
 // Run shows the picker, saves the choice and the coordinator record, labels
 // the tab of the pane with the coordinator name, and then replaces this
-// process with the harness. It fails before the picker when a live agent in
-// another pane has the name. A quit returns nil and writes nothing.
+// process with the harness. When a live agent in another pane has the name
+// by then, for example another bare hive that resolved the same name, the
+// record gets the next free name of the directory. A quit returns nil and
+// writes nothing.
 func Run(opts Options) error {
 	logger := opts.Logger.With("command", "hive", "agent_id", opts.Name)
-	if err := checkName(opts.Home, opts.Name, opts.Pane, logger); err != nil {
-		logger.Error("coordinator name taken", "error", err.Error())
-		return err
-	}
 	last, hasLast, err := LoadChoice(opts.Home)
 	if err != nil {
 		logger.Warn("last choice unreadable", "error", err.Error())
@@ -104,25 +104,44 @@ func Run(opts Options) error {
 	if err != nil {
 		return err
 	}
-	if err := SaveChoice(opts.Home, choice); err != nil {
-		return err
-	}
-	record := agent.Record{
-		Name:      opts.Name,
-		Pane:      opts.Pane,
-		Harness:   choice.Harness,
-		Model:     choice.Model,
-		Cwd:       opts.Dir,
-		StartedAt: opts.Now(),
-	}
-	if err := agent.Save(opts.Home, record); err != nil {
+	name := opts.Name
+	// Another bare hive can take the name after ResolveName, also while the
+	// picker is open. Under the layout lock, a taken name gives the next free
+	// name of the directory.
+	err = agent.Hold(opts.Home, func() error {
+		if err := SaveChoice(opts.Home, choice); err != nil {
+			return err
+		}
+		if checkName(opts.Home, name, opts.Pane, logger) != nil {
+			free, err := ResolveName(opts.Home, opts.Dir, opts.Pane, logger)
+			if err != nil {
+				return err
+			}
+			logger.Info("coordinator name changed", "from", name, "to", free)
+			name = free
+			logger = opts.Logger.With("command", "hive", "agent_id", name)
+		}
+		record := agent.Record{
+			Name:      name,
+			Pane:      opts.Pane,
+			Harness:   choice.Harness,
+			Model:     choice.Model,
+			Cwd:       opts.Dir,
+			StartedAt: opts.Now(),
+		}
+		if err := agent.Save(opts.Home, record); err != nil {
+			return err
+		}
+		logger.Info("coordinator record saved", "pane", record.Pane, "harness", record.Harness, "model", record.Model)
+		removeOldCoordinators(opts.Home, name, opts.Pane, logger)
+		return nil
+	})
+	if err != nil {
 		logger.Error("coordinator record save failed", "error", err.Error())
 		return err
 	}
-	logger.Info("coordinator record saved", "pane", record.Pane, "harness", record.Harness, "model", record.Model)
-	removeOldCoordinators(opts.Home, opts.Name, opts.Pane, logger)
 	if opts.Pane != "" {
-		labelTab(opts.Pane, opts.Name, logger)
+		labelTab(opts.Pane, name, logger)
 	}
 	binary := profile.ProcessNames()[0]
 	inbox, err := profile.InboxArgs(opts.Home)

@@ -1,9 +1,9 @@
 ---
 title: "A spawn worktree name cannot contain a slash"
 description: "hive agent spawn --worktree rejects a name with /, so a branch such as friction/SLUG needs a push with HEAD:friction/SLUG"
-status: "Open"
+status: "Resolved 2026-11-01"
 opened: 2026-10-30
-decision: ""
+decision: "The pull request that removed the project registry replaced --project and --worktree with --branch, which takes each valid Git branch name, for example feat/x; TestSpawnBranchMakesTheCheckoutAndANewWorkspaceOnIt spawns on feat/x"
 ---
 
 **Issue:** `hive agent spawn --worktree NAME` checks NAME with the agent name
