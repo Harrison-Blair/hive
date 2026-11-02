@@ -313,3 +313,45 @@ func TestListFailureKeepsTheRemovedEffects(t *testing.T) {
 		t.Fatal("record a-dead stays")
 	}
 }
+
+func TestListWaitsForTheLayoutLockOncePerCall(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	fake.AddWorkspace("mine", "", false)
+	for _, name := range []string{"a", "b", "c", "d"} {
+		gone := fake.AddPane("w1", "")
+		save(t, home, agent.Record{Name: name, Pane: gone.ID, Harness: "claude", StartedAt: now})
+		fake.ClosePane(gone.ID)
+	}
+	// A spawn holds the layout lock through the whole list.
+	held := make(chan struct{})
+	release := make(chan struct{})
+	done := make(chan error, 1)
+	go func() {
+		done <- agent.Hold(home, func() error {
+			close(held)
+			<-release
+			return nil
+		})
+	}()
+	<-held
+	defer func() {
+		close(release)
+		if err := <-done; err != nil {
+			t.Error(err)
+		}
+	}()
+
+	// The graph gives each refresh 5 s.
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	started := time.Now()
+	envelope := Run(ctx, home, Options{Now: func() time.Time { return now }})
+	elapsed := time.Since(started)
+	if envelope.Outcome != "ok" || len(envelope.Effects) != 0 || strings.Join(names(envelope), ",") != "a,b,c,d" {
+		t.Fatalf("envelope = %+v; want ok with each row kept", envelope)
+	}
+	if elapsed > 3*time.Second {
+		t.Fatalf("list took %s; want one lock wait of at most 2 s", elapsed)
+	}
+}

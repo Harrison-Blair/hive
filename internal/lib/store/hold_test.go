@@ -22,7 +22,7 @@ func TestHoldRunsOneHolderAtATimeAndAllowsWrites(t *testing.T) {
 		})
 	}()
 	<-inside
-	if err := s.Hold("layout", 50*time.Millisecond, func() error { return nil }); !errors.Is(err, errLockTimeout) {
+	if err := s.Hold("layout", 50*time.Millisecond, func() error { return nil }); !errors.Is(err, ErrLockTimeout) {
 		t.Fatalf("second Hold while held = %v; want a lock timeout", err)
 	}
 	close(release)

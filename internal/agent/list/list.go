@@ -3,6 +3,7 @@ package list
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 // Options holds the values of one list.
@@ -53,6 +55,9 @@ func Run(ctx context.Context, home string, options Options) output.Envelope {
 	}
 	entries := make([]Entry, 0, len(records))
 	effects := []output.Effect{}
+	// busy turns true at the first lock timeout of a removal. The list then
+	// tries no more removals, so one call waits for the layout lock once.
+	busy := false
 	for _, record := range records {
 		status, session, reason := "gone", "", ""
 		pane, err := herdr.PaneGet(ctx, record.Pane, herdr.WithLogger(logger))
@@ -69,9 +74,13 @@ func Run(ctx context.Context, home string, options Options) output.Envelope {
 			failed.Effects = effects
 			return failed
 		}
-		if reason != "" && remove(home, record, reason, logger) {
-			effects = append(effects, output.Effect{Resource: "record", Path: "agents/" + record.Name + ".json", Action: "removed"})
-			continue
+		if reason != "" && !busy {
+			removed, err := remove(home, record, reason, logger)
+			busy = errors.Is(err, store.ErrLockTimeout)
+			if removed {
+				effects = append(effects, output.Effect{Resource: "record", Path: "agents/" + record.Name + ".json", Action: "removed"})
+				continue
+			}
 		}
 		entries = append(entries, Entry{Record: record, Status: status, HarnessSessionID: session})
 	}
@@ -108,9 +117,10 @@ func deadReason(ctx context.Context, record agent.Record, now time.Time, logger 
 	return reasonNoHarness
 }
 
-// remove deletes record when its file still names the same pane, and logs
-// the result. It reports whether it deleted the record.
-func remove(home string, record agent.Record, reason string, logger *slog.Logger) bool {
+// remove deletes record when its file still holds the same agent, and logs
+// the result. It reports whether it deleted the record, and the error of the
+// removal.
+func remove(home string, record agent.Record, reason string, logger *slog.Logger) (bool, error) {
 	removed, err := agent.RemoveIfSame(home, record)
 	switch {
 	case err != nil:
@@ -120,7 +130,7 @@ func remove(home string, record agent.Record, reason string, logger *slog.Logger
 	default:
 		logger.Info("agent record kept", "command", "agent list", "target", record.Name, "pane", record.Pane, "reason", "record replaced")
 	}
-	return removed
+	return removed, err
 }
 
 // Text renders the entries as a table.
