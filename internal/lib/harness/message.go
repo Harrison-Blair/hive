@@ -27,21 +27,26 @@ const writeTimeout = 5 * time.Second
 // permission prompts holds a message from an unknown sender by default.
 const claudeInbound = `{"crossSessionInbound":"accept"}`
 
+// Running reports whether pane has a process of profile among its foreground
+// processes. It does not use the agent status of herdr, which can be unknown
+// for a live harness.
+func Running(ctx context.Context, profile Profile, paneID string, logger *slog.Logger) (bool, error) {
+	info, err := processInfo(ctx, profile, paneID, logger)
+	if err != nil {
+		return false, err
+	}
+	return len(processesOf(profile, info)) > 0, nil
+}
+
 // harnessProcess returns the process of profile in the foreground group of
 // pane. It prefers the group leader, because the harness can start child
 // processes with the same name.
 func harnessProcess(ctx context.Context, profile Profile, paneID string, logger *slog.Logger) (herdr.Process, error) {
-	opts := []herdr.Option{herdr.WithLogger(logger), herdr.WithReplyRedact(func(reply []byte) map[string]string { return guideValues(profile, reply) })}
-	info, err := herdr.PaneProcessInfo(ctx, paneID, opts...)
+	info, err := processInfo(ctx, profile, paneID, logger)
 	if err != nil {
 		return herdr.Process{}, fmt.Errorf("process info of pane %s: %w", paneID, err)
 	}
-	var found []herdr.Process
-	for _, process := range info.ForegroundProcesses {
-		if slices.Contains(profile.ProcessNames(), process.Name) {
-			found = append(found, process)
-		}
-	}
+	found := processesOf(profile, info)
 	if len(found) == 0 {
 		return herdr.Process{}, fmt.Errorf("no %s process in pane %s", profile.Kind(), paneID)
 	}
@@ -51,6 +56,25 @@ func harnessProcess(ctx context.Context, profile Profile, paneID string, logger 
 		}
 	}
 	return found[0], nil
+}
+
+// processInfo reads the processes of pane and logs the reply without the
+// guide argument of profile.
+func processInfo(ctx context.Context, profile Profile, paneID string, logger *slog.Logger) (herdr.ProcessInfo, error) {
+	opts := []herdr.Option{herdr.WithLogger(logger), herdr.WithReplyRedact(func(reply []byte) map[string]string { return guideValues(profile, reply) })}
+	return herdr.PaneProcessInfo(ctx, paneID, opts...)
+}
+
+// processesOf returns each foreground process of info whose name is a
+// process name of profile.
+func processesOf(profile Profile, info herdr.ProcessInfo) []herdr.Process {
+	var found []herdr.Process
+	for _, process := range info.ForegroundProcesses {
+		if slices.Contains(profile.ProcessNames(), process.Name) {
+			found = append(found, process)
+		}
+	}
+	return found
 }
 
 // guideValues returns each guide argument of profile in the argv of the

@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 // ErrNotFound reports that no record matches the name or the pane.
@@ -150,6 +152,42 @@ func Remove(home, name string) error {
 		return err
 	}
 	return nil
+}
+
+// removeWait bounds the wait of RemoveIfPane for the layout lock. It is short,
+// because a spawn holds that lock until its harness starts, and a list or a
+// graph refresh must not stall that long.
+const removeWait = 2 * time.Second
+
+// RemoveIfPane deletes the record of name when it still names pane. It holds
+// the layout lock, which each writer of records holds, so a record that a
+// spawn or a bare hive saved for the name in between stays. It reports
+// whether it deleted the record. A missing record is not an error.
+func RemoveIfPane(home, name, pane string) (bool, error) {
+	target, err := path(home, name)
+	if err != nil {
+		return false, err
+	}
+	records, err := store.Open(home)
+	if err != nil {
+		return false, err
+	}
+	removed := false
+	err = records.Hold("layout", removeWait, func() error {
+		record, err := read(target)
+		if errors.Is(err, ErrNotFound) {
+			return nil
+		}
+		if err != nil || record.Pane != pane {
+			return err
+		}
+		if err := os.Remove(target); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		removed = true
+		return nil
+	})
+	return removed, err
 }
 
 // FindByPane returns the record whose pane is pane, or ErrNotFound.
