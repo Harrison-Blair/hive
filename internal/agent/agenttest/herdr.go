@@ -44,8 +44,11 @@ type Pane struct {
 	Status        string
 	Name          string
 	Kind          string
-	Args          []string
-	Env           map[string]string
+	// Process is the name of the foreground process that pane.process_info
+	// gives, or empty for Kind.
+	Process string
+	Args    []string
+	Env     map[string]string
 	// StartEnv is a copy of Env when agent.start ran in the pane.
 	StartEnv map[string]string
 	Prompts  []string
@@ -153,6 +156,14 @@ func (h *Herdr) SetArgs(paneID string, args []string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	h.pane(paneID).Args = args
+}
+
+// SetProcess sets the name of the foreground process of one pane, for a pane
+// whose process differs from the agent kind that herdr reports.
+func (h *Herdr) SetProcess(paneID, name string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.pane(paneID).Process = name
 }
 
 // SetSession sets the agent session ID of one pane.
@@ -478,9 +489,13 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 			return nil, failed
 		}
 		processes := []any{}
-		if pane.Kind != "" {
-			argv := append([]string{pane.Kind}, pane.Args...)
-			processes = append(processes, map[string]any{"pid": pane.PID, "name": pane.Kind, "argv": argv})
+		name := pane.Process
+		if name == "" {
+			name = pane.Kind
+		}
+		if name != "" {
+			argv := append([]string{name}, pane.Args...)
+			processes = append(processes, map[string]any{"pid": pane.PID, "name": name, "argv": argv})
 		}
 		return map[string]any{"type": "pane_process_info", "process_info": map[string]any{
 			"pane_id": pane.ID, "shell_pid": pane.PID - 1, "foreground_process_group_id": pane.PID, "foreground_processes": processes,

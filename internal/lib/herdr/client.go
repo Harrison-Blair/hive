@@ -42,8 +42,9 @@ type callOptions struct {
 	deadline time.Duration
 	logger   *slog.Logger
 	redact   []redaction
-	// findRedact gives more values to hide, found in the reply.
-	findRedact []func(reply []byte) map[string]string
+	// logReply gives the reply as the reply log event shows it, or is nil
+	// for the reply unchanged.
+	logReply func(reply []byte) []byte
 }
 
 // redaction is one value that the request and reply log events hide.
@@ -74,12 +75,10 @@ func WithRedact(value, placeholder string) Option {
 	}
 }
 
-// WithReplyRedact makes the reply log event of one call hide each value that
-// find returns for the reply, with its placeholder. Use it when only the reply
-// shows which value is secret.
-func WithReplyRedact(find func(reply []byte) map[string]string) Option {
+// withLogReply makes the reply log event of one call show logReply(reply).
+func withLogReply(logReply func(reply []byte) []byte) Option {
 	return func(options *callOptions) {
-		options.findRedact = append(options.findRedact, find)
+		options.logReply = logReply
 	}
 }
 
@@ -184,7 +183,11 @@ func call(ctx context.Context, method string, params, result any, check func() e
 	if err != nil {
 		return fail(callFailure(callCtx, err))
 	}
-	logEvent(options.logger, "herdr reply", requestID, method, started, redact(reply, replyRedactions(reply, options)))
+	logged := reply
+	if options.logReply != nil {
+		logged = options.logReply(reply)
+	}
+	logEvent(options.logger, "herdr reply", requestID, method, started, redact(logged, options.redact))
 	if err := settleReply(requestID, reply, result); err != nil {
 		return fail(err)
 	}
@@ -371,18 +374,6 @@ func callFailure(ctx context.Context, err error) error {
 		return context.DeadlineExceeded
 	}
 	return err
-}
-
-// replyRedactions returns the redactions of options and the values that its
-// find functions return for reply.
-func replyRedactions(reply []byte, options callOptions) []redaction {
-	redactions := options.redact
-	for _, find := range options.findRedact {
-		for value, placeholder := range find(reply) {
-			redactions = append(redactions, redaction{value, placeholder})
-		}
-	}
-	return redactions
 }
 
 // redact replaces each value in the JSON body with its placeholder. A value

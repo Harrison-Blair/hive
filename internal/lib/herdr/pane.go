@@ -176,11 +176,15 @@ type Process struct {
 }
 
 // PaneProcessInfo reads the shell and the foreground processes of one pane.
+// Its reply log event shows only the PID and the name of each foreground
+// process, because the argv and the command line of any process in the pane
+// can hold a secret.
 func PaneProcessInfo(ctx context.Context, paneID string, opts ...Option) (ProcessInfo, error) {
 	var result struct {
 		Type        *string     `json:"type"`
 		ProcessInfo ProcessInfo `json:"process_info"`
 	}
+	opts = append(opts, withLogReply(processNamesOnly))
 	if err := Call(ctx, "pane.process_info", PaneTarget{PaneID: paneID}, &result, opts...); err != nil {
 		return ProcessInfo{}, err
 	}
@@ -188,4 +192,44 @@ func PaneProcessInfo(ctx context.Context, paneID string, opts ...Option) (Proces
 		return ProcessInfo{}, fmt.Errorf("bad reply: result type %q, want pane_process_info", stringValue(result.Type))
 	}
 	return result.ProcessInfo, nil
+}
+
+// processNamesOnly returns a pane.process_info reply with each foreground
+// process cut to its PID and name. An error reply stays as it is. A reply
+// that does not parse gives a note in place of the reply.
+func processNamesOnly(reply []byte) []byte {
+	const unparsed = `"<unparsed pane.process_info reply>"`
+	var parsed struct {
+		ID     json.RawMessage `json:"id"`
+		Result *struct {
+			Type        string      `json:"type"`
+			ProcessInfo ProcessInfo `json:"process_info"`
+		} `json:"result"`
+	}
+	if json.Unmarshal(reply, &parsed) != nil {
+		return []byte(unparsed)
+	}
+	if parsed.Result == nil {
+		return reply
+	}
+	type named struct {
+		PID  int    `json:"pid"`
+		Name string `json:"name"`
+	}
+	info := parsed.Result.ProcessInfo
+	processes := make([]named, 0, len(info.ForegroundProcesses))
+	for _, process := range info.ForegroundProcesses {
+		processes = append(processes, named{process.PID, process.Name})
+	}
+	out, err := json.Marshal(map[string]any{"id": parsed.ID, "result": map[string]any{
+		"type": parsed.Result.Type,
+		"process_info": map[string]any{
+			"pane_id": info.PaneID, "shell_pid": info.ShellPID,
+			"foreground_process_group_id": info.ForegroundProcessGroupID, "foreground_processes": processes,
+		},
+	}})
+	if err != nil {
+		return []byte(unparsed)
+	}
+	return out
 }

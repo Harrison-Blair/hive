@@ -234,8 +234,8 @@ func TestWithLockAbandonedWaitReleases(t *testing.T) {
 		ran = true
 		return nil
 	})
-	if !errors.Is(err, errLockTimeout) {
-		t.Fatalf("withLock() error = %v; want errLockTimeout", err)
+	if !errors.Is(err, ErrLockTimeout) {
+		t.Fatalf("withLock() error = %v; want ErrLockTimeout", err)
 	}
 	release()
 

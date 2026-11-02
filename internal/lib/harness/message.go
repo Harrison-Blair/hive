@@ -2,7 +2,6 @@ package harness
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -12,10 +11,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
-	"strings"
 	"time"
 
-	"github.com/Harrison-Blair/hive/internal/guide"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 )
 
@@ -27,21 +24,26 @@ const writeTimeout = 5 * time.Second
 // permission prompts holds a message from an unknown sender by default.
 const claudeInbound = `{"crossSessionInbound":"accept"}`
 
+// Running reports whether pane has a process of profile among its foreground
+// processes. It does not use the agent status of herdr, which can be unknown
+// for a live harness.
+func Running(ctx context.Context, profile Profile, paneID string, logger *slog.Logger) (bool, error) {
+	info, err := herdr.PaneProcessInfo(ctx, paneID, herdr.WithLogger(logger))
+	if err != nil {
+		return false, err
+	}
+	return len(processesOf(profile, info)) > 0, nil
+}
+
 // harnessProcess returns the process of profile in the foreground group of
 // pane. It prefers the group leader, because the harness can start child
 // processes with the same name.
 func harnessProcess(ctx context.Context, profile Profile, paneID string, logger *slog.Logger) (herdr.Process, error) {
-	opts := []herdr.Option{herdr.WithLogger(logger), herdr.WithReplyRedact(func(reply []byte) map[string]string { return guideValues(profile, reply) })}
-	info, err := herdr.PaneProcessInfo(ctx, paneID, opts...)
+	info, err := herdr.PaneProcessInfo(ctx, paneID, herdr.WithLogger(logger))
 	if err != nil {
 		return herdr.Process{}, fmt.Errorf("process info of pane %s: %w", paneID, err)
 	}
-	var found []herdr.Process
-	for _, process := range info.ForegroundProcesses {
-		if slices.Contains(profile.ProcessNames(), process.Name) {
-			found = append(found, process)
-		}
-	}
+	found := processesOf(profile, info)
 	if len(found) == 0 {
 		return herdr.Process{}, fmt.Errorf("no %s process in pane %s", profile.Kind(), paneID)
 	}
@@ -53,34 +55,16 @@ func harnessProcess(ctx context.Context, profile Profile, paneID string, logger 
 	return found[0], nil
 }
 
-// guideValues returns each guide argument of profile in the argv of the
-// processes of a pane.process_info reply, with its placeholder, so that the
-// reply log event does not carry the guide.
-func guideValues(profile Profile, reply []byte) map[string]string {
-	const mark = "GUIDE"
-	probe := profile.GuideArgs(mark)
-	if len(probe) != 2 {
-		return nil
-	}
-	flag := probe[0]
-	prefix, _, _ := strings.Cut(probe[1], mark)
-	var parsed struct {
-		Result struct {
-			ProcessInfo herdr.ProcessInfo `json:"process_info"`
-		} `json:"result"`
-	}
-	if json.Unmarshal(reply, &parsed) != nil {
-		return nil
-	}
-	values := map[string]string{}
-	for _, process := range parsed.Result.ProcessInfo.ForegroundProcesses {
-		for index := 0; index+1 < len(process.Argv); index++ {
-			if value := process.Argv[index+1]; process.Argv[index] == flag && strings.HasPrefix(value, prefix) {
-				values[value] = guide.Placeholder(value)
-			}
+// processesOf returns each foreground process of info whose name is a
+// process name of profile.
+func processesOf(profile Profile, info herdr.ProcessInfo) []herdr.Process {
+	var found []herdr.Process
+	for _, process := range info.ForegroundProcesses {
+		if slices.Contains(profile.ProcessNames(), process.Name) {
+			found = append(found, process)
 		}
 	}
-	return values
+	return found
 }
 
 // hasArgPair reports whether argv holds name followed by value.

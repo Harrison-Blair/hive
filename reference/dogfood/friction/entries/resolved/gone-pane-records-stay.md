@@ -1,9 +1,9 @@
 ---
 title: "The record of a closed pane stays until a stop"
 description: "When a pane closes without hive agent stop, its agent record stays, and each agent list and each graph refresh queries the gone pane again"
-status: "Open"
+status: "Resolved 2026-11-02"
 opened: 2026-11-02
-decision: ""
+decision: "hive agent list, and so each graph refresh, deletes the record of a gone pane, and of a pane that runs no process of the record harness when the record is at least 60 s old, under the layout lock and only when the file still names the same pane"
 ---
 
 **Issue:** When the pane of an agent closes without `hive agent stop`, for

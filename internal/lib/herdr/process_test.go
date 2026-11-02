@@ -1,8 +1,11 @@
 package herdr
 
 import (
+	"bytes"
 	"context"
+	"log/slog"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -47,5 +50,28 @@ func TestAgentWaitRequestAndReply(t *testing.T) {
 	requests := server.recorded("agent.wait")
 	if want := `{"target":"w1:p1","until":["working"],"timeout_ms":500}`; len(requests) != 1 || requests[0].Params != want {
 		t.Fatalf("requests = %#v; want params %s", requests, want)
+	}
+}
+
+func TestPaneProcessInfoLogsNoArgv(t *testing.T) {
+	server := newFakeServer(t)
+	server.scriptResult("pane.process_info", `{"type":"pane_process_info","process_info":{"pane_id":"w2:p1","shell_pid":1,"foreground_process_group_id":2,"foreground_processes":[{"argv":["curl","-H","Authorization: Bearer s3cr3t"],"cmdline":"curl -H Authorization: Bearer s3cr3t","cwd":"/home/u","name":"curl","pid":2}]}}`)
+	var logs bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	info, err := PaneProcessInfo(context.Background(), "w2:p1", WithLogger(logger))
+	if err != nil {
+		t.Fatalf("PaneProcessInfo error = %v", err)
+	}
+	if got := info.ForegroundProcesses[0].Argv; len(got) != 3 || got[2] != "Authorization: Bearer s3cr3t" {
+		t.Fatalf("argv = %q; want it unchanged in the result", got)
+	}
+	text := logs.String()
+	if strings.Contains(text, "s3cr3t") {
+		t.Fatalf("logs = %s; want no argv and no cmdline", text)
+	}
+	for _, want := range []string{"herdr reply", "pane_process_info", `\"name\":\"curl\"`, `\"pid\":2`} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("logs = %s; want %s", text, want)
+		}
 	}
 }

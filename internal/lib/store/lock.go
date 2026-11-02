@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// errLockTimeout reports that the bounded lock wait ended.
-var errLockTimeout = errors.New("store lock timeout")
+// ErrLockTimeout reports that the bounded lock wait ended.
+var ErrLockTimeout = errors.New("store lock timeout")
 
 const defaultLockWait = 2 * time.Second
 
@@ -68,6 +68,6 @@ func acquireLock(path string, wait time.Duration) (*os.File, error) {
 		return file, nil
 	case <-timer.C:
 		_ = file.Close()
-		return nil, errLockTimeout
+		return nil, ErrLockTimeout
 	}
 }

@@ -222,3 +222,107 @@ func TestSaveAcceptsLongestValidName(t *testing.T) {
 		t.Fatalf("Save(64-char name) error = %v", err)
 	}
 }
+
+func TestRemoveIfSameRemovesTheSameRecord(t *testing.T) {
+	home := t.TempDir()
+	if err := Save(home, sample("kid", "w1:p2")); err != nil {
+		t.Fatal(err)
+	}
+	removed, err := RemoveIfSame(home, sample("kid", "w1:p2"))
+	if err != nil || !removed {
+		t.Fatalf("RemoveIfSame = %v, %v; want true", removed, err)
+	}
+	if _, err := Load(home, "kid"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("Load error = %v; want ErrNotFound", err)
+	}
+}
+
+func TestRemoveIfSameKeepsARecordOfAnotherPane(t *testing.T) {
+	home := t.TempDir()
+	if err := Save(home, sample("kid", "w9:p1")); err != nil {
+		t.Fatal(err)
+	}
+	removed, err := RemoveIfSame(home, sample("kid", "w1:p2"))
+	if err != nil || removed {
+		t.Fatalf("RemoveIfSame = %v, %v; want false", removed, err)
+	}
+	if got, err := Load(home, "kid"); err != nil || got.Pane != "w9:p1" {
+		t.Fatalf("Load = %+v, %v; want the record of w9:p1", got, err)
+	}
+}
+
+func TestRemoveIfSameOfAMissingRecord(t *testing.T) {
+	removed, err := RemoveIfSame(t.TempDir(), sample("kid", "w1:p2"))
+	if err != nil || removed {
+		t.Fatalf("RemoveIfSame = %v, %v; want false", removed, err)
+	}
+}
+
+func TestRemoveIfSameWaitsForTheLayoutLock(t *testing.T) {
+	home := t.TempDir()
+	if err := Save(home, sample("kid", "w1:p2")); err != nil {
+		t.Fatal(err)
+	}
+	// A spawn that holds the layout lock replaces the record before it
+	// releases the lock. The remove must see the new record.
+	held := make(chan struct{})
+	release := make(chan struct{})
+	done := make(chan error, 1)
+	go func() {
+		done <- Hold(home, func() error {
+			close(held)
+			<-release
+			return Save(home, sample("kid", "w9:p1"))
+		})
+	}()
+	<-held
+	result := make(chan bool, 1)
+	go func() {
+		removed, _ := RemoveIfSame(home, sample("kid", "w1:p2"))
+		result <- removed
+	}()
+	time.Sleep(100 * time.Millisecond)
+	close(release)
+	if err := <-done; err != nil {
+		t.Fatal(err)
+	}
+	if <-result {
+		t.Fatal("RemoveIfSame removed the record that the holder of the lock wrote")
+	}
+	if got, err := Load(home, "kid"); err != nil || got.Pane != "w9:p1" {
+		t.Fatalf("Load = %+v, %v; want the record of w9:p1", got, err)
+	}
+}
+
+func TestRemoveIfSameKeepsANewRecordOfTheSamePane(t *testing.T) {
+	home := t.TempDir()
+	read := sample("kid", "w1:p2")
+	fresh := read
+	fresh.StartedAt = read.StartedAt.Add(time.Hour)
+	if err := Save(home, fresh); err != nil {
+		t.Fatal(err)
+	}
+	removed, err := RemoveIfSame(home, read)
+	if err != nil || removed {
+		t.Fatalf("RemoveIfSame = %v, %v; want false", removed, err)
+	}
+	if got, err := Load(home, "kid"); err != nil || !got.StartedAt.Equal(fresh.StartedAt) {
+		t.Fatalf("Load = %+v, %v; want the new record", got, err)
+	}
+}
+
+func TestListSkipsARecordFileThatVanished(t *testing.T) {
+	home := t.TempDir()
+	if err := Save(home, sample("kid", "w1:p2")); err != nil {
+		t.Fatal(err)
+	}
+	// A dangling link is a directory entry whose read finds no file, as a
+	// record that another process removes between the two steps of List.
+	if err := os.Symlink(filepath.Join(home, "nowhere.json"), filepath.Join(agentsDir(home), "gone.json")); err != nil {
+		t.Fatal(err)
+	}
+	records, err := List(home)
+	if err != nil || len(records) != 1 || records[0].Name != "kid" {
+		t.Fatalf("List = %+v, %v; want only kid", records, err)
+	}
+}

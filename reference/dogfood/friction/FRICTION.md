@@ -24,10 +24,10 @@ The entries from before the teardown are at the tag `pre-teardown`, below
 - [herdr agent.start can cut a long command line at 4095 bytes](entries/agent-start-line-cut-at-4095-bytes.md) — A start command line above 4095 bytes can reach the new pane shell cut short, so the harness never starts
 - [A message to a Claude coordinator can be lost with outcome ok](entries/send-lost-after-session-change.md) — hive agent send writes to the inbox socket and reports ok, but after the Claude session changed in the same process no message appeared
 - [An open hive agent graph fills the daily log](entries/graph-log-volume.md) — The graph refreshes each second and logs each herdr call, each git call, and each list result, so one open graph writes most of the daily log
-- [The record of a closed pane stays until a stop](entries/gone-pane-records-stay.md) — When a pane closes without hive agent stop, its agent record stays, and each agent list and each graph refresh queries the gone pane again
 
 ## Resolved
 
+- [The record of a closed pane stays until a stop](entries/resolved/gone-pane-records-stay.md) — When a pane closes without hive agent stop, its agent record stays, and each agent list and each graph refresh queries the gone pane again
 - [A spawn worktree name cannot contain a slash](entries/resolved/worktree-name-no-slash.md) — hive agent spawn --worktree rejects a name with /, so a branch such as friction/SLUG needs a push with HEAD:friction/SLUG
 - [hive agent send can split a message that the user types](entries/resolved/send-splits-typed-message.md) — agent.prompt pastes text and presses Enter into a prompt that already holds the partial text of the user
 - [A report sent to a pane with an open dialog is lost](entries/resolved/send-blocked-by-dialog.md) — hive agent send refuses a target that a dialog blocks, and a worker that ends its turn never sends the report again

@@ -105,7 +105,7 @@ func TestStoreProcessHelper(t *testing.T) {
 		if err == nil {
 			break
 		}
-		if !errors.Is(err, errLockTimeout) || attempt == 20 {
+		if !errors.Is(err, ErrLockTimeout) || attempt == 20 {
 			t.Fatal(err)
 		}
 	}
