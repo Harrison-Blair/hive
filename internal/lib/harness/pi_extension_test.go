@@ -16,8 +16,9 @@ import (
 // fakePi loads the extension with a fake pi API and starts a session. Its
 // sendUserMessage acts as AgentSession.prompt of pi 1.4.0 does: after an
 // await, it rejects every message during a compaction, and a message without
-// deliverAs during a run; else it starts a run of 300 ms or queues a
-// follow-up. Each outcome is one JSON line on stdout. A stdin line "compact"
+// deliverAs during a run; else it starts a run of 300 ms or queues the
+// message with its deliverAs mode as the event. Each outcome is one JSON line
+// on stdout. A stdin line "compact"
 // runs a manual compaction of 500 ms. A stdin line "timers" prints the count of
 // pending timers as event "timers". A stdin line "shutdown" ends the session,
 // emits agent_settled 600 ms later as a run that settles late does, and prints
@@ -35,7 +36,7 @@ ext.default({
 	sendUserMessage: async (text, options) => {
 		await new Promise((resolve) => setTimeout(resolve, 20));
 		if (compacting) return out("rejected", text);
-		if (running) return out(options?.deliverAs ? "followUp" : "rejected", text);
+		if (running) return out(options?.deliverAs ?? "rejected", text);
 		running = true;
 		emit("agent_start");
 		out("started", text);
@@ -155,7 +156,7 @@ func nextEvent(t *testing.T, events <-chan event) event {
 func nextText(t *testing.T, events <-chan event) string {
 	t.Helper()
 	e := nextEvent(t, events)
-	if e.Event != "started" && e.Event != "followUp" {
+	if e.Event != "started" && e.Event != "steer" {
 		t.Fatalf("pi event = %+v; want an accepted message", e)
 	}
 	return e.Text
@@ -191,11 +192,11 @@ func TestPiExtensionSurvivesBadRecords(t *testing.T) {
 
 // TestPiExtensionSerializesMessagesToAnIdlePi sends three lines at once to an
 // idle pi. The first starts a run, and the others wait for that run and go as
-// follow-ups, so pi rejects none.
+// steering messages, so pi rejects none and delivers them during the run.
 func TestPiExtensionSerializesMessagesToAnIdlePi(t *testing.T) {
 	socket, _, events := runExtension(t)
 	writeTo(t, socket, `{"text":"one"}`+"\n"+`{"text":"two"}`+"\n"+`{"text":"three"}`+"\n")
-	for _, want := range []event{{"started", "one"}, {"followUp", "two"}, {"followUp", "three"}} {
+	for _, want := range []event{{"started", "one"}, {"steer", "two"}, {"steer", "three"}} {
 		if got := nextEvent(t, events); got != want {
 			t.Fatalf("pi event = %+v; want %+v", got, want)
 		}
