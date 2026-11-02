@@ -26,6 +26,7 @@ The entries from before the teardown are at the tag `pre-teardown`, below
 - [An open hive agent graph fills the daily log](entries/graph-log-volume.md) — The graph refreshes each second and logs each herdr call, each git call, and each list result, so one open graph writes most of the daily log
 - [herdr can misdetect a running Claude agent as another agent](entries/herdr-misdetects-running-claude.md) — herdr reported agent opencode with status unknown for a pane whose foreground process was claude, so hive agent list showed a live agent as unknown
 - [The old ID of a moved pane stops working after a herdr restart](entries/moved-pane-id-lost-after-restart.md) — herdr resolves the ID of a pane before a pane.move only until the server restarts, so a hive record of a moved agent then shows the agent as gone
+- [A Claude agent that herdr resumes can lack the hive start arguments](entries/resumed-claude-lacks-hive-settings.md) — After a herdr restart, herdr resumes Claude as claude --resume ID, probably without --settings crossSessionInbound, so hive agent send to it can fail
 
 ## Resolved
 
