@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log/slog"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -248,5 +249,67 @@ func TestListFailsWhenHerdrFails(t *testing.T) {
 	envelope := listRun(t, home)
 	if envelope.Outcome != "failed" || !strings.Contains(envelope.Error.(string), "boom") {
 		t.Fatalf("envelope = %+v", envelope)
+	}
+}
+
+func TestListKeepsARecordThatANewAgentReplacedInTheSamePane(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	_, pane := fake.AddWorkspace("mine", "", false)
+	fake.SetProcess(pane.ID, "bash")
+	save(t, home, agent.Record{Name: "boss", Pane: pane.ID, Harness: "claude", StartedAt: now.Add(-time.Hour)})
+	// Bare hive runs again in the same pane after list read the old record.
+	fake.After("pane.process_info", func() {
+		save(t, home, agent.Record{Name: "boss", Pane: pane.ID, Harness: "claude", StartedAt: now})
+	})
+
+	envelope := listAt(t, home, nil)
+	if envelope.Outcome != "ok" || len(envelope.Effects) != 0 {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got, err := agent.Load(home, "boss"); err != nil || !got.StartedAt.Equal(now) {
+		t.Fatalf("Load = %+v, %v; want the new record", got, err)
+	}
+}
+
+func TestListLogsNoArgvOfAForegroundProcess(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	_, pane := fake.AddWorkspace("mine", "", false)
+	fake.SetProcess(pane.ID, "curl")
+	fake.SetArgs(pane.ID, []string{"-H", "Authorization: Bearer s3cr3t-token"})
+	save(t, home, agent.Record{Name: "exited", Pane: pane.ID, Harness: "claude", StartedAt: now.Add(-time.Hour)})
+	var logs bytes.Buffer
+
+	envelope := listAt(t, home, slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{Level: slog.LevelDebug})))
+	if envelope.Outcome != "ok" || !removedEffect(envelope, "exited") {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if !strings.Contains(logs.String(), "pane_process_info") {
+		t.Fatalf("logs = %s; want the pane.process_info reply", logs.String())
+	}
+	if strings.Contains(logs.String(), "s3cr3t-token") {
+		t.Fatalf("logs = %s; want no argv", logs.String())
+	}
+}
+
+func TestListFailureKeepsTheRemovedEffects(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	fake.AddWorkspace("mine", "", false)
+	gone := fake.AddPane("w1", "")
+	other := fake.AddPane("w1", "")
+	save(t, home, agent.Record{Name: "a-dead", Pane: gone.ID, Harness: "claude", StartedAt: now})
+	save(t, home, agent.Record{Name: "b-kid", Pane: other.ID, Harness: "claude", StartedAt: now})
+	fake.ClosePane(gone.ID)
+	var once sync.Once
+	fake.After("pane.get", func() { once.Do(func() { fake.Fail("pane.get", "server_error", "boom") }) })
+
+	envelope := listAt(t, home, nil)
+	if envelope.Outcome != "failed" || !strings.Contains(envelope.Error.(string), "boom") || !removedEffect(envelope, "a-dead") {
+		t.Fatalf("envelope = %+v; want failed with the removed effect of a-dead", envelope)
+	}
+	if recordExists(t, home, "a-dead") {
+		t.Fatal("record a-dead stays")
 	}
 }

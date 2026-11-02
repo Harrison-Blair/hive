@@ -223,42 +223,42 @@ func TestSaveAcceptsLongestValidName(t *testing.T) {
 	}
 }
 
-func TestRemoveIfPaneRemovesTheSameRecord(t *testing.T) {
+func TestRemoveIfSameRemovesTheSameRecord(t *testing.T) {
 	home := t.TempDir()
 	if err := Save(home, sample("kid", "w1:p2")); err != nil {
 		t.Fatal(err)
 	}
-	removed, err := RemoveIfPane(home, "kid", "w1:p2")
+	removed, err := RemoveIfSame(home, sample("kid", "w1:p2"))
 	if err != nil || !removed {
-		t.Fatalf("RemoveIfPane = %v, %v; want true", removed, err)
+		t.Fatalf("RemoveIfSame = %v, %v; want true", removed, err)
 	}
 	if _, err := Load(home, "kid"); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("Load error = %v; want ErrNotFound", err)
 	}
 }
 
-func TestRemoveIfPaneKeepsARecordOfAnotherPane(t *testing.T) {
+func TestRemoveIfSameKeepsARecordOfAnotherPane(t *testing.T) {
 	home := t.TempDir()
 	if err := Save(home, sample("kid", "w9:p1")); err != nil {
 		t.Fatal(err)
 	}
-	removed, err := RemoveIfPane(home, "kid", "w1:p2")
+	removed, err := RemoveIfSame(home, sample("kid", "w1:p2"))
 	if err != nil || removed {
-		t.Fatalf("RemoveIfPane = %v, %v; want false", removed, err)
+		t.Fatalf("RemoveIfSame = %v, %v; want false", removed, err)
 	}
 	if got, err := Load(home, "kid"); err != nil || got.Pane != "w9:p1" {
 		t.Fatalf("Load = %+v, %v; want the record of w9:p1", got, err)
 	}
 }
 
-func TestRemoveIfPaneOfAMissingRecord(t *testing.T) {
-	removed, err := RemoveIfPane(t.TempDir(), "kid", "w1:p2")
+func TestRemoveIfSameOfAMissingRecord(t *testing.T) {
+	removed, err := RemoveIfSame(t.TempDir(), sample("kid", "w1:p2"))
 	if err != nil || removed {
-		t.Fatalf("RemoveIfPane = %v, %v; want false", removed, err)
+		t.Fatalf("RemoveIfSame = %v, %v; want false", removed, err)
 	}
 }
 
-func TestRemoveIfPaneWaitsForTheLayoutLock(t *testing.T) {
+func TestRemoveIfSameWaitsForTheLayoutLock(t *testing.T) {
 	home := t.TempDir()
 	if err := Save(home, sample("kid", "w1:p2")); err != nil {
 		t.Fatal(err)
@@ -278,7 +278,7 @@ func TestRemoveIfPaneWaitsForTheLayoutLock(t *testing.T) {
 	<-held
 	result := make(chan bool, 1)
 	go func() {
-		removed, _ := RemoveIfPane(home, "kid", "w1:p2")
+		removed, _ := RemoveIfSame(home, sample("kid", "w1:p2"))
 		result <- removed
 	}()
 	time.Sleep(100 * time.Millisecond)
@@ -287,9 +287,42 @@ func TestRemoveIfPaneWaitsForTheLayoutLock(t *testing.T) {
 		t.Fatal(err)
 	}
 	if <-result {
-		t.Fatal("RemoveIfPane removed the record that the holder of the lock wrote")
+		t.Fatal("RemoveIfSame removed the record that the holder of the lock wrote")
 	}
 	if got, err := Load(home, "kid"); err != nil || got.Pane != "w9:p1" {
 		t.Fatalf("Load = %+v, %v; want the record of w9:p1", got, err)
+	}
+}
+
+func TestRemoveIfSameKeepsANewRecordOfTheSamePane(t *testing.T) {
+	home := t.TempDir()
+	read := sample("kid", "w1:p2")
+	fresh := read
+	fresh.StartedAt = read.StartedAt.Add(time.Hour)
+	if err := Save(home, fresh); err != nil {
+		t.Fatal(err)
+	}
+	removed, err := RemoveIfSame(home, read)
+	if err != nil || removed {
+		t.Fatalf("RemoveIfSame = %v, %v; want false", removed, err)
+	}
+	if got, err := Load(home, "kid"); err != nil || !got.StartedAt.Equal(fresh.StartedAt) {
+		t.Fatalf("Load = %+v, %v; want the new record", got, err)
+	}
+}
+
+func TestListSkipsARecordFileThatVanished(t *testing.T) {
+	home := t.TempDir()
+	if err := Save(home, sample("kid", "w1:p2")); err != nil {
+		t.Fatal(err)
+	}
+	// A dangling link is a directory entry whose read finds no file, as a
+	// record that another process removes between the two steps of List.
+	if err := os.Symlink(filepath.Join(home, "nowhere.json"), filepath.Join(agentsDir(home), "gone.json")); err != nil {
+		t.Fatal(err)
+	}
+	records, err := List(home)
+	if err != nil || len(records) != 1 || records[0].Name != "kid" {
+		t.Fatalf("List = %+v, %v; want only kid", records, err)
 	}
 }

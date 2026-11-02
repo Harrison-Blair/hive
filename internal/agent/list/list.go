@@ -65,7 +65,9 @@ func Run(ctx context.Context, home string, options Options) output.Envelope {
 		default:
 			message := fmt.Sprintf("agent %s: pane %s: %s", record.Name, record.Pane, err)
 			logger.Debug("agent list", "command", "agent list", "outcome", output.OutcomeFailed, "error", message)
-			return output.Failed("herdr", message)
+			failed := output.Failed("herdr", message)
+			failed.Effects = effects
+			return failed
 		}
 		if reason != "" && remove(home, record, reason, logger) {
 			effects = append(effects, output.Effect{Resource: "record", Path: "agents/" + record.Name + ".json", Action: "removed"})
@@ -109,7 +111,7 @@ func deadReason(ctx context.Context, record agent.Record, now time.Time, logger 
 // remove deletes record when its file still names the same pane, and logs
 // the result. It reports whether it deleted the record.
 func remove(home string, record agent.Record, reason string, logger *slog.Logger) bool {
-	removed, err := agent.RemoveIfPane(home, record.Name, record.Pane)
+	removed, err := agent.RemoveIfSame(home, record)
 	switch {
 	case err != nil:
 		logger.Warn("agent record kept", "command", "agent list", "target", record.Name, "pane", record.Pane, "reason", reason, "error", err.Error())

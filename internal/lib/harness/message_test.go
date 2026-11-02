@@ -2,14 +2,11 @@ package harness
 
 import (
 	"context"
-	"encoding/json"
-	"maps"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/agent/agenttest"
-	"github.com/Harrison-Blair/hive/internal/guide"
 )
 
 // claudePane starts a fake claude agent with args in a pane of a fake herdr.
@@ -96,7 +93,7 @@ func TestClaudeDeliverFailsWithoutClaudeProcess(t *testing.T) {
 }
 
 // TestDeliverLogsNoGuide checks that the logged pane.process_info reply shows
-// the guide in the argv of the harness as <guide N bytes>.
+// no argv of the harness, so it carries no guide.
 func TestDeliverLogsNoGuide(t *testing.T) {
 	const text = "secret guide <body>\nline two"
 	profile, _ := Lookup("claude")
@@ -115,28 +112,7 @@ func TestDeliverLogsNoGuide(t *testing.T) {
 	if strings.Contains(log.Text(), "secret guide") {
 		t.Fatalf("logs = %s; want no guide", log.Text())
 	}
-	if !strings.Contains(body, guide.Placeholder(guideArgs[1])) {
-		t.Fatalf("body = %s; want %s", body, guide.Placeholder(guideArgs[1]))
-	}
-}
-
-func TestGuideValuesFindsTheGuideOfEachHarness(t *testing.T) {
-	for _, kind := range KnownKinds() {
-		t.Run(kind, func(t *testing.T) {
-			profile, _ := Lookup(kind)
-			guideArgs := profile.GuideArgs("the guide\nline two")
-			argv := append([]string{kind}, profile.Args("m", guideArgs)...)
-			reply, err := json.Marshal(map[string]any{"result": map[string]any{"process_info": map[string]any{
-				"foreground_processes": []any{map[string]any{"pid": 7, "name": kind, "argv": argv}},
-			}}})
-			if err != nil {
-				t.Fatal(err)
-			}
-			value := guideArgs[1]
-			want := map[string]string{value: guide.Placeholder(value)}
-			if got := guideValues(profile, reply); !maps.Equal(got, want) {
-				t.Fatalf("guideValues() = %q; want %q", got, want)
-			}
-		})
+	if strings.Contains(body, "argv") || strings.Contains(body, "crossSessionInbound") {
+		t.Fatalf("body = %s; want no argv", body)
 	}
 }

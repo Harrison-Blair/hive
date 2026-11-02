@@ -133,6 +133,10 @@ func List(home string) ([]Record, error) {
 			continue
 		}
 		record, err := read(filepath.Join(dir(home), name))
+		if errors.Is(err, ErrNotFound) {
+			// Another process removed the record after ReadDir.
+			continue
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -154,17 +158,18 @@ func Remove(home, name string) error {
 	return nil
 }
 
-// removeWait bounds the wait of RemoveIfPane for the layout lock. It is short,
+// removeWait bounds the wait of RemoveIfSame for the layout lock. It is short,
 // because a spawn holds that lock until its harness starts, and a list or a
 // graph refresh must not stall that long.
 const removeWait = 2 * time.Second
 
-// RemoveIfPane deletes the record of name when it still names pane. It holds
-// the layout lock, which each writer of records holds, so a record that a
-// spawn or a bare hive saved for the name in between stays. It reports
-// whether it deleted the record. A missing record is not an error.
-func RemoveIfPane(home, name, pane string) (bool, error) {
-	target, err := path(home, name)
+// RemoveIfSame deletes the record of want.Name when the file still holds the
+// same agent: the same pane and start time. It holds the layout lock, which
+// each writer of records holds, so a record that a spawn or a bare hive saved
+// for the name in between stays, also in the same pane. It reports whether it
+// deleted the record. A missing record is not an error.
+func RemoveIfSame(home string, want Record) (bool, error) {
+	target, err := path(home, want.Name)
 	if err != nil {
 		return false, err
 	}
@@ -178,7 +183,7 @@ func RemoveIfPane(home, name, pane string) (bool, error) {
 		if errors.Is(err, ErrNotFound) {
 			return nil
 		}
-		if err != nil || record.Pane != pane {
+		if err != nil || record.Pane != want.Pane || !record.StartedAt.Equal(want.StartedAt) {
 			return err
 		}
 		if err := os.Remove(target); err != nil && !errors.Is(err, os.ErrNotExist) {
