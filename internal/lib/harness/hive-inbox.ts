@@ -14,8 +14,9 @@ export default function (pi: ExtensionAPI) {
 	// pi 1.4.0 rejects a message without deliverAs while a run starts or runs,
 	// and every message during a manual compaction, and drops a rejected
 	// message. So one message goes to an idle pi; the next ones wait until its
-	// run starts and then go as follow-ups. While pi is neither idle nor in a
-	// run, the queue waits and checks again every 250 ms.
+	// run starts and then go as steering messages, which pi delivers after the
+	// tool calls of the current turn. While pi is neither idle nor in a run, the
+	// queue waits and checks again every 250 ms.
 	const queue: string[] = [];
 	let running = false; // from agent_start to agent_settled
 	let sentAt = 0; // when a message went to an idle pi whose run has not started yet
@@ -27,7 +28,7 @@ export default function (pi: ExtensionAPI) {
 		if (!active) return;
 		try {
 			while (queue.length > 0) {
-				if (running) pi.sendUserMessage(queue.shift()!, { deliverAs: "followUp" });
+				if (running) pi.sendUserMessage(queue.shift()!, { deliverAs: "steer" });
 				else if (Date.now() - sentAt < 10_000 || !ctx?.isIdle()) break;
 				else {
 					sentAt = Date.now();

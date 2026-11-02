@@ -62,7 +62,8 @@ func (piProfile) Trust() Trust {
 
 // inboxExtension is the Pi extension of the native message path. It listens
 // on $XDG_RUNTIME_DIR/hive-pi/<pid>.sock and passes each line to
-// pi.sendUserMessage: as a new turn when Pi is idle, else as a follow-up.
+// pi.sendUserMessage: as a new turn when Pi is idle, else as a steering
+// message that Pi delivers after the tool calls of the current turn.
 //
 //go:embed hive-inbox.ts
 var inboxExtension []byte
