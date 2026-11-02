@@ -27,6 +27,7 @@ The entries from before the teardown are at the tag `pre-teardown`, below
 - [herdr can misdetect a running Claude agent as another agent](entries/herdr-misdetects-running-claude.md) — herdr reported agent opencode with status unknown for a pane whose foreground process was claude, so hive agent list showed a live agent as unknown
 - [The old ID of a moved pane stops working after a herdr restart](entries/moved-pane-id-lost-after-restart.md) — herdr resolves the ID of a pane before a pane.move only until the server restarts, so a hive record of a moved agent then shows the agent as gone
 - [A Claude agent that herdr resumes can lack the hive start arguments](entries/resumed-claude-lacks-hive-settings.md) — After a herdr restart, herdr resumes Claude as claude --resume ID, probably without --settings crossSessionInbound, so hive agent send to it can fail
+- [A message to a busy Codex agent waits until its turn ends](entries/codex-message-waits-for-turn-end.md) — codex queue holds a hive agent send until the turn of the target ends, so a Codex agent that polls gets its reports in one late burst
 
 ## Resolved
 
