@@ -35,7 +35,7 @@ coordinator pane had no record. At 23:20:14, bare `hive` in the hive pane
 these two coordinators: 17 `agent prompted` and 16 `agent messaged`. Their
 workers and reviewers got the messages as `⬢ user: …`. 12 of the messages
 start `⬢ user: Coordinator: …`, so the text names a coordinator while the
-marker gives user authority. No worker questioned the label.
+marker gives user authority.
 
 A second form: at 23:41:00 and 23:44:02 the hive coordinator relayed words of
 the user to `claude-artifact-check` as `⬢ coordinator: ⬢ user: …`. The inner
