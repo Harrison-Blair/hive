@@ -24,6 +24,7 @@ The entries from before the teardown are at the tag `pre-teardown`, below
 - [herdr agent.start can cut a long command line at 4095 bytes](entries/agent-start-line-cut-at-4095-bytes.md) — A start command line above 4095 bytes can reach the new pane shell cut short, so the harness never starts
 - [A message to a Claude coordinator can be lost with outcome ok](entries/send-lost-after-session-change.md) — hive agent send writes to the inbox socket and reports ok, but after the Claude session changed in the same process no message appeared
 - [An open hive agent graph fills the daily log](entries/graph-log-volume.md) — The graph refreshes each second and logs each herdr call, each git call, and each list result, so one open graph writes most of the daily log
+- [herdr can misdetect a running Claude agent as another agent](entries/herdr-misdetects-running-claude.md) — herdr reported agent opencode with status unknown for a pane whose foreground process was claude, so hive agent list showed a live agent as unknown
 
 ## Resolved
 
