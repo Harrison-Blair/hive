@@ -4,16 +4,17 @@
 // The picker has two steps in one rounded box of 62 × 15 cells with a key
 // line under it, in the palette of internal/lib/style that the agent graph
 // uses. Each step has the same size. In a smaller pane the box takes the pane
-// width and loses rows until the box and the key line fit; the harness and
-// model lists scroll so the cursor row stays in the box. A list row that is
-// too narrow drops the last model column of step 1 first, then "✓ last", and
-// then cuts the name with …, keeping its first cell; ▸ always stays. The
-// filter row drops its count and then its label, and the model input row its
-// label, before either cuts the start of the typed text; ▏ always stays. A
-// last guard cuts the view to the pane size. The drop orders are promised
-// from 24 columns. In a narrower pane the picker promises only that the view
-// stays inside the pane and that the cursor row shows; the rest of the layout
-// is best effort.
+// width and loses rows until the box and the key line fit, and a last guard
+// cuts the view to the pane size, so the view never goes outside the pane.
+// From 5 rows the harness and model lists scroll so the cursor row stays in
+// the box, and each step keeps its cursor row: ▸, the ▏ of a typed field, or
+// the spinner. From 24 columns the rows also keep one drop order. A list row
+// that is too narrow drops the last model column of step 1 first, then
+// "✓ last", and then cuts the name with …, keeping its first cell; ▸ always
+// stays. The filter row drops its count and then its label, and the model
+// input row its label, before either cuts the start of the typed text; ▏
+// always stays. In a narrower pane the layout is best effort, and below 5
+// rows the picker promises only that the view stays inside the pane.
 // The title in the top edge names the step. Step 1 lists the harnesses
 // claude, codex, and pi, each in its harness colour, with the last model of
 // each harness, or – when it has none. Enter lists the models of the chosen
