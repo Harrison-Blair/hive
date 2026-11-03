@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/agent/list"
+	"github.com/Harrison-Blair/hive/internal/lib/style"
 )
 
 // The card size of the historical Agents graph, widened so that a name of 16
@@ -15,17 +16,6 @@ const (
 	cardWidth    = 33
 	minCardWidth = 16
 	cardHeight   = 5
-)
-
-// The SGR parameters of the historical palette. Each state also has a glyph
-// or a border shape, so colour only adds.
-const (
-	styleBorder   = "38;2;61;58;51"
-	styleDim      = "38;2;163;157;144"
-	styleAccent   = "38;2;245;185;66"
-	styleSelected = "1;38;2;245;185;66"
-	styleWorking  = "38;2;110;230;154"
-	styleError    = "38;2;232;112;95"
 )
 
 // frameInterval is the frame interval of the Pi working indicator.
@@ -38,26 +28,26 @@ var workingFrames = [...]string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦",
 // statuses gives the glyph and the glyph style of each herdr status, in
 // legend order.
 var statuses = []struct{ status, glyph, style string }{
-	{"working", workingFrames[0], styleWorking},
-	{"idle", "○", styleAccent},
-	{"blocked", "×", styleError},
-	{"done", "✓", styleDim},
-	{"unknown", "·", styleDim},
-	{"gone", "–", styleDim},
+	{"working", workingFrames[0], style.Working},
+	{"idle", "○", style.Accent},
+	{"blocked", "×", style.Error},
+	{"done", "✓", style.Dim},
+	{"unknown", "·", style.Dim},
+	{"gone", "–", style.Dim},
 }
 
 // glyph gives the status glyph and its style. The working glyph is the
 // braille frame of frame.
 func glyph(status string, frame int) (string, string) {
 	if status == "working" {
-		return workingFrames[frame%len(workingFrames)], styleWorking
+		return workingFrames[frame%len(workingFrames)], style.Working
 	}
 	for _, s := range statuses {
 		if s.status == status {
 			return s.glyph, s.style
 		}
 	}
-	return "·", styleDim
+	return "·", style.Dim
 }
 
 // elapsed formats a duration with seconds: 7s, 4m05s, 26h04m03s.
@@ -86,12 +76,12 @@ func since(e list.Entry, now time.Time) string {
 // has the harness and the model.
 // A selected card has a heavy border.
 func drawCard(c *canvas, x, y, w int, e list.Entry, age string, selected bool, frame int, checkout string) {
-	border, edge := styleBorder, "╭╮╰╯─│"
+	border, edge := style.Border, "╭╮╰╯─│"
 	switch {
 	case selected:
-		border, edge = styleSelected, "┏┓┗┛━┃"
+		border, edge = style.Selected, "┏┓┗┛━┃"
 	case e.Status == "working":
-		border = styleWorking
+		border = style.Working
 	}
 	corners := []rune(edge)
 	c.box(x, y, w, cardHeight, corners, border)
@@ -101,22 +91,22 @@ func drawCard(c *canvas, x, y, w int, e list.Entry, age string, selected bool, f
 	room := inner - 2
 	if cells := len([]rune(age)); cells > 0 && cells <= room {
 		room -= cells + 1
-		c.text(x+w-2-cells, y+1, age, styleDim, cells)
+		c.text(x+w-2-cells, y+1, age, style.Dim, cells)
 	}
 	nameStyle := ""
 	switch {
 	case selected:
-		nameStyle = styleSelected
+		nameStyle = style.Selected
 	case e.Status == "done" || e.Status == "gone":
-		nameStyle = styleDim
+		nameStyle = style.Dim
 	}
 	c.text(x+4, y+1, clip(e.Name, room), nameStyle, room)
-	c.text(x+2, y+2, clip(checkout, inner), styleDim, inner)
+	c.text(x+2, y+2, clip(checkout, inner), style.Dim, inner)
 	sub := e.Harness
 	if e.Model != "" {
 		sub += " · " + e.Model
 	}
-	c.text(x+2, y+3, clip(sub, inner), styleDim, inner)
+	c.text(x+2, y+3, clip(sub, inner), style.Dim, inner)
 }
 
 // cardLines renders one card alone.

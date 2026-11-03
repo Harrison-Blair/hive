@@ -1,5 +1,7 @@
 package graph
 
+import "github.com/Harrison-Blair/hive/internal/lib/style"
+
 // treeGap is the number of columns between two subtrees side by side.
 const treeGap = 2
 
@@ -70,15 +72,15 @@ func (d *drawer) joins(n *Node, x, y int, xs []int) {
 	center, bar := x+half, y+cardHeight
 	first, last := xs[0]+half, xs[len(xs)-1]+half
 	for col := first; col <= last; col++ {
-		d.c.set(col, bar, '─', styleBorder)
+		d.c.set(col, bar, '─', style.Border)
 	}
 	if len(xs) == 1 {
-		d.c.set(center, bar, '│', styleBorder)
+		d.c.set(center, bar, '│', style.Border)
 	} else {
-		d.c.set(first, bar, '╭', styleBorder)
-		d.c.set(last, bar, '╮', styleBorder)
+		d.c.set(first, bar, '╭', style.Border)
+		d.c.set(last, bar, '╮', style.Border)
 		for _, cx := range xs[1 : len(xs)-1] {
-			d.c.set(cx+half, bar, '┬', styleBorder)
+			d.c.set(cx+half, bar, '┬', style.Border)
 		}
 		up := '┴'
 		for _, cx := range xs[1 : len(xs)-1] {
@@ -86,7 +88,7 @@ func (d *drawer) joins(n *Node, x, y int, xs []int) {
 				up = '┼'
 			}
 		}
-		d.c.set(center, bar, up, styleBorder)
+		d.c.set(center, bar, up, style.Border)
 	}
 }
 

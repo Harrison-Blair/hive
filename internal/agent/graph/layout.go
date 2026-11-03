@@ -1,5 +1,7 @@
 package graph
 
+import "github.com/Harrison-Blair/hive/internal/lib/style"
+
 // span is the place of one card in the pod area: its first row, its first
 // column, and its width.
 type span struct {
@@ -114,7 +116,7 @@ type drawer struct {
 
 // box draws the border and the title of p.
 func (d *drawer) box(p Pod, x, y, w, h int) {
-	d.c.box(x, y, w, h, []rune("╭╮╰╯─│"), styleBorder)
+	d.c.box(x, y, w, h, []rune("╭╮╰╯─│"), style.Border)
 	d.c.text(x+2, y, " "+clip(p.Title, w-6)+" ", "", w-4)
 }
 
@@ -137,17 +139,17 @@ func (d *drawer) tree(n *Node, x, y int) {
 		top := row + 1
 		join := top + 1
 		for r := row; r < join; r++ {
-			d.c.set(x, r, '│', styleBorder)
+			d.c.set(x, r, '│', style.Border)
 		}
 		branch := '├'
 		if last {
 			branch = '╰'
 		}
-		d.c.set(x, join, branch, styleBorder)
+		d.c.set(x, join, branch, style.Border)
 		h := treeHeight(child)
 		if !last {
 			for r := join + 1; r < top+h; r++ {
-				d.c.set(x, r, '│', styleBorder)
+				d.c.set(x, r, '│', style.Border)
 			}
 		}
 		d.tree(child, x+1, top)

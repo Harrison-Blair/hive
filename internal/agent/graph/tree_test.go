@@ -7,6 +7,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/agent/list"
+	"github.com/Harrison-Blair/hive/internal/lib/style"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -75,13 +76,13 @@ func TestTreeJoinsOfTheSelectedAndOfAWorkingParent(t *testing.T) {
 	entries := smallTree()
 	entries[1].Status = "working"
 	b := drawBoard(Pods(entries), 38, nil, "c", 0, nil, true)
-	if row := b.lines[5]; !strings.Contains(row, "\x1b["+styleSelected+"m┗━━━━━━━━━━━━━━┛") {
+	if row := b.lines[5]; !strings.Contains(row, "\x1b["+style.Selected+"m┗━━━━━━━━━━━━━━┛") {
 		t.Errorf("selected parent bottom = %q; want a whole heavy edge in the selected style", row)
 	}
-	if row := b.lines[7]; !strings.Contains(row, "\x1b["+styleWorking+"m╭──────────────╮") {
+	if row := b.lines[7]; !strings.Contains(row, "\x1b["+style.Working+"m╭──────────────╮") {
 		t.Errorf("working child top = %q; want a whole edge in the working style", row)
 	}
-	if row := b.lines[11]; !strings.Contains(row, "\x1b["+styleWorking+"m╰──────────────╯") {
+	if row := b.lines[11]; !strings.Contains(row, "\x1b["+style.Working+"m╰──────────────╯") {
 		t.Errorf("working parent bottom = %q; want a whole edge in the working style", row)
 	}
 	b = drawBoard(Pods(entries), 38, nil, "b", 0, nil, true)
@@ -271,15 +272,15 @@ func TestJoinsLeaveTheCardBordersWhole(t *testing.T) {
 				rows[i] = parseCells(line)
 			}
 			for name, s := range b.cards {
-				box, style := []rune("╭╮╰╯─│"), styleBorder
+				box, edge := []rune("╭╮╰╯─│"), style.Border
 				switch {
 				case name == selected:
-					box, style = []rune("┏┓┗┛━┃"), styleSelected
+					box, edge = []rune("┏┓┗┛━┃"), style.Selected
 				case s.status == "working":
-					style = styleWorking
+					edge = style.Working
 				}
 				want := newCanvas(s.left+s.width, s.top+cardHeight)
-				want.box(s.left, s.top, s.width, cardHeight, box, style)
+				want.box(s.left, s.top, s.width, cardHeight, box, edge)
 				for y := s.top; y < s.top+cardHeight; y++ {
 					for x := s.left; x < s.left+s.width; x++ {
 						w := want.cells[y][x]
