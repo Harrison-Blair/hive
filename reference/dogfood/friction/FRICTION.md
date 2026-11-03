@@ -28,6 +28,7 @@ The entries from before the teardown are at the tag `pre-teardown`, below
 - [The old ID of a moved pane stops working after a herdr restart](entries/moved-pane-id-lost-after-restart.md) — herdr resolves the ID of a pane before a pane.move only until the server restarts, so a hive record of a moved agent then shows the agent as gone
 - [A Claude agent that herdr resumes can lack the hive start arguments](entries/resumed-claude-lacks-hive-settings.md) — After a herdr restart, herdr resumes Claude as claude --resume ID, probably without --settings crossSessionInbound, so hive agent send to it can fail
 - [A message to a busy Codex agent waits until its turn ends](entries/codex-message-waits-for-turn-end.md) — codex queue holds a hive agent send until the turn of the target ends, so a Codex agent that polls gets its reports in one late burst
+- [herdr does not resize the terminal of a pane in a background tab](entries/herdr-background-tab-not-resized.md) — A pane split or resize in an unfocused tab changes the pane rect but not the terminal size, so a live check of a small pane needs the tab in front
 
 ## Resolved
 
