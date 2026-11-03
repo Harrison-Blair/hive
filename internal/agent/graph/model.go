@@ -34,6 +34,8 @@ type fetchedMsg struct {
 	entries   []list.Entry
 	checkouts map[string]string
 	err       error
+	// at is the time when the agent list returned.
+	at time.Time
 }
 
 type clockMsg time.Time
@@ -105,13 +107,14 @@ func (m Model) fetch() tea.Cmd {
 		ctx, cancel := context.WithTimeout(context.Background(), fetchTimeout)
 		defer cancel()
 		entries, err := fetch(ctx)
+		at := m.options.Now()
 		checkouts := make(map[string]string, len(entries))
 		if err == nil && m.options.Checkout != nil {
 			for _, entry := range entries {
 				checkouts[entry.Name] = m.options.Checkout(ctx, entry.Cwd)
 			}
 		}
-		return fetchedMsg{entries: entries, checkouts: checkouts, err: err}
+		return fetchedMsg{entries: entries, checkouts: checkouts, err: err, at: at}
 	}
 }
 
@@ -136,9 +139,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.err = msg.err.Error()
 			break
 		}
-		m.err, m.loaded, m.fetchedAt = "", true, m.now
+		m.err, m.loaded, m.fetchedAt = "", true, msg.at
 		m.entries, m.pods, m.checkouts = msg.entries, Pods(msg.entries), msg.checkouts
-		m.states = m.track(msg.entries)
+		m.states = m.track(msg.entries, msg.at)
 		if _, ok := m.find(m.selected); !ok {
 			m.selected = ""
 			if order := m.order(); len(order) > 0 {
@@ -183,9 +186,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-// track returns the state of each agent in entries after a refresh at m.now.
-// It drops the agents that left the list.
-func (m Model) track(entries []list.Entry) map[stateKey]stateSince {
+// track returns the state of each agent in entries after a refresh that
+// returned at at. It drops the agents that left the list.
+func (m Model) track(entries []list.Entry, at time.Time) map[stateKey]stateSince {
 	states := make(map[stateKey]stateSince, len(entries))
 	for _, e := range entries {
 		k := stateKey{e.Name, e.StartedAt.UnixNano()}
@@ -194,7 +197,7 @@ func (m Model) track(entries []list.Entry) map[stateKey]stateSince {
 		case !ok:
 			states[k] = stateSince{status: e.Status}
 		case old.status != e.Status:
-			states[k] = stateSince{status: e.Status, since: m.now, changed: true}
+			states[k] = stateSince{status: e.Status, since: at, changed: true}
 		default:
 			states[k] = old
 		}
@@ -417,6 +420,7 @@ func (m Model) detailLines(width int) []string {
 	rows := [][2]string{
 		{"pod", m.pods[at[0]].Title},
 		{"status", color(markStyle, mark) + " " + e.Status},
+		{"in state", m.inState(e)},
 		{"harness", e.Harness},
 		{"model", e.Model},
 		{"pane", e.Pane},
@@ -426,7 +430,6 @@ func (m Model) detailLines(width int) []string {
 		{"session", e.HarnessSessionID},
 		{"started", started},
 		{"elapsed", since(e, m.now)},
-		{"in state", m.inState(e)},
 	}
 	w := min(width-2, 72)
 	inner := w - 4

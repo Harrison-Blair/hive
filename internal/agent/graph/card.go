@@ -9,11 +9,10 @@ import (
 )
 
 // The card size of the historical Agents graph, widened so that a name of 16
-// cells, such as hive-coordinator, and a time in state with seconds up to
-// 99h59m59s fit on row 1. A time with the ≥ mark takes one more cell from the
-// name.
+// cells, such as hive-coordinator, and a time in state with the ≥ mark and
+// seconds up to ≥99h59m59s fit on row 1.
 const (
-	cardWidth    = 32
+	cardWidth    = 33
 	minCardWidth = 16
 	cardHeight   = 5
 )
@@ -82,7 +81,8 @@ func since(e list.Entry, now time.Time) string {
 }
 
 // drawCard draws the card of e at x, y with width w. Row 1 has the status
-// glyph, the name, and age, the time in the current state. Row 2 has the checkout, and row 3
+// glyph, the name, and age, the time in the current state. The age shows only
+// when it fits after the glyph, and the name gets the room that is left. Row 2 has the checkout, and row 3
 // has the harness and the model.
 // A selected card has a heavy border.
 func drawCard(c *canvas, x, y, w int, e list.Entry, age string, selected bool, frame int, checkout string) {
@@ -99,7 +99,7 @@ func drawCard(c *canvas, x, y, w int, e list.Entry, age string, selected bool, f
 	mark, markStyle := glyph(e.Status, frame)
 	c.text(x+2, y+1, mark, markStyle, 1)
 	room := inner - 2
-	if cells := len([]rune(age)); cells > 0 {
+	if cells := len([]rune(age)); cells > 0 && cells <= room {
 		room -= cells + 1
 		c.text(x+w-2-cells, y+1, age, styleDim, cells)
 	}

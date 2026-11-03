@@ -45,7 +45,7 @@ func loaded(t *testing.T, entries []list.Entry, width, height int) Model {
 	t.Helper()
 	m := New(Options{Fetch: fetchOf(entries), Now: func() time.Time { return clock }})
 	m = update(t, m, tea.WindowSizeMsg{Width: width, Height: height})
-	return update(t, m, fetchedMsg{entries: entries})
+	return update(t, m, fetchedMsg{entries: entries, at: clock})
 }
 
 func update(t *testing.T, m Model, msg tea.Msg) Model {
@@ -126,15 +126,15 @@ func TestCardKeepsACoordinatorNameWithALongElapsedTime(t *testing.T) {
 		e := entry("hive-coordinator", "", "idle", "claude", "opus", time.Hour)
 		m := loaded(t, []list.Entry{e}, 140, 20)
 		e.Status = "working"
-		m = update(t, m, fetchedMsg{entries: []list.Entry{e}})
+		m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock})
 		m = update(t, m, clockMsg(clock.Add(age)))
 		if text := screen(m); !strings.Contains(text, " hive-coordinator ") || !strings.Contains(text, " "+want+" ") {
 			t.Errorf("age %v: card row 1 has no full name and time in state:\n%s", age, text)
 		}
 	}
 	e := entry("hive-coordinator", "", "idle", "claude", "opus", 26*time.Hour+4*time.Minute+3*time.Second)
-	if text := screen(loaded(t, []list.Entry{e}, 140, 20)); !strings.Contains(text, " hive-coordinat… ≥26h04m03s ") {
-		t.Errorf("a long time with ≥ does not fit whole beside the cut name:\n%s", text)
+	if text := screen(loaded(t, []list.Entry{e}, 140, 20)); !strings.Contains(text, " hive-coordinator ≥26h04m03s ") {
+		t.Errorf("a long time with ≥ does not fit whole beside the full name:\n%s", text)
 	}
 }
 
@@ -535,7 +535,7 @@ func TestCardTimerShowsAtLeastSinceStartUntilAChange(t *testing.T) {
 		t.Fatalf("row after a fetch with no change = %q; want ≥1h02m08s", row)
 	}
 	e.Status = "working"
-	m = update(t, m, fetchedMsg{entries: []list.Entry{e}})
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock.Add(3 * time.Second)})
 	if row := cardRow1(t, m, "w"); !strings.Contains(row, " 0s ┃") || strings.Contains(row, "≥") {
 		t.Fatalf("row at the change = %q; want 0s without ≥", row)
 	}
@@ -546,7 +546,7 @@ func TestCardTimerShowsAtLeastSinceStartUntilAChange(t *testing.T) {
 	}
 	m = update(t, m, clockMsg(clock.Add(12*time.Second)))
 	e.Status = "idle"
-	m = update(t, m, fetchedMsg{entries: []list.Entry{e}})
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock.Add(12 * time.Second)})
 	m = update(t, m, clockMsg(clock.Add(14*time.Second)))
 	if row := cardRow1(t, m, "w"); !strings.Contains(row, " 2s ┃") {
 		t.Fatalf("row 2 s after a second change = %q; want 2s", row)
@@ -557,7 +557,7 @@ func TestReplacedRecordStartsAFreshTimer(t *testing.T) {
 	e := entry("w", "", "idle", "pi", "m", time.Hour)
 	m := loaded(t, []list.Entry{e}, 140, 30)
 	e.Status = "working"
-	m = update(t, m, fetchedMsg{entries: []list.Entry{e}})
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock})
 	m = update(t, m, clockMsg(clock.Add(5*time.Second)))
 	if row := cardRow1(t, m, "w"); !strings.Contains(row, " 5s ┃") {
 		t.Fatalf("row = %q; want 5s", row)
@@ -581,9 +581,65 @@ func TestDetailsShowTimeInState(t *testing.T) {
 		t.Fatalf("details before a change:\n%s", text)
 	}
 	e.Status = "working"
-	m = update(t, m, fetchedMsg{entries: []list.Entry{e}})
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock})
 	m = update(t, m, clockMsg(clock.Add(4*time.Second)))
 	if text := screen(m); !strings.Contains(text, "in state  4s ") || !strings.Contains(text, "elapsed   10m04s") {
 		t.Fatalf("details after a change:\n%s", text)
+	}
+}
+
+// TestStateChangeTimeIsWhenTheFetchSawIt proves that the time in state counts
+// from the end of the fetch that saw the change, not from the clock tick
+// before it.
+func TestStateChangeTimeIsWhenTheFetchSawIt(t *testing.T) {
+	now := clock
+	entries := []list.Entry{entry("w", "", "idle", "pi", "m", time.Hour)}
+	m := New(Options{Fetch: func(context.Context) ([]list.Entry, error) { return entries, nil }, Now: func() time.Time { return now }})
+	m = update(t, m, tea.WindowSizeMsg{Width: 140, Height: 30})
+	m = update(t, m, m.fetch()())
+	m = update(t, m, clockMsg(clock.Add(time.Second)))
+	entries = []list.Entry{entry("w", "", "working", "pi", "m", time.Hour)}
+	now = clock.Add(1900 * time.Millisecond)
+	m = update(t, m, m.fetch()())
+	m = update(t, m, clockMsg(clock.Add(2*time.Second)))
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " 0s ┃") {
+		t.Fatalf("row 100 ms after the fetch saw the change = %q; want 0s", row)
+	}
+	m = update(t, m, clockMsg(clock.Add(3*time.Second)))
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " 1s ┃") {
+		t.Fatalf("row 1.1 s after the fetch saw the change = %q; want 1s", row)
+	}
+}
+
+func TestNarrowCardKeepsTheGlyph(t *testing.T) {
+	e := entry("solo", "", "idle", "pi", "m", 0)
+	for age, want := range map[string]string{
+		"≥1000h00m00s": "│ ○ solo       │",
+		"≥10m00s":      "│ ○ s… ≥10m00s │",
+		"≥1h00m00s":    "│ ○  ≥1h00m00s │",
+		"≥10h00m00s":   "│ ○ ≥10h00m00s │",
+	} {
+		if row := ansi.Strip(cardLines(e, age, false, 0, 16)[1]); row != want {
+			t.Errorf("age %s: row 1 = %q; want %q", age, row, want)
+		}
+	}
+}
+
+func TestShortDetailsShowTimeInState(t *testing.T) {
+	m := key(t, loaded(t, []list.Entry{entry("w", "", "idle", "pi", "m", 10*time.Minute)}, 80, 16), tea.KeyEnter)
+	if text := screen(m); !strings.Contains(text, "in state  ≥10m00s") {
+		t.Fatalf("an 80x16 detail panel has no in state row:\n%s", text)
+	}
+}
+
+func TestUpdatedTimeIsWhenTheFetchReturned(t *testing.T) {
+	now := clock
+	m := New(Options{Fetch: fetchOf(fixture()), Now: func() time.Time { return now }})
+	m = update(t, m, tea.WindowSizeMsg{Width: 140, Height: 50})
+	m = update(t, m, clockMsg(clock.Add(time.Second)))
+	now = clock.Add(2500 * time.Millisecond)
+	m = update(t, m, m.fetch()())
+	if text := screen(m); !strings.Contains(text, " updated 14:22:07") {
+		t.Fatalf("status does not show the time when the fetch returned:\n%s", text)
 	}
 }
