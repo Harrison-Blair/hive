@@ -20,7 +20,6 @@
 // choice.go reads and writes the last choice and the last model of each
 // harness at <home>/coordinator-choice.json.
 // picker.go is the Bubble Tea picker.
-// canvas.go is the cell grid that the picker draws its box on.
 // name.go resolves the coordinator name from the start directory and guards
 // the record of that name.
 // launch.go saves the coordinator record, labels its tab, and starts the harness

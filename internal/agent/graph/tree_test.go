@@ -7,6 +7,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/agent/list"
+	"github.com/Harrison-Blair/hive/internal/lib/canvas"
 	"github.com/Harrison-Blair/hive/internal/lib/style"
 	"github.com/charmbracelet/x/ansi"
 )
@@ -238,8 +239,8 @@ func TestHiddenTreeKeepsTheSideScrollAndAMoveKeyShowsWithoutMoving(t *testing.T)
 
 // parseCells reads a rendered line back into one cell per rune with its SGR
 // style.
-func parseCells(line string) []cell {
-	var out []cell
+func parseCells(line string) []canvas.Cell {
+	var out []canvas.Cell
 	style := ""
 	for i := 0; i < len(line); {
 		if strings.HasPrefix(line[i:], "\x1b[") {
@@ -252,7 +253,7 @@ func parseCells(line string) []cell {
 			continue
 		}
 		r, n := utf8.DecodeRuneInString(line[i:])
-		out = append(out, cell{r, style})
+		out = append(out, canvas.Cell{R: r, Style: style})
 		i += n
 	}
 	return out
@@ -267,7 +268,7 @@ func TestJoinsLeaveTheCardBordersWhole(t *testing.T) {
 	for _, tree := range []bool{true, false} {
 		for _, selected := range []string{"c", "a", "b", "w"} {
 			b := drawBoard(Pods(entries), 38, nil, selected, 0, nil, tree)
-			rows := make([][]cell, len(b.lines))
+			rows := make([][]canvas.Cell, len(b.lines))
 			for i, line := range b.lines {
 				rows[i] = parseCells(line)
 			}
@@ -279,17 +280,17 @@ func TestJoinsLeaveTheCardBordersWhole(t *testing.T) {
 				case s.status == "working":
 					edge = style.Working
 				}
-				want := newCanvas(s.left+s.width, s.top+cardHeight)
-				want.box(s.left, s.top, s.width, cardHeight, box, edge)
+				want := canvas.New(s.left+s.width, s.top+cardHeight)
+				want.Box(s.left, s.top, s.width, cardHeight, box, edge)
 				for y := s.top; y < s.top+cardHeight; y++ {
 					for x := s.left; x < s.left+s.width; x++ {
-						w := want.cells[y][x]
-						if w.r == 0 {
+						w := want.Cells[y][x]
+						if w.R == 0 {
 							continue
 						}
 						if got := rows[y][x]; got != w {
 							t.Errorf("tree %v, selected %s: card %s cell %d,%d = %q in %q; want %q in %q",
-								tree, selected, name, x, y, got.r, got.style, w.r, w.style)
+								tree, selected, name, x, y, got.R, got.Style, w.R, w.Style)
 						}
 					}
 				}

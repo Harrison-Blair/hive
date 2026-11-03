@@ -10,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/canvas"
 	"github.com/Harrison-Blair/hive/internal/lib/style"
 )
 
@@ -228,8 +229,8 @@ func (p Picker) visible() []string {
 // View draws the box of the current step and the key line under it.
 func (p Picker) View() tea.View {
 	w, h := p.size()
-	c := newCanvas(w, h+1)
-	c.box(w, h)
+	c := canvas.New(w, h+1)
+	c.Box(0, 0, w, h, []rune("╭╮╰╯─│"), style.Border)
 	harness := Harnesses[p.harness]
 	title := []span{{"hive", style.Accent}, {harness, style.Harness(harness)}, {"model", ""}}
 	keys := "[model] enter start · esc back"
@@ -240,21 +241,21 @@ func (p Picker) View() tea.View {
 		p.drawHarnesses(c, w)
 	case stepLoading:
 		keys = "[model] esc back"
-		c.text(2, 2, spinnerFrames[p.frame], style.Working, 1)
-		c.text(4, 2, "listing models…", style.Dim, w-6)
+		put(c, 2, 2, spinnerFrames[p.frame], style.Working, 1)
+		put(c, 4, 2, "listing models…", style.Dim, w-6)
 	case stepModels:
 		keys = "[model] ↑↓ move · type filter · enter start · esc back"
 		p.drawModels(c, w, h)
 	case stepFailure:
-		c.text(2, 2, "! model list unavailable", style.Error, w-4)
-		c.text(4, 3, p.failure, style.Dim, w-6)
+		put(c, 2, 2, "! model list unavailable", style.Error, w-4)
+		put(c, 4, 3, p.failure, style.Dim, w-6)
 		drawInput(c, 5, 2, "model", p.typed, w-2)
 	case stepOther:
 		drawInput(c, 2, 2, "model", p.typed, w-2)
 	}
-	c.title(title)
-	c.text(1, h, keys, style.Dim, w-1)
-	return tea.NewView(strings.Join(c.lines(), "\n"))
+	drawTitle(c, title)
+	put(c, 1, h, keys, style.Dim, w-1)
+	return tea.NewView(strings.Join(c.Lines(), "\n"))
 }
 
 // size gives the box size: boxWidth × boxHeight, cut to fit the pane with one
@@ -271,36 +272,36 @@ func (p Picker) size() (int, int) {
 }
 
 // drawHarnesses draws one row per harness with the last model of each.
-func (p Picker) drawHarnesses(c *canvas, w int) {
+func (p Picker) drawHarnesses(c *canvas.Canvas, w int) {
 	for i, name := range Harnesses {
 		y := 2 + i
 		nameStyle := style.Harness(name)
 		if i == p.harness {
-			c.text(2, y, "▸", style.Selected, 1)
+			put(c, 2, y, "▸", style.Selected, 1)
 			nameStyle = bold(nameStyle)
 		}
-		c.text(4, y, name, nameStyle, 8)
+		put(c, 4, y, name, nameStyle, 8)
 		if p.hasLast && name == p.last.Harness {
-			c.text(12, y, lastMark, style.Dim, 6)
+			put(c, 12, y, lastMark, style.Dim, 6)
 		}
 		model := p.lastModel(name)
 		if model == "" {
 			model = "–"
 		}
-		c.text(21, y, model, style.Dim, w-23)
+		put(c, 21, y, model, style.Dim, w-23)
 	}
 }
 
 // drawModels draws the filter row, a rule, and the rows of the list that fit
 // the box around the cursor.
-func (p Picker) drawModels(c *canvas, w, h int) {
+func (p Picker) drawModels(c *canvas.Canvas, w, h int) {
 	rows := p.visible()
 	count := fmt.Sprintf("%d of %d", len(rows)-1, len(p.models))
 	countX := w - 2 - utf8.RuneCountInString(count)
-	c.text(countX, 1, count, style.Dim, len(count))
+	put(c, countX, 1, count, style.Dim, len(count))
 	drawInput(c, 1, 2, "filter", p.filter, countX-1)
 	for x := 1; x < w-1; x++ {
-		c.set(x, 2, '─', style.Border)
+		c.Set(x, 2, '─', style.Border)
 	}
 	nameWidth := 0
 	for _, model := range rows {
@@ -317,23 +318,23 @@ func (p Picker) drawModels(c *canvas, w, h int) {
 			nameStyle = style.Dim
 		}
 		if i == p.cursor {
-			c.text(2, y, "▸", style.Selected, 1)
+			put(c, 2, y, "▸", style.Selected, 1)
 			nameStyle = bold(nameStyle)
 			if rows[i] != otherRow {
 				nameStyle = style.Selected
 			}
 		}
-		c.text(4, y, rows[i], nameStyle, nameWidth)
+		put(c, 4, y, rows[i], nameStyle, nameWidth)
 		if lastHarness && rows[i] == p.last.Model {
-			c.text(6+nameWidth, y, lastMark, style.Dim, 6)
+			put(c, 6+nameWidth, y, lastMark, style.Dim, 6)
 		}
 	}
 }
 
 // drawInput draws label at x, then text and the ▏ cursor, ending before end.
 // A text that does not fit keeps its end, after a … mark.
-func drawInput(c *canvas, y, x int, label, text string, end int) {
-	c.text(x, y, label, style.Dim, end-x)
+func drawInput(c *canvas.Canvas, y, x int, label, text string, end int) {
+	put(c, x, y, label, style.Dim, end-x)
 	x += utf8.RuneCountInString(label) + 1
 	room := end - x - 1
 	if room <= 0 {
@@ -343,7 +344,32 @@ func drawInput(c *canvas, y, x int, label, text string, end int) {
 	if len(runes) > room {
 		runes = append([]rune("…"), runes[len(runes)-room+1:]...)
 	}
-	c.text(x, y, string(runes)+"▏", "", room+1)
+	put(c, x, y, string(runes)+"▏", "", room+1)
+}
+
+// put writes s at x, y, cut to limit cells with … at the end.
+func put(c *canvas.Canvas, x, y int, s, style string, limit int) {
+	c.Text(x, y, canvas.Clip(s, limit), style, limit)
+}
+
+// span is one run of title text with its SGR style.
+type span struct{ text, style string }
+
+// drawTitle writes the spans into the top edge, joined by a dim " · ".
+func drawTitle(c *canvas.Canvas, spans []span) {
+	x, end := 3, c.W-2
+	c.Set(2, 0, ' ', "")
+	for i, s := range spans {
+		if i > 0 {
+			put(c, x, 0, " · ", style.Dim, end-x)
+			x += 3
+		}
+		put(c, x, 0, s.text, s.style, end-x)
+		x += utf8.RuneCountInString(s.text)
+	}
+	if x < end {
+		c.Set(x, 0, ' ', "")
+	}
 }
 
 // bold adds bold to an SGR style.
