@@ -314,18 +314,16 @@ func (p Picker) drawHarnesses(c *canvas.Canvas, w, h int) {
 		y := top + i - first
 		nameStyle := style.Harness(name)
 		if i == p.harness {
-			put(c, 2, y, "▸", style.Selected, 1)
 			nameStyle = bold(nameStyle)
-		}
-		put(c, 4, y, name, nameStyle, 8)
-		if p.hasLast && name == p.last.Harness {
-			put(c, 12, y, lastMark, style.Dim, 6)
 		}
 		model := p.lastModel(name)
 		if model == "" {
 			model = "–"
 		}
-		put(c, 21, y, model, style.Dim, w-23)
+		drawRow(c, y, w, listRow{
+			cursor: i == p.harness, name: name, nameStyle: nameStyle, field: 8,
+			last: p.hasLast && name == p.last.Harness, second: model,
+		})
 	}
 }
 
@@ -352,7 +350,6 @@ func (p Picker) drawModels(c *canvas.Canvas, w, h int) {
 	for _, model := range rows {
 		nameWidth = max(nameWidth, ansi.StringWidth(model))
 	}
-	nameWidth = min(nameWidth, w-14)
 	lastModel := p.lastModel(Harnesses[p.harness])
 	list := h - 1 - top
 	first := max(0, min(p.cursor-list/2, len(rows)-list))
@@ -363,17 +360,63 @@ func (p Picker) drawModels(c *canvas.Canvas, w, h int) {
 			nameStyle = style.Dim
 		}
 		if i == p.cursor {
-			put(c, 2, y, "▸", style.Selected, 1)
 			nameStyle = bold(nameStyle)
 			if rows[i] != otherRow {
 				nameStyle = style.Selected
 			}
 		}
-		put(c, 4, y, rows[i], nameStyle, nameWidth)
-		if lastModel != "" && rows[i] == lastModel {
-			put(c, 6+nameWidth, y, lastMark, style.Dim, 6)
-		}
+		drawRow(c, y, w, listRow{
+			cursor: i == p.cursor, name: rows[i], nameStyle: nameStyle, field: nameWidth, gap: 2,
+			last: lastModel != "" && rows[i] == lastModel,
+		})
 	}
+}
+
+// listRow is one row of the harness or the model list.
+type listRow struct {
+	cursor          bool
+	name, nameStyle string
+	// field is the width of the name column, and gap the cells between it
+	// and the ✓ last column, so the marks of each row line up.
+	field, gap int
+	last       bool
+	// second is the dim column after the ✓ last column, or "".
+	second string
+}
+
+// drawRow draws one list row in a box of width w. The ▸ cursor mark never
+// drops. When the row is too narrow, it drops the second column first, then
+// ✓ last, and then cuts the name with …, keeping at least its first cell.
+func drawRow(c *canvas.Canvas, y, w int, r listRow) {
+	if r.cursor {
+		put(c, 2, y, "▸", style.Selected, 1)
+	}
+	room := w - 2 - 4 // the cells from the name to the right margin
+	// The name column narrows to keep the ✓ last column while the name fits.
+	field := min(r.field, room-r.gap-ansi.StringWidth(lastMark))
+	if ansi.StringWidth(r.name) > field {
+		drawName(c, y, r.name, r.nameStyle, room)
+		return
+	}
+	put(c, 4, y, r.name, r.nameStyle, field)
+	lastX := 4 + field + r.gap
+	if r.last {
+		put(c, lastX, y, lastMark, style.Dim, ansi.StringWidth(lastMark))
+	}
+	secondX := lastX + ansi.StringWidth(lastMark) + 3
+	if limit := w - 2 - secondX; r.second != "" && limit >= 2 {
+		put(c, secondX, y, r.second, style.Dim, limit)
+	}
+}
+
+// drawName cuts name to limit cells with …, and keeps its first cell when
+// there is room for less than the first cell and the … mark.
+func drawName(c *canvas.Canvas, y int, name, nameStyle string, limit int) {
+	if limit < 2 {
+		c.Text(4, y, name, nameStyle, 1)
+		return
+	}
+	put(c, 4, y, name, nameStyle, limit)
 }
 
 // drawInput draws label at x, then text and the ▏ cursor, ending before end.

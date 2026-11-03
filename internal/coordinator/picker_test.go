@@ -692,3 +692,59 @@ func TestPickerViewIsUncutBeforeAPaneSize(t *testing.T) {
 		t.Fatalf("view before any WindowSizeMsg is %d × %d; want the 62 × 15 box and the key line", w, h)
 	}
 }
+
+// rowAt returns the stripped row of a picker in a w × 24 pane that holds part.
+func rowAt(t *testing.T, m Picker, w int, part string) string {
+	t.Helper()
+	return lineWith(t, view(update(t, m, tea.WindowSizeMsg{Width: w, Height: 24})), part)
+}
+
+func TestPickerHarnessRowsDropPartsInOrderWhenNarrow(t *testing.T) {
+	last := Choice{Harness: "claude", Model: "claude-opus-5-5", Models: map[string]string{"claude": "claude-opus-5-5", "codex": "gpt-6.1-sol"}}
+	m := NewPicker(last, true, fakeDiscover(piModels, nil))
+	for _, tc := range []struct {
+		width int
+		want  string // the claude cursor row, without the right edge
+	}{
+		{62, "│ ▸ claude  ✓ last   claude-opus-5-5"},
+		{25, "│ ▸ claude  ✓ last   c…"},
+		{24, "│ ▸ claude  ✓ last  "}, // (1) the second column drops
+		{17, "│ ▸ claude      "},     // (2) ✓ last drops, the name stays whole
+		{10, "│ ▸ cla…"},             // (3) the name is cut
+		{7, "│ ▸ c"},                 // the first cell of the name stays
+	} {
+		row := rowAt(t, m, tc.width, "▸")
+		if row != tc.want+strings.Repeat(" ", tc.width-1-ansi.StringWidth(tc.want))+"│" {
+			t.Errorf("claude row at width %d = %q; want %q and the right edge", tc.width, row, tc.want)
+		}
+	}
+}
+
+func TestPickerModelRowsDropPartsInOrderWhenNarrow(t *testing.T) {
+	m := steps(t)["models"]
+	for _, tc := range []struct {
+		width int
+		want  string // the cursor row on the remembered model
+	}{
+		{40, "│ ▸ provider/model-10  ✓ last"},
+		{31, "│ ▸ provider/model-10  ✓ last"},
+		{30, "│ ▸ provider/model-10"}, // (2) ✓ last drops, the name stays whole
+		{20, "│ ▸ provider/mode…"},    // (3) the name is cut
+		{14, "│ ▸ provide…"},
+		{7, "│ ▸ p"},
+	} {
+		row := rowAt(t, m, tc.width, "▸")
+		if row != tc.want+strings.Repeat(" ", tc.width-1-ansi.StringWidth(tc.want))+"│" {
+			t.Errorf("model cursor row at width %d = %q; want %q and the right edge", tc.width, row, tc.want)
+		}
+	}
+	if row := lineWith(t, view(update(t, m, tea.WindowSizeMsg{Width: 14, Height: 15})), "▸"); !strings.Contains(row, "▸ provide…") {
+		t.Errorf("cursor row at 14 × 15 = %q; want the start of its name", row)
+	}
+	lines := strings.Split(view(update(t, m, tea.WindowSizeMsg{Width: 14, Height: 24})), "\n")
+	for i, line := range lines {
+		if strings.Contains(line, "▸") && lines[i+1] != "│   provide… │" {
+			t.Errorf("row under the cursor at width 14 = %q; want its name cut", lines[i+1])
+		}
+	}
+}

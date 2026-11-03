@@ -5,8 +5,10 @@
 // line under it, in the palette of internal/lib/style that the agent graph
 // uses. Each step has the same size. In a smaller pane the box takes the pane
 // width and loses rows until the box and the key line fit; the harness and
-// model lists scroll so the cursor row stays in the box. A last guard cuts
-// the view to the pane size.
+// model lists scroll so the cursor row stays in the box. A list row that is
+// too narrow drops the last model column of step 1 first, then "✓ last", and
+// then cuts the name with …, keeping its first cell; ▸ always stays. A last
+// guard cuts the view to the pane size.
 // The title in the top edge names the step. Step 1 lists the harnesses
 // claude, codex, and pi, each in its harness colour, with the last model of
 // each harness, or – when it has none. Enter lists the models of the chosen
