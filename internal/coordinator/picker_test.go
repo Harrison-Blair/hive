@@ -664,8 +664,8 @@ func TestPickerWideFilterTextStaysInTheBox(t *testing.T) {
 	if !strings.Contains(view(m), "看▏") {
 		t.Errorf("view = %q; want the end of the typed text and the cursor", view(m))
 	}
-	m = typeText(t, m, "看看")
-	line := lineWith(t, view(m), "filter")
+	m = typeText(t, m, "看看看看看看看看")
+	line := strings.Split(view(m), "\n")[1]
 	if !strings.Contains(line, "…") || !strings.Contains(line, "看▏") || ansi.StringWidth(line) != 40 {
 		t.Errorf("overflowing filter row = %q; want … then the end of the text and the cursor in 40 cells", line)
 	}
@@ -745,6 +745,33 @@ func TestPickerModelRowsDropPartsInOrderWhenNarrow(t *testing.T) {
 	for i, line := range lines {
 		if strings.Contains(line, "▸") && lines[i+1] != "│   provide… │" {
 			t.Errorf("row under the cursor at width 14 = %q; want its name cut", lines[i+1])
+		}
+	}
+}
+
+func TestPickerFilterRowDropsPartsInOrderWhenNarrow(t *testing.T) {
+	models := steps(t)["models"]
+	opus := typeText(t, models, "opus")
+	for _, tc := range []struct {
+		m     Picker
+		width int
+		want  string // the filter row: left part, then the right part before the edge
+		right string
+	}{
+		{models, 40, "│ filter ▏", "20 of 20 │"},
+		{opus, 40, "│ filter opus▏", "0 of 20 │"},
+		{opus, 24, "│ filter opus▏", "0 of 20 │"},
+		{opus, 23, "│ filter opus▏", "│"}, // the count drops
+		{opus, 16, "│ filter opus▏", "│"},
+		{opus, 15, "│ opus▏", "│"}, // the label drops
+		{opus, 9, "│ opus▏", "│"},
+		{opus, 8, "│ …us▏", "│"}, // the start of the text is cut
+		{models, 7, "│ ▏", "│"},
+	} {
+		lines := strings.Split(view(update(t, tc.m, tea.WindowSizeMsg{Width: tc.width, Height: 24})), "\n")
+		want := tc.want + strings.Repeat(" ", tc.width-ansi.StringWidth(tc.want)-ansi.StringWidth(tc.right)) + tc.right
+		if lines[1] != want {
+			t.Errorf("filter row at width %d = %q; want %q", tc.width, lines[1], want)
 		}
 	}
 }

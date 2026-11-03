@@ -332,7 +332,6 @@ func (p Picker) drawHarnesses(c *canvas.Canvas, w, h int) {
 func (p Picker) drawModels(c *canvas.Canvas, w, h int) {
 	rows := p.visible()
 	count := fmt.Sprintf("%d of %d", len(rows)-1, len(p.models))
-	countX := w - 2 - ansi.StringWidth(count)
 	// In a short box the list keeps one row: the rule goes first, then the
 	// filter row.
 	top := 3
@@ -340,8 +339,7 @@ func (p Picker) drawModels(c *canvas.Canvas, w, h int) {
 		top--
 	}
 	if top >= 2 {
-		put(c, countX, 1, count, style.Dim, len(count))
-		drawInput(c, 1, 2, "filter", p.filter, countX-1)
+		drawFilter(c, 1, w, p.filter, count)
 	}
 	for x := 1; top >= 3 && x < w-1; x++ {
 		c.Set(x, 2, '─', style.Border)
@@ -420,15 +418,45 @@ func drawName(c *canvas.Canvas, y int, name, nameStyle string, limit int) {
 }
 
 // drawInput draws label at x, then text and the ▏ cursor, ending before end.
-// A text that does not fit keeps its end, after a … mark.
 func drawInput(c *canvas.Canvas, y, x int, label, text string, end int) {
 	put(c, x, y, label, style.Dim, end-x)
 	x += ansi.StringWidth(label) + 1
-	room := end - x - 1
-	if room <= 0 {
+	put(c, x, y, field(text, end-x), "", end-x)
+}
+
+// drawFilter draws the filter row in a box of width w: the filter label, the
+// typed text with the ▏ cursor, and the count at the right. When the row is
+// too narrow, it drops the count first, then the label, and then cuts the
+// start of the text. The ▏ cursor always stays.
+func drawFilter(c *canvas.Canvas, y, w int, text, count string) {
+	const label = "filter"
+	end := w - 2
+	room := end - 2
+	input := ansi.StringWidth(text) + 1
+	labelWidth := ansi.StringWidth(label) + 1
+	countWidth := ansi.StringWidth(count)
+	if labelWidth+input > room {
+		put(c, 2, y, field(text, room), "", room)
 		return
 	}
+	put(c, 2, y, label, style.Dim, labelWidth)
+	put(c, 2+labelWidth, y, text+"▏", "", input)
+	if labelWidth+input+1+countWidth <= room {
+		put(c, end-countWidth, y, count, style.Dim, countWidth)
+	}
+}
+
+// field gives text and the ▏ cursor in room cells. A text that does not fit
+// keeps its end, after a … mark.
+func field(text string, room int) string {
+	room-- // the ▏ cursor
+	if room < 0 {
+		return ""
+	}
 	if width := ansi.StringWidth(text); width > room {
+		if room == 0 {
+			return "▏"
+		}
 		// A wide character on the cut stays whole, so cut one more cell
 		// until the end fits after the … mark.
 		tail := text
@@ -437,7 +465,7 @@ func drawInput(c *canvas.Canvas, y, x int, label, text string, end int) {
 		}
 		text = "…" + tail
 	}
-	put(c, x, y, text+"▏", "", room+1)
+	return text + "▏"
 }
 
 // put writes s at x, y, cut to limit cells with … at the end.
