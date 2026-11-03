@@ -10,6 +10,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/agent/list"
+	"github.com/Harrison-Blair/hive/internal/lib/style"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -92,6 +93,20 @@ func TestPodsSurviveAParentCycle(t *testing.T) {
 	pods := Pods([]list.Entry{entry("a", "b", "idle", "pi", "m", 0), entry("b", "a", "idle", "pi", "m", 0)})
 	if len(pods) != 1 || len(pods[0].Order()) != 2 {
 		t.Fatalf("pods = %+v; want one home pod with both agents", pods)
+	}
+}
+
+func TestCardRow3ColoursTheHarnessNameAndKeepsTheModelDim(t *testing.T) {
+	for _, tc := range []struct{ harness, model, want string }{
+		{"claude", "opus", "\x1b[" + style.Claude + "mclaude\x1b[0m\x1b[" + style.Dim + "m · opus"},
+		{"codex", "gpt-6.1-sol", "\x1b[" + style.Codex + "mcodex\x1b[0m\x1b[" + style.Dim + "m · gpt-6.1-sol"},
+		{"pi", "luna", " pi\x1b[" + style.Dim + "m · luna"},
+	} {
+		e := entry("solo", "", "idle", tc.harness, tc.model, time.Minute)
+		row3 := cardLines(e, "1m00s", false, 0, 28)[3]
+		if !strings.Contains(row3, tc.want) {
+			t.Errorf("%s row 3 = %q; want %q", tc.harness, row3, tc.want)
+		}
 	}
 }
 

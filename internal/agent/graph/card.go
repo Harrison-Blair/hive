@@ -73,7 +73,7 @@ func since(e list.Entry, now time.Time) string {
 // drawCard draws the card of e at x, y with width w. Row 1 has the status
 // glyph, the name, and age, the time in the current state. The age shows only
 // when it fits after the glyph, and the name gets the room that is left. Row 2 has the checkout, and row 3
-// has the harness and the model.
+// has the harness in its harness colour and the model.
 // A selected card has a heavy border.
 func drawCard(c *canvas, x, y, w int, e list.Entry, age string, selected bool, frame int, checkout string) {
 	border, edge := style.Border, "╭╮╰╯─│"
@@ -106,7 +106,9 @@ func drawCard(c *canvas, x, y, w int, e list.Entry, age string, selected bool, f
 	if e.Model != "" {
 		sub += " · " + e.Model
 	}
-	c.text(x+2, y+3, clip(sub, inner), style.Dim, inner)
+	sub = clip(sub, inner)
+	c.text(x+2, y+3, sub, style.Dim, inner)
+	c.text(x+2, y+3, sub, style.Harness(e.Harness), min(len([]rune(e.Harness)), len([]rune(sub))))
 }
 
 // cardLines renders one card alone.
