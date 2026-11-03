@@ -128,8 +128,8 @@ func TestCardKeepsACoordinatorNameWithALongElapsedTime(t *testing.T) {
 		e.Status = "working"
 		m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock})
 		m = update(t, m, clockMsg(clock.Add(age)))
-		if text := screen(m); !strings.Contains(text, " hive-coordinator ") || !strings.Contains(text, " "+want+" ") {
-			t.Errorf("age %v: card row 1 has no full name and time in state:\n%s", age, text)
+		if row := cardRow1(t, m, "hive-coordinator"); !strings.Contains(row, " "+want+" ") {
+			t.Errorf("age %v: card row 1 %q has no full name and time in state", age, row)
 		}
 	}
 	e := entry("hive-coordinator", "", "idle", "claude", "opus", 26*time.Hour+4*time.Minute+3*time.Second)
@@ -455,6 +455,18 @@ func cardRow1(t *testing.T, m Model, name string) string {
 	return ""
 }
 
+// rawCardRow1 is cardRow1 with its SGR sequences.
+func rawCardRow1(t *testing.T, m Model, name string) string {
+	t.Helper()
+	for _, line := range strings.Split(m.View().Content, "\n") {
+		if strings.Contains(ansi.Strip(line), " "+name+" ") {
+			return line
+		}
+	}
+	t.Fatalf("no card row of %s:\n%s", name, screen(m))
+	return ""
+}
+
 func legendLine(m Model) string {
 	lines := strings.Split(m.View().Content, "\n")
 	return lines[len(lines)-2]
@@ -462,13 +474,13 @@ func legendLine(m Model) string {
 
 func TestEachStateHasItsGlyphAndStyle(t *testing.T) {
 	for _, tc := range []struct{ status, glyph, style string }{
-		{"working", "⠋", styleWorking},
-		{"idle", "○", styleAccent},
-		{"blocked", "×", styleError},
-		{"done", "✓", styleDim},
-		{"unknown", "·", styleDim},
-		{"gone", "–", styleDim},
-		{"strange", "·", styleDim},
+		{"working", "⠋", "38;2;110;230;154"},
+		{"idle", "○", "38;2;245;185;66"},
+		{"blocked", "×", "38;2;232;112;95"},
+		{"done", "✓", "38;2;163;157;144"},
+		{"unknown", "·", "38;2;163;157;144"},
+		{"gone", "–", "38;2;163;157;144"},
+		{"strange", "·", "38;2;163;157;144"},
 	} {
 		e := entry("solo", "", tc.status, "pi", "m", time.Minute)
 		m := loaded(t, []list.Entry{entry("first", "", "idle", "pi", "m", 0), e}, 140, 30)
@@ -476,8 +488,8 @@ func TestEachStateHasItsGlyphAndStyle(t *testing.T) {
 		if !strings.Contains(row, tc.glyph+" solo ") {
 			t.Errorf("%s: card row %q has no %q", tc.status, row, tc.glyph)
 		}
-		if !strings.Contains(m.View().Content, "\x1b["+tc.style+"m"+tc.glyph+"\x1b[0m") {
-			t.Errorf("%s: glyph %q is not in style %q", tc.status, tc.glyph, tc.style)
+		if raw := rawCardRow1(t, m, "solo"); !strings.Contains(raw, "\x1b["+tc.style+"m"+tc.glyph+"\x1b[0m") {
+			t.Errorf("%s: card glyph %q is not in style %q: %q", tc.status, tc.glyph, tc.style, raw)
 		}
 	}
 }
@@ -486,12 +498,12 @@ func TestLegendShowsEachGlyphAndNoStaticWorkingGlyph(t *testing.T) {
 	m := loaded(t, []list.Entry{entry("a", "", "idle", "pi", "m", 0)}, 140, 30)
 	legend := legendLine(m)
 	for _, want := range []string{
-		"\x1b[" + styleWorking + "m⠋\x1b[0m working",
-		"\x1b[" + styleAccent + "m○\x1b[0m idle",
-		"\x1b[" + styleError + "m×\x1b[0m blocked",
-		"\x1b[" + styleDim + "m✓\x1b[0m done",
-		"\x1b[" + styleDim + "m·\x1b[0m unknown",
-		"\x1b[" + styleDim + "m–\x1b[0m gone",
+		"\x1b[38;2;110;230;154m⠋\x1b[0m working",
+		"\x1b[38;2;245;185;66m○\x1b[0m idle",
+		"\x1b[38;2;232;112;95m×\x1b[0m blocked",
+		"\x1b[38;2;163;157;144m✓\x1b[0m done",
+		"\x1b[38;2;163;157;144m·\x1b[0m unknown",
+		"\x1b[38;2;163;157;144m–\x1b[0m gone",
 	} {
 		if !strings.Contains(legend, want) {
 			t.Errorf("legend %q has no %q", ansi.Strip(legend), ansi.Strip(want))
