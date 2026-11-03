@@ -439,7 +439,7 @@ func steps(t *testing.T, msgs ...tea.Msg) map[string]Picker {
 		other = update(t, other, press(tea.KeyDown))
 	}
 	other = update(t, other, press(tea.KeyEnter))
-	if !strings.Contains(view(other), "[model] enter start") || strings.Contains(view(other), "filter") {
+	if other.step != stepOther {
 		t.Fatalf("other step not reached:\n%s", view(other))
 	}
 	return map[string]Picker{
@@ -580,6 +580,37 @@ func TestPickerKeyLines(t *testing.T) {
 		lines := strings.Split(view(m), "\n")
 		if got := lines[len(lines)-1]; got != want[name] {
 			t.Errorf("%s key line = %q; want %q", name, got, want[name])
+		}
+	}
+}
+
+func TestPickerNeverGoesBeyondATinyPane(t *testing.T) {
+	for _, pane := range []tea.WindowSizeMsg{{Width: 20, Height: 8}, {Width: 10, Height: 4}, {Width: 3, Height: 2}, {Width: 1, Height: 1}} {
+		for name, m := range steps(t, pane) {
+			lines := strings.Split(raw(m), "\n")
+			if len(lines) > pane.Height {
+				t.Errorf("%s step in a %d × %d pane has %d lines:\n%s", name, pane.Width, pane.Height, len(lines), view(m))
+			}
+			for _, line := range lines {
+				if w := ansi.StringWidth(line); w > pane.Width {
+					t.Errorf("%s step in a %d × %d pane has a line of %d cells: %q", name, pane.Width, pane.Height, w, ansi.Strip(line))
+				}
+			}
+		}
+	}
+}
+
+func TestPickerKeepsTheWholeBoxInASmallPane(t *testing.T) {
+	for name, m := range steps(t, tea.WindowSizeMsg{Width: 20, Height: 8}) {
+		lines := strings.Split(view(m), "\n")
+		box := lines[:len(lines)-1]
+		if !strings.HasPrefix(box[0], "╭") || !strings.HasPrefix(box[len(box)-1], "╰") {
+			t.Errorf("%s box has no top or bottom edge:\n%s", name, view(m))
+		}
+		for _, line := range box {
+			if w := ansi.StringWidth(line); w != 20 || !strings.ContainsAny(string([]rune(line)[19]), "╮│╯") {
+				t.Errorf("%s box line %q (%d cells) lacks the right edge at column 20", name, line, w)
+			}
 		}
 	}
 }

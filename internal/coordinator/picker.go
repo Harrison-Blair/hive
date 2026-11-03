@@ -23,8 +23,6 @@ const (
 	spinnerDelay = 100 * time.Millisecond
 	boxWidth     = 62
 	boxHeight    = 15
-	minBoxWidth  = 24
-	minBoxHeight = 7
 )
 
 var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
@@ -230,7 +228,6 @@ func (p Picker) visible() []string {
 func (p Picker) View() tea.View {
 	w, h := p.size()
 	c := canvas.New(w, h+1)
-	c.Box(0, 0, w, h, []rune("╭╮╰╯─│"), style.Border)
 	harness := Harnesses[p.harness]
 	title := []span{{"hive", style.Accent}, {harness, style.Harness(harness)}, {"model", ""}}
 	keys := "[model] enter start · esc back"
@@ -253,20 +250,30 @@ func (p Picker) View() tea.View {
 	case stepOther:
 		drawInput(c, 2, 2, "model", p.typed, w-2)
 	}
-	drawTitle(c, title)
+	// The content stays inside the box: the edges overwrite it, and the
+	// key row is cleared before the key line.
+	c.Cells[h] = make([]canvas.Cell, w)
+	if h > 0 {
+		c.Box(0, 0, w, h, []rune("╭╮╰╯─│"), style.Border)
+		drawTitle(c, title)
+	}
 	put(c, 1, h, keys, style.Dim, w-1)
 	return tea.NewView(strings.Join(c.Lines(), "\n"))
 }
 
 // size gives the box size: boxWidth × boxHeight, cut to fit the pane with one
-// row left for the shell prompt and one for the key line.
+// row left for the shell prompt and one for the key line. The height is 0,
+// for the key line alone, when the pane has no room for a box.
 func (p Picker) size() (int, int) {
 	w, h := boxWidth, boxHeight
 	if p.width > 0 {
-		w = max(minBoxWidth, min(w, p.width))
+		w = min(w, p.width)
 	}
 	if p.height > 0 {
-		h = max(minBoxHeight, min(h, p.height-2))
+		h = min(h, p.height-2)
+	}
+	if w < 2 || h < 2 {
+		h = 0
 	}
 	return w, h
 }
