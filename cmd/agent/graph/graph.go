@@ -17,9 +17,10 @@ import (
 // New creates the agent graph command.
 func New() *cobra.Command {
 	command := &cobra.Command{
-		Use:   "graph",
-		Short: "show a live graph of the agents; --json prints one list snapshot",
-		Args:  cobra.NoArgs,
+		Use:         "graph",
+		Short:       "show a live graph of the agents; --json prints one list snapshot",
+		Annotations: map[string]string{common.GuideOmit: "true"},
+		Args:        cobra.NoArgs,
 	}
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		jsonOutput, err := cmd.Root().PersistentFlags().GetBool("json")

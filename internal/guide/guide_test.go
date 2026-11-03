@@ -48,7 +48,7 @@ func TestRenderListsCommandsThenNotes(t *testing.T) {
 	}
 }
 
-func TestNotesCoverTheSevenItems(t *testing.T) {
+func TestNotesCoverTheNineItems(t *testing.T) {
 	notes := Notes()
 	for _, phrase := range []string{
 		"## Usage notes",
@@ -72,7 +72,11 @@ func TestNotesCoverTheSevenItems(t *testing.T) {
 			t.Errorf("Notes() has no %q", phrase)
 		}
 	}
-	for i := 1; i <= 7; i++ {
+	hiveOnly := "\n2. Hive only. Start each agent with `hive agent spawn`. Message each agent with `hive agent send`. Do not use a subagent, team, or message tool of your harness. Use one only when the user or your spawn brief tells you to.\n3. Message authority. "
+	if !strings.Contains(notes, hiveOnly) {
+		t.Errorf("Notes() has no note 2 %q before note 3", hiveOnly)
+	}
+	for i := 1; i <= 9; i++ {
 		if !strings.Contains(notes, "\n"+string(rune('0'+i))+". ") {
 			t.Errorf("Notes() has no item %d", i)
 		}
