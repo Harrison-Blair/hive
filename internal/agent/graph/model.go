@@ -78,6 +78,9 @@ type Model struct {
 	details       bool
 	scroll        int
 	hidden        bool // hides the outline of the selected card; the selection stays
+	xscroll       int
+	// list is true in list mode and false in tree mode.
+	list bool
 
 	spinning bool
 	frame    int
@@ -181,14 +184,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc":
 			m.hidden = m.hidden || !m.details
 			m.details = false
+		case "g":
+			m.list = !m.list
 		case "down", "j":
-			m.step(1)
+			m.vertical(1)
 		case "up", "k":
-			m.step(-1)
+			m.vertical(-1)
 		case "right", "l":
-			m.jump(1)
+			m.horizontal(1)
 		case "left", "h":
-			m.jump(-1)
+			m.horizontal(-1)
 		}
 	}
 	m.follow()
@@ -293,19 +298,32 @@ func (m Model) board() board {
 	if m.hidden {
 		selected = ""
 	}
-	return drawBoard(m.pods, m.screenWidth(), ages, selected, m.frame, m.checkouts)
+	return drawBoard(m.pods, m.screenWidth(), ages, selected, m.frame, m.checkouts, !m.list)
 }
 
-// follow scrolls the pod area so that the selected card shows. While the
-// outline is hidden, it only keeps the scroll in the pod area.
+// follow scrolls the pod area down and sideways so that the selected card
+// shows. While the outline is hidden, it only keeps both scrolls in the pod
+// area.
 func (m *Model) follow() {
+	b := m.board()
+	card, ok := b.cards[m.selected]
+	ok = ok && !m.hidden
+	width := m.screenWidth()
+	if ok {
+		if card.left < m.xscroll {
+			m.xscroll = card.left
+		}
+		if right := card.left + card.width; right > m.xscroll+width {
+			m.xscroll = right - width
+		}
+	}
+	m.xscroll = max(0, min(m.xscroll, b.width-width))
 	area := m.area()
 	if area == 0 {
 		m.scroll = 0
 		return
 	}
-	b := m.board()
-	if card, ok := b.cards[m.selected]; ok && !m.hidden {
+	if ok {
 		if card.top < m.scroll {
 			m.scroll = card.top
 		}
@@ -323,9 +341,9 @@ func (m Model) wantSpinner() bool {
 		e, ok := m.selectedEntry()
 		return ok && e.Status == "working"
 	}
-	area := m.area()
+	area, width := m.area(), m.screenWidth()
 	for _, card := range m.board().cards {
-		if card.status != "working" {
+		if card.status != "working" || card.left+card.width <= m.xscroll || card.left >= m.xscroll+width {
 			continue
 		}
 		if area == 0 || card.top+cardHeight > m.scroll && card.top < m.scroll+area {
@@ -363,6 +381,9 @@ func (m Model) View() tea.View {
 		body = []string{" no agents"}
 	default:
 		body = m.board().lines
+		for i, line := range body {
+			body[i] = ansi.Cut(line, m.xscroll, m.xscroll+width)
+		}
 		if area := m.area(); area > 0 {
 			body = body[min(m.scroll, len(body)):]
 			body = body[:min(area, len(body))]
@@ -400,7 +421,10 @@ func (m Model) keys() string {
 	if m.details {
 		return color(styleDim, " [details] esc close · ↑↓ move · r refresh · q quit")
 	}
-	return color(styleDim, " [graph] ←↑↓→ move · enter details · esc hide · r refresh · q quit")
+	if m.list {
+		return color(styleDim, " [list] ←↑↓→ move · enter details · esc hide · g tree · r refresh · q quit")
+	}
+	return color(styleDim, " [tree] ←↑↓→ move · enter details · esc hide · g list · r refresh · q quit")
 }
 
 // legend shows the glyph of each status. The working glyph follows frame.
