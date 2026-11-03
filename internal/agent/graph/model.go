@@ -413,14 +413,17 @@ func (m Model) detailLines(width int) []string {
 	}
 	e := m.pods[at[0]].Order()[at[1]].Entry
 	mark, markStyle := glyph(e.Status, m.frame)
+	status := color(markStyle, mark) + " " + e.Status
+	if age := m.inState(e); age != "" {
+		status += " · in state " + age
+	}
 	started := ""
 	if !e.StartedAt.IsZero() {
 		started = e.StartedAt.Local().Format("2006-01-02 15:04:05")
 	}
 	rows := [][2]string{
 		{"pod", m.pods[at[0]].Title},
-		{"status", color(markStyle, mark) + " " + e.Status},
-		{"in state", m.inState(e)},
+		{"status", status},
 		{"harness", e.Harness},
 		{"model", e.Model},
 		{"pane", e.Pane},

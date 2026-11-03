@@ -589,13 +589,13 @@ func TestReplacedRecordStartsAFreshTimer(t *testing.T) {
 func TestDetailsShowTimeInState(t *testing.T) {
 	e := entry("w", "", "idle", "pi", "m", 10*time.Minute)
 	m := key(t, loaded(t, []list.Entry{e}, 120, 40), tea.KeyEnter)
-	if text := screen(m); !strings.Contains(text, "in state  ≥10m00s") || !strings.Contains(text, "elapsed   10m00s") {
+	if text := screen(m); !strings.Contains(text, "status    ○ idle · in state ≥10m00s ") || !strings.Contains(text, "elapsed   10m00s") {
 		t.Fatalf("details before a change:\n%s", text)
 	}
 	e.Status = "working"
 	m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock})
 	m = update(t, m, clockMsg(clock.Add(4*time.Second)))
-	if text := screen(m); !strings.Contains(text, "in state  4s ") || !strings.Contains(text, "elapsed   10m04s") {
+	if text := screen(m); !strings.Contains(text, "status    ⠋ working · in state 4s ") || !strings.Contains(text, "elapsed   10m04s") {
 		t.Fatalf("details after a change:\n%s", text)
 	}
 }
@@ -638,9 +638,24 @@ func TestNarrowCardKeepsTheGlyph(t *testing.T) {
 }
 
 func TestShortDetailsShowTimeInState(t *testing.T) {
-	m := key(t, loaded(t, []list.Entry{entry("w", "", "idle", "pi", "m", 10*time.Minute)}, 80, 16), tea.KeyEnter)
-	if text := screen(m); !strings.Contains(text, "in state  ≥10m00s") {
-		t.Fatalf("an 80x16 detail panel has no in state row:\n%s", text)
+	for height, want := range map[int]string{
+		16: "pod status harness model pane parent cwd worktree session started elapsed",
+		15: "pod status harness model pane parent cwd worktree session started",
+	} {
+		m := key(t, loaded(t, []list.Entry{entry("w", "", "idle", "pi", "m", 10*time.Minute)}, 80, height), tea.KeyEnter)
+		text := screen(m)
+		var labels []string
+		for _, line := range strings.Split(text, "\n") {
+			if fields := strings.Fields(strings.Trim(strings.TrimSpace(line), "┃")); strings.HasPrefix(strings.TrimSpace(line), "┃ ") && len(fields) > 0 {
+				labels = append(labels, fields[0])
+			}
+		}
+		if got := strings.Join(labels, " "); got != want {
+			t.Errorf("80x%d detail rows = %q; want %q:\n%s", height, got, want, text)
+		}
+		if !strings.Contains(text, "status    ○ idle · in state ≥10m00s ") {
+			t.Errorf("80x%d status row has no time in state:\n%s", height, text)
+		}
 	}
 }
 
