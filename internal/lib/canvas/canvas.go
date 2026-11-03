@@ -2,12 +2,20 @@
 // the agent graph and the picker of bare hive draw on.
 package canvas
 
-import "strings"
+import (
+	"strings"
 
-// Cell is one rune of the grid with its SGR style. R is 0 for an unset cell.
+	"github.com/charmbracelet/x/ansi"
+)
+
+// Cell is one column of the grid with its SGR style. R is 0 for an unset
+// cell. G holds a grapheme of more than one rune, of which R is the first. A
+// wide grapheme takes its cell and the next one, which has cont set.
 type Cell struct {
 	R     rune
 	Style string
+	G     string
+	cont  bool
 }
 
 // Canvas is a grid of W × H cells.
@@ -25,20 +33,50 @@ func New(w, h int) *Canvas {
 	return c
 }
 
-// Set writes one cell. A cell outside the grid is ignored.
+// Set writes one cell of one column. A cell outside the grid is ignored.
 func (c *Canvas) Set(x, y int, r rune, style string) {
-	if x >= 0 && y >= 0 && x < c.W && y < c.H {
-		c.Cells[y][x] = Cell{r, style}
-	}
+	c.put(x, y, Cell{R: r, Style: style})
 }
 
-// Text writes at most limit runes of s from x.
+// put writes cell at x, y. When it covers half of a wide grapheme, the other
+// half becomes a blank in the style of the grapheme.
+func (c *Canvas) put(x, y int, cell Cell) {
+	if x < 0 || y < 0 || x >= c.W || y >= c.H {
+		return
+	}
+	row := c.Cells[y]
+	if row[x].cont && x > 0 {
+		row[x-1] = Cell{R: ' ', Style: row[x-1].Style}
+	}
+	if x+1 < c.W && row[x+1].cont {
+		row[x+1] = Cell{R: ' ', Style: row[x].Style}
+	}
+	row[x] = cell
+}
+
+// Text writes s from x, one grapheme at a time, in at most limit columns. A
+// wide grapheme takes two columns. A grapheme that does not fit in limit or
+// in the grid ends the text.
 func (c *Canvas) Text(x, y int, s, style string, limit int) {
-	for i, r := range []rune(s) {
-		if i >= limit {
+	col := 0
+	for s != "" {
+		g, width := ansi.FirstGraphemeCluster(s, ansi.GraphemeWidth)
+		s = s[len(g):]
+		if width == 0 {
+			continue
+		}
+		if col+width > limit || x+col+width > c.W {
 			return
 		}
-		c.Set(x+i, y, r, style)
+		cell := Cell{R: []rune(g)[0], Style: style}
+		if len([]rune(g)) > 1 {
+			cell.G = g
+		}
+		c.put(x+col, y, cell)
+		for i := 1; i < width; i++ {
+			c.put(x+col+i, y, Cell{Style: style, cont: true})
+		}
+		col += width
 	}
 }
 
@@ -70,8 +108,11 @@ func (c *Canvas) Lines() []string {
 		var b strings.Builder
 		style := ""
 		for _, cl := range row[:end] {
+			if cl.cont {
+				continue
+			}
 			if cl.R == 0 {
-				cl = Cell{' ', ""}
+				cl = Cell{R: ' '}
 			}
 			if cl.Style != style {
 				if style != "" {
@@ -82,7 +123,11 @@ func (c *Canvas) Lines() []string {
 				}
 				style = cl.Style
 			}
-			b.WriteRune(cl.R)
+			if cl.G != "" {
+				b.WriteString(cl.G)
+			} else {
+				b.WriteRune(cl.R)
+			}
 		}
 		if style != "" {
 			b.WriteString("\x1b[0m")
@@ -92,14 +137,10 @@ func (c *Canvas) Lines() []string {
 	return out
 }
 
-// Clip cuts text to limit runes with … at the end.
+// Clip cuts text to limit columns with … at the end.
 func Clip(text string, limit int) string {
-	runes := []rune(text)
 	if limit <= 0 {
 		return ""
 	}
-	if len(runes) <= limit {
-		return text
-	}
-	return string(runes[:limit-1]) + "…"
+	return ansi.Truncate(text, limit, "…")
 }
