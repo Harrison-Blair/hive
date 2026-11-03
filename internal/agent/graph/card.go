@@ -9,8 +9,9 @@ import (
 )
 
 // The card size of the historical Agents graph, widened so that a name of 16
-// cells, such as hive-coordinator, and an elapsed time with seconds up to
-// 99h59m59s fit on row 1.
+// cells, such as hive-coordinator, and a time in state with seconds up to
+// 99h59m59s fit on row 1. A time with the ≥ mark takes one more cell from the
+// name.
 const (
 	cardWidth    = 32
 	minCardWidth = 16
@@ -31,33 +32,33 @@ const (
 // frameInterval is the frame interval of the Pi working indicator.
 const frameInterval = 80 * time.Millisecond
 
-// workingFrames are the frames of the Pi working indicator. Frame 0 is the
-// static working glyph.
+// workingFrames are the frames of the Pi working indicator. The working glyph
+// is always one of them.
 var workingFrames = [...]string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 
 // statuses gives the glyph and the glyph style of each herdr status, in
 // legend order.
 var statuses = []struct{ status, glyph, style string }{
-	{"working", "●", styleWorking},
-	{"idle", "◐", styleAccent},
-	{"blocked", "▲", styleError},
+	{"working", workingFrames[0], styleWorking},
+	{"idle", "○", styleAccent},
+	{"blocked", "×", styleError},
 	{"done", "✓", styleDim},
-	{"unknown", "◌", styleDim},
-	{"gone", "○", styleDim},
+	{"unknown", "·", styleDim},
+	{"gone", "–", styleDim},
 }
 
-// glyph gives the status glyph and its style. A working glyph at frame 1 or
-// later is a braille frame.
+// glyph gives the status glyph and its style. The working glyph is the
+// braille frame of frame.
 func glyph(status string, frame int) (string, string) {
-	if status == "working" && frame > 0 {
-		return workingFrames[(frame-1)%len(workingFrames)], styleWorking
+	if status == "working" {
+		return workingFrames[frame%len(workingFrames)], styleWorking
 	}
 	for _, s := range statuses {
 		if s.status == status {
 			return s.glyph, s.style
 		}
 	}
-	return "◌", styleDim
+	return "·", styleDim
 }
 
 // elapsed formats a duration with seconds: 7s, 4m05s, 26h04m03s.
@@ -81,10 +82,10 @@ func since(e list.Entry, now time.Time) string {
 }
 
 // drawCard draws the card of e at x, y with width w. Row 1 has the status
-// glyph, the name, and the elapsed time. Row 2 has the checkout, and row 3
+// glyph, the name, and age, the time in the current state. Row 2 has the checkout, and row 3
 // has the harness and the model.
 // A selected card has a heavy border.
-func drawCard(c *canvas, x, y, w int, e list.Entry, now time.Time, selected bool, frame int, checkout string) {
+func drawCard(c *canvas, x, y, w int, e list.Entry, age string, selected bool, frame int, checkout string) {
 	border, edge := styleBorder, "╭╮╰╯─│"
 	switch {
 	case selected:
@@ -97,11 +98,10 @@ func drawCard(c *canvas, x, y, w int, e list.Entry, now time.Time, selected bool
 	inner := w - 4
 	mark, markStyle := glyph(e.Status, frame)
 	c.text(x+2, y+1, mark, markStyle, 1)
-	age := since(e, now)
 	room := inner - 2
-	if age != "" {
-		room -= len(age) + 1
-		c.text(x+w-2-len(age), y+1, age, styleDim, len(age))
+	if cells := len([]rune(age)); cells > 0 {
+		room -= cells + 1
+		c.text(x+w-2-cells, y+1, age, styleDim, cells)
 	}
 	nameStyle := ""
 	switch {
@@ -120,9 +120,9 @@ func drawCard(c *canvas, x, y, w int, e list.Entry, now time.Time, selected bool
 }
 
 // cardLines renders one card alone.
-func cardLines(e list.Entry, now time.Time, selected bool, frame, w int) []string {
+func cardLines(e list.Entry, age string, selected bool, frame, w int) []string {
 	c := newCanvas(w, cardHeight)
-	drawCard(c, 0, 0, w, e, now, selected, frame, "")
+	drawCard(c, 0, 0, w, e, age, selected, frame, "")
 	return c.lines()
 }
 
