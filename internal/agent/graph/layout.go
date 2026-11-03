@@ -127,18 +127,10 @@ func (d *drawer) card(n *Node, x, y int) {
 // tree draws the card of n at x, y and its children below it, each one
 // column to the right, joined to n by a trunk in column x.
 func (d *drawer) tree(n *Node, x, y int) {
-	selected := n.Entry.Name == d.selected
 	d.card(n, x, y)
 	if len(n.Children) == 0 {
 		return
 	}
-	corner, cornerStyle := '├', styleBorder
-	if selected {
-		corner, cornerStyle = '┣', styleSelected
-	} else if n.Entry.Status == "working" {
-		cornerStyle = styleWorking
-	}
-	d.c.set(x, y+cardHeight-1, corner, cornerStyle)
 	row := y + cardHeight
 	for i, child := range n.Children {
 		last := i == len(n.Children)-1
@@ -159,14 +151,6 @@ func (d *drawer) tree(n *Node, x, y int) {
 			}
 		}
 		d.tree(child, x+1, top)
-		tee, teeStyle := '┤', styleBorder
-		switch {
-		case child.Entry.Name == d.selected:
-			tee, teeStyle = '┨', styleSelected
-		case child.Entry.Status == "working":
-			teeStyle = styleWorking
-		}
-		d.c.set(x+1, join, tee, teeStyle)
 		row = top + h
 	}
 }

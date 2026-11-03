@@ -155,7 +155,7 @@ func TestViewDrawsPodsTreesAndClock(t *testing.T) {
 	text := screen(listed(t, fixture(), 140, 50))
 	for _, want := range []string{
 		"14:22:05", "╭─ api ", "╭─ hive ", "╭─ home ",
-		"├──", "├┤ ✓ hive-reviewer", "╰┤ × hive-worker ", "╰┤ ○ hive-worker-kid",
+		"│ │╭─", "├│ ✓ hive-reviewer", "╰│ × hive-worker ", "╰│ ○ hive-worker-kid",
 		"┃ ○ api-coordinator", "⠋ working", "○ idle", "× blocked", "✓ done", "– gone",
 	} {
 		if !strings.Contains(text, want) {
@@ -175,7 +175,7 @@ func TestSelectedCardHasHeavyBorder(t *testing.T) {
 	}
 	m = key(t, m, tea.KeyDown)
 	text = screen(m)
-	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "╰┨ ⠋ api-worker") {
+	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "╰┃ ⠋ api-worker") {
 		t.Fatalf("down did not move the heavy border:\n%s", text)
 	}
 }
@@ -682,11 +682,11 @@ func TestNarrowDetailsKeepTheWholeStatusRow(t *testing.T) {
 func TestEscHidesTheOutlineAndAMoveKeyShowsIt(t *testing.T) {
 	m := key(t, listed(t, fixture(), 140, 50), tea.KeyDown)
 	m = key(t, m, tea.KeyEscape)
-	if text := screen(m); strings.ContainsAny(text, "┏┨") {
+	if text := screen(m); strings.ContainsAny(text, "┏┃") {
 		t.Fatalf("esc did not hide the outline:\n%s", text)
 	}
 	m = key(t, m, tea.KeyDown)
-	if text := screen(m); strings.Count(text, "┏") != 1 || !strings.Contains(text, "╰┨ ⠋ api-worker") {
+	if text := screen(m); strings.Count(text, "┏") != 1 || !strings.Contains(text, "╰┃ ⠋ api-worker") {
 		t.Fatalf("the first down after esc does not show the outline on api-worker:\n%s", text)
 	}
 	m = key(t, m, tea.KeyDown)
@@ -713,11 +713,11 @@ func TestEnterWhileHiddenShowsTheOutlineAndNoDetails(t *testing.T) {
 func TestRefreshKeepsTheOutlineHidden(t *testing.T) {
 	m := key(t, loaded(t, fixture(), 140, 50), tea.KeyEscape)
 	m = update(t, m, fetchedMsg{entries: fixture(), at: clock})
-	if text := screen(m); strings.ContainsAny(text, "┏┨") {
+	if text := screen(m); strings.ContainsAny(text, "┏┃") {
 		t.Fatalf("a refresh showed the hidden outline:\n%s", text)
 	}
 	m = update(t, m, fetchedMsg{entries: fixture()[2:], at: clock})
-	if text := screen(m); strings.ContainsAny(text, "┏┨") {
+	if text := screen(m); strings.ContainsAny(text, "┏┃") {
 		t.Fatalf("a refresh that dropped the selection showed the hidden outline:\n%s", text)
 	}
 	m = key(t, m, tea.KeyDown)
