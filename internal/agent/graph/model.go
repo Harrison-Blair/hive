@@ -34,11 +34,30 @@ type fetchedMsg struct {
 	entries   []list.Entry
 	checkouts map[string]string
 	err       error
+	// at is the time when the agent list returned.
+	at time.Time
 }
 
 type clockMsg time.Time
 
 type frameMsg struct{ gen int }
+
+// stateKey names one agent record. A record replaced under the same name has
+// a new start time and so a new key.
+type stateKey struct {
+	name    string
+	started int64
+}
+
+// stateSince is the last status that the graph saw for an agent, and the
+// time of the refresh that first saw it. changed is false until the graph
+// sees a change, and the time in state is then at least the time since the
+// start.
+type stateSince struct {
+	status  string
+	since   time.Time
+	changed bool
+}
 
 // Model is the Bubble Tea model of the graph.
 type Model struct {
@@ -46,6 +65,7 @@ type Model struct {
 
 	entries   []list.Entry
 	checkouts map[string]string
+	states    map[stateKey]stateSince
 	pods      []Pod
 	loaded    bool
 	fetchedAt time.Time
@@ -87,13 +107,14 @@ func (m Model) fetch() tea.Cmd {
 		ctx, cancel := context.WithTimeout(context.Background(), fetchTimeout)
 		defer cancel()
 		entries, err := fetch(ctx)
+		at := m.options.Now()
 		checkouts := make(map[string]string, len(entries))
 		if err == nil && m.options.Checkout != nil {
 			for _, entry := range entries {
 				checkouts[entry.Name] = m.options.Checkout(ctx, entry.Cwd)
 			}
 		}
-		return fetchedMsg{entries: entries, checkouts: checkouts, err: err}
+		return fetchedMsg{entries: entries, checkouts: checkouts, err: err, at: at}
 	}
 }
 
@@ -118,8 +139,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.err = msg.err.Error()
 			break
 		}
-		m.err, m.loaded, m.fetchedAt = "", true, m.now
+		m.err, m.loaded, m.fetchedAt = "", true, msg.at
 		m.entries, m.pods, m.checkouts = msg.entries, Pods(msg.entries), msg.checkouts
+		m.states = m.track(msg.entries, msg.at)
 		if _, ok := m.find(m.selected); !ok {
 			m.selected = ""
 			if order := m.order(); len(order) > 0 {
@@ -162,6 +184,37 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.follow()
 	cmds = append(cmds, m.syncSpinner())
 	return m, tea.Batch(cmds...)
+}
+
+// track returns the state of each agent in entries after a refresh that
+// returned at at. It drops the agents that left the list.
+func (m Model) track(entries []list.Entry, at time.Time) map[stateKey]stateSince {
+	states := make(map[stateKey]stateSince, len(entries))
+	for _, e := range entries {
+		k := stateKey{e.Name, e.StartedAt.UnixNano()}
+		old, ok := m.states[k]
+		switch {
+		case !ok:
+			states[k] = stateSince{status: e.Status}
+		case old.status != e.Status:
+			states[k] = stateSince{status: e.Status, since: at, changed: true}
+		default:
+			states[k] = old
+		}
+	}
+	return states
+}
+
+// inState formats the time of e in its current state. Before the graph sees
+// a change, it is ≥ and the time since the start.
+func (m Model) inState(e list.Entry) string {
+	if s := m.states[stateKey{e.Name, e.StartedAt.UnixNano()}]; s.changed {
+		return elapsed(m.now.Sub(s.since))
+	}
+	if age := since(e, m.now); age != "" {
+		return "≥" + age
+	}
+	return ""
 }
 
 func (m Model) order() []*Node {
@@ -222,7 +275,11 @@ func (m Model) area() int {
 }
 
 func (m Model) board() board {
-	return drawBoard(m.pods, m.screenWidth(), m.now, m.selected, m.frame, m.checkouts)
+	ages := make(map[string]string, len(m.entries))
+	for _, e := range m.entries {
+		ages[e.Name] = m.inState(e)
+	}
+	return drawBoard(m.pods, m.screenWidth(), ages, m.selected, m.frame, m.checkouts)
 }
 
 // follow scrolls the pod area so that the selected card shows.
@@ -244,10 +301,12 @@ func (m *Model) follow() {
 	m.scroll = max(0, min(m.scroll, len(b.lines)-area))
 }
 
-// wantSpinner reports whether a working card shows in the pod area.
+// wantSpinner reports whether a working card shows in the pod area, or the
+// details show a working agent.
 func (m Model) wantSpinner() bool {
 	if m.details {
-		return false
+		e, ok := m.selectedEntry()
+		return ok && e.Status == "working"
 	}
 	area := m.area()
 	for _, card := range m.board().cards {
@@ -301,7 +360,7 @@ func (m Model) View() tea.View {
 		}
 	}
 	lines = append(lines, body...)
-	lines = append(lines, legend(), m.keys())
+	lines = append(lines, legend(m.frame), m.keys())
 	for i, line := range lines {
 		lines[i] = ansi.Truncate(line, width, "")
 	}
@@ -329,12 +388,22 @@ func (m Model) keys() string {
 	return color(styleDim, " [graph] ←↑↓→ move · enter details · r refresh · q quit")
 }
 
-func legend() string {
+// legend shows the glyph of each status. The working glyph follows frame.
+func legend(frame int) string {
 	parts := make([]string, 0, len(statuses))
 	for _, s := range statuses {
-		parts = append(parts, color(s.style, s.glyph)+" "+s.status)
+		mark, style := glyph(s.status, frame)
+		parts = append(parts, color(style, mark)+" "+s.status)
 	}
 	return " " + color(styleBorder, "──") + " " + strings.Join(parts, "   ")
+}
+
+func (m Model) selectedEntry() (list.Entry, bool) {
+	at, ok := m.find(m.selected)
+	if !ok {
+		return list.Entry{}, false
+	}
+	return m.pods[at[0]].Order()[at[1]].Entry, true
 }
 
 func (m Model) detailLines(width int) []string {
@@ -343,14 +412,18 @@ func (m Model) detailLines(width int) []string {
 		return nil
 	}
 	e := m.pods[at[0]].Order()[at[1]].Entry
-	mark, markStyle := glyph(e.Status, 0)
+	mark, markStyle := glyph(e.Status, m.frame)
+	status := color(markStyle, mark) + " " + e.Status
+	if age := m.inState(e); age != "" {
+		status += " · " + age
+	}
 	started := ""
 	if !e.StartedAt.IsZero() {
 		started = e.StartedAt.Local().Format("2006-01-02 15:04:05")
 	}
 	rows := [][2]string{
 		{"pod", m.pods[at[0]].Title},
-		{"status", color(markStyle, mark) + " " + e.Status},
+		{"status", status},
 		{"harness", e.Harness},
 		{"model", e.Model},
 		{"pane", e.Pane},

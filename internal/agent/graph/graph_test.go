@@ -45,7 +45,7 @@ func loaded(t *testing.T, entries []list.Entry, width, height int) Model {
 	t.Helper()
 	m := New(Options{Fetch: fetchOf(entries), Now: func() time.Time { return clock }})
 	m = update(t, m, tea.WindowSizeMsg{Width: width, Height: height})
-	return update(t, m, fetchedMsg{entries: entries})
+	return update(t, m, fetchedMsg{entries: entries, at: clock})
 }
 
 func update(t *testing.T, m Model, msg tea.Msg) Model {
@@ -103,12 +103,12 @@ func TestCardShowsNameCheckoutThenHarnessAndModel(t *testing.T) {
 	if !strings.Contains(text, "feature-branch") || strings.Index(text, "feature-branch") > strings.Index(text, "claude · opus") {
 		t.Fatalf("checkout must appear before harness and model:\n%s", text)
 	}
-	lines := cardLines(e, clock, false, 0, 28)
+	lines := cardLines(e, "4m05s", false, 0, 28)
 	if len(lines) != 5 {
 		t.Fatalf("card has %d lines; want 5", len(lines))
 	}
 	row1, row3 := ansi.Strip(lines[1]), ansi.Strip(lines[3])
-	if !strings.HasPrefix(row1, "│ ◐ hive-coordinator") || !strings.HasSuffix(row1, " 4m05s │") {
+	if !strings.HasPrefix(row1, "│ ○ hive-coordinator") || !strings.HasSuffix(row1, " 4m05s │") {
 		t.Errorf("row 1 = %q; want the idle glyph, the name, and 4m05s", row1)
 	}
 	if row3 != "│ claude · opus"+strings.Repeat(" ", 12)+"│" {
@@ -122,12 +122,19 @@ func TestCardShowsNameCheckoutThenHarnessAndModel(t *testing.T) {
 }
 
 func TestCardKeepsACoordinatorNameWithALongElapsedTime(t *testing.T) {
-	for _, age := range []time.Duration{10 * time.Minute, 26*time.Hour + 4*time.Minute + 3*time.Second} {
-		e := entry("hive-coordinator", "", "idle", "claude", "opus", age)
-		text := screen(loaded(t, []list.Entry{e}, 140, 20))
-		if !strings.Contains(text, " hive-coordinator ") || !strings.Contains(text, " "+elapsed(age)+" ") {
-			t.Errorf("age %v: card row 1 has no full name and elapsed time:\n%s", age, text)
+	for age, want := range map[time.Duration]string{10 * time.Minute: "10m00s", 26*time.Hour + 4*time.Minute + 3*time.Second: "26h04m03s"} {
+		e := entry("hive-coordinator", "", "idle", "claude", "opus", time.Hour)
+		m := loaded(t, []list.Entry{e}, 140, 20)
+		e.Status = "working"
+		m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock})
+		m = update(t, m, clockMsg(clock.Add(age)))
+		if row := cardRow1(t, m, "hive-coordinator"); !strings.Contains(row, " "+want+" ") {
+			t.Errorf("age %v: card row 1 %q has no full name and time in state", age, row)
 		}
+	}
+	e := entry("hive-coordinator", "", "idle", "claude", "opus", 26*time.Hour+4*time.Minute+3*time.Second)
+	if text := screen(loaded(t, []list.Entry{e}, 140, 20)); !strings.Contains(text, " hive-coordinator ≥26h04m03s ") {
+		t.Errorf("a long time with ≥ does not fit whole beside the full name:\n%s", text)
 	}
 }
 
@@ -148,8 +155,8 @@ func TestViewDrawsPodsTreesAndClock(t *testing.T) {
 	text := screen(loaded(t, fixture(), 140, 50))
 	for _, want := range []string{
 		"14:22:05", "╭─ api ", "╭─ hive ", "╭─ home ",
-		"├──", "├┤ ✓ hive-reviewer", "╰┤ ▲ hive-worker ", "╰┤ ◐ hive-worker-kid",
-		"┃ ◐ api-coordinator", "● working", "◐ idle", "▲ blocked", "✓ done", "○ gone",
+		"├──", "├┤ ✓ hive-reviewer", "╰┤ × hive-worker ", "╰┤ ○ hive-worker-kid",
+		"┃ ○ api-coordinator", "⠋ working", "○ idle", "× blocked", "✓ done", "– gone",
 	} {
 		if !strings.Contains(text, want) {
 			t.Errorf("view has no %q:\n%s", want, text)
@@ -163,12 +170,12 @@ func TestViewDrawsPodsTreesAndClock(t *testing.T) {
 func TestSelectedCardHasHeavyBorder(t *testing.T) {
 	m := loaded(t, fixture(), 140, 50)
 	text := screen(m)
-	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ◐ api-coordinator") {
+	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ○ api-coordinator") {
 		t.Fatalf("first card is not the one heavy card:\n%s", text)
 	}
 	m = key(t, m, tea.KeyDown)
 	text = screen(m)
-	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "╰┨ ● api-worker") {
+	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "╰┨ ⠋ api-worker") {
 		t.Fatalf("down did not move the heavy border:\n%s", text)
 	}
 }
@@ -377,10 +384,10 @@ func TestSpinnerRunsOnlyWhileAWorkingCardIsVisible(t *testing.T) {
 		t.Fatal("a frame with working cards schedules no next frame")
 	}
 	after := screen(m)
-	if !strings.Contains(after, "⠋ api-worker") || strings.Contains(before, "⠋") {
-		t.Fatalf("frame 1 does not show the first braille frame:\nbefore\n%s\nafter\n%s", before, after)
+	if !strings.Contains(before, "⠋ api-worker") || !strings.Contains(after, "⠙ api-worker") {
+		t.Fatalf("frame 1 does not show the second braille frame:\nbefore\n%s\nafter\n%s", before, after)
 	}
-	if !strings.Contains(after, "◐ api-coordinator") {
+	if !strings.Contains(after, "○ api-coordinator") {
 		t.Fatalf("an idle card spins:\n%s", after)
 	}
 
@@ -432,5 +439,242 @@ func TestStaleFrameDoesNotSpinTwice(t *testing.T) {
 	next, cmd := m.Update(stale)
 	if cmd != nil || next.(Model).frame != m.frame {
 		t.Fatal("a stale frame advanced the spinner or scheduled a frame")
+	}
+}
+
+// cardRow1 returns the stripped row 1 of the card of name: the line that
+// holds the name.
+func cardRow1(t *testing.T, m Model, name string) string {
+	t.Helper()
+	for _, line := range strings.Split(screen(m), "\n") {
+		if strings.Contains(line, " "+name+" ") {
+			return line
+		}
+	}
+	t.Fatalf("no card row of %s:\n%s", name, screen(m))
+	return ""
+}
+
+// rawCardRow1 is cardRow1 with its SGR sequences.
+func rawCardRow1(t *testing.T, m Model, name string) string {
+	t.Helper()
+	for _, line := range strings.Split(m.View().Content, "\n") {
+		if strings.Contains(ansi.Strip(line), " "+name+" ") {
+			return line
+		}
+	}
+	t.Fatalf("no card row of %s:\n%s", name, screen(m))
+	return ""
+}
+
+func legendLine(m Model) string {
+	lines := strings.Split(m.View().Content, "\n")
+	return lines[len(lines)-2]
+}
+
+func TestEachStateHasItsGlyphAndStyle(t *testing.T) {
+	for _, tc := range []struct{ status, glyph, style string }{
+		{"working", "⠋", "38;2;110;230;154"},
+		{"idle", "○", "38;2;245;185;66"},
+		{"blocked", "×", "38;2;232;112;95"},
+		{"done", "✓", "38;2;163;157;144"},
+		{"unknown", "·", "38;2;163;157;144"},
+		{"gone", "–", "38;2;163;157;144"},
+		{"strange", "·", "38;2;163;157;144"},
+	} {
+		e := entry("solo", "", tc.status, "pi", "m", time.Minute)
+		m := loaded(t, []list.Entry{entry("first", "", "idle", "pi", "m", 0), e}, 140, 30)
+		row := cardRow1(t, m, "solo")
+		if !strings.Contains(row, tc.glyph+" solo ") {
+			t.Errorf("%s: card row %q has no %q", tc.status, row, tc.glyph)
+		}
+		if raw := rawCardRow1(t, m, "solo"); !strings.Contains(raw, "\x1b["+tc.style+"m"+tc.glyph+"\x1b[0m") {
+			t.Errorf("%s: card glyph %q is not in style %q: %q", tc.status, tc.glyph, tc.style, raw)
+		}
+	}
+}
+
+func TestLegendShowsEachGlyphAndNoStaticWorkingGlyph(t *testing.T) {
+	m := loaded(t, []list.Entry{entry("a", "", "idle", "pi", "m", 0)}, 140, 30)
+	legend := legendLine(m)
+	for _, want := range []string{
+		"\x1b[38;2;110;230;154m⠋\x1b[0m working",
+		"\x1b[38;2;245;185;66m○\x1b[0m idle",
+		"\x1b[38;2;232;112;95m×\x1b[0m blocked",
+		"\x1b[38;2;163;157;144m✓\x1b[0m done",
+		"\x1b[38;2;163;157;144m·\x1b[0m unknown",
+		"\x1b[38;2;163;157;144m–\x1b[0m gone",
+	} {
+		if !strings.Contains(legend, want) {
+			t.Errorf("legend %q has no %q", ansi.Strip(legend), ansi.Strip(want))
+		}
+	}
+	m = loaded(t, fixture(), 140, 50)
+	if strings.Contains(screen(m), "●") {
+		t.Fatalf("the static working glyph shows:\n%s", screen(m))
+	}
+	m = update(t, m, frameMsg{gen: m.frameGen})
+	if !strings.Contains(ansi.Strip(legendLine(m)), "⠙ working") {
+		t.Fatalf("legend does not follow the spinner: %q", ansi.Strip(legendLine(m)))
+	}
+	if !strings.Contains(screen(m), "⠙ api-worker") {
+		t.Fatalf("card does not follow the spinner:\n%s", screen(m))
+	}
+}
+
+func TestDetailStatusOfAWorkingAgentSpins(t *testing.T) {
+	m := loaded(t, []list.Entry{entry("w", "", "working", "pi", "m", time.Minute)}, 120, 40)
+	m = key(t, m, tea.KeyEnter)
+	if !strings.Contains(screen(m), "status    ⠋ working") {
+		t.Fatalf("detail status has no braille frame:\n%s", screen(m))
+	}
+	next, cmd := m.Update(frameMsg{gen: m.frameGen})
+	m = next.(Model)
+	if cmd == nil || !strings.Contains(screen(m), "status    ⠙ working") {
+		t.Fatalf("detail status does not spin:\n%s", screen(m))
+	}
+}
+
+func TestCardTimerShowsAtLeastSinceStartUntilAChange(t *testing.T) {
+	e := entry("w", "", "idle", "pi", "m", time.Hour+2*time.Minute+5*time.Second)
+	m := loaded(t, []list.Entry{e}, 140, 30)
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " ≥1h02m05s ┃") {
+		t.Fatalf("row before a change = %q; want ≥1h02m05s", row)
+	}
+	m = update(t, m, clockMsg(clock.Add(3*time.Second)))
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}})
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " ≥1h02m08s ┃") {
+		t.Fatalf("row after a fetch with no change = %q; want ≥1h02m08s", row)
+	}
+	e.Status = "working"
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock.Add(3 * time.Second)})
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " 0s ┃") || strings.Contains(row, "≥") {
+		t.Fatalf("row at the change = %q; want 0s without ≥", row)
+	}
+	m = update(t, m, clockMsg(clock.Add(10*time.Second)))
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}})
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " 7s ┃") || strings.Contains(row, "≥") {
+		t.Fatalf("row 7 s after the change = %q; want 7s", row)
+	}
+	m = update(t, m, clockMsg(clock.Add(12*time.Second)))
+	e.Status = "idle"
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock.Add(12 * time.Second)})
+	m = update(t, m, clockMsg(clock.Add(14*time.Second)))
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " 2s ┃") {
+		t.Fatalf("row 2 s after a second change = %q; want 2s", row)
+	}
+}
+
+func TestReplacedRecordStartsAFreshTimer(t *testing.T) {
+	e := entry("w", "", "idle", "pi", "m", time.Hour)
+	m := loaded(t, []list.Entry{e}, 140, 30)
+	e.Status = "working"
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock})
+	m = update(t, m, clockMsg(clock.Add(5*time.Second)))
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " 5s ┃") {
+		t.Fatalf("row = %q; want 5s", row)
+	}
+	fresh := entry("w", "", "idle", "pi", "m", -3*time.Second)
+	m = update(t, m, fetchedMsg{entries: []list.Entry{fresh}})
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " ≥2s ┃") {
+		t.Fatalf("row of the replaced record = %q; want ≥2s since its own start", row)
+	}
+	m = update(t, m, fetchedMsg{entries: nil})
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}})
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " ≥1h00m05s ┃") {
+		t.Fatalf("row of an agent that left and came back = %q; want ≥1h00m05s", row)
+	}
+}
+
+func TestDetailsShowTimeInState(t *testing.T) {
+	e := entry("w", "", "idle", "pi", "m", 10*time.Minute)
+	m := key(t, loaded(t, []list.Entry{e}, 120, 40), tea.KeyEnter)
+	if text := screen(m); !strings.Contains(text, "status    ○ idle · ≥10m00s ") || !strings.Contains(text, "elapsed   10m00s") {
+		t.Fatalf("details before a change:\n%s", text)
+	}
+	e.Status = "working"
+	m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock})
+	m = update(t, m, clockMsg(clock.Add(4*time.Second)))
+	if text := screen(m); !strings.Contains(text, "status    ⠋ working · 4s ") || !strings.Contains(text, "elapsed   10m04s") {
+		t.Fatalf("details after a change:\n%s", text)
+	}
+}
+
+// TestStateChangeTimeIsWhenTheFetchSawIt proves that the time in state counts
+// from the end of the fetch that saw the change, not from the clock tick
+// before it.
+func TestStateChangeTimeIsWhenTheFetchSawIt(t *testing.T) {
+	now := clock
+	entries := []list.Entry{entry("w", "", "idle", "pi", "m", time.Hour)}
+	m := New(Options{Fetch: func(context.Context) ([]list.Entry, error) { return entries, nil }, Now: func() time.Time { return now }})
+	m = update(t, m, tea.WindowSizeMsg{Width: 140, Height: 30})
+	m = update(t, m, m.fetch()())
+	m = update(t, m, clockMsg(clock.Add(time.Second)))
+	entries = []list.Entry{entry("w", "", "working", "pi", "m", time.Hour)}
+	now = clock.Add(1900 * time.Millisecond)
+	m = update(t, m, m.fetch()())
+	m = update(t, m, clockMsg(clock.Add(2*time.Second)))
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " 0s ┃") {
+		t.Fatalf("row 100 ms after the fetch saw the change = %q; want 0s", row)
+	}
+	m = update(t, m, clockMsg(clock.Add(3*time.Second)))
+	if row := cardRow1(t, m, "w"); !strings.Contains(row, " 1s ┃") {
+		t.Fatalf("row 1.1 s after the fetch saw the change = %q; want 1s", row)
+	}
+}
+
+func TestNarrowCardKeepsTheGlyph(t *testing.T) {
+	e := entry("solo", "", "idle", "pi", "m", 0)
+	for age, want := range map[string]string{
+		"≥1000h00m00s": "│ ○ solo       │",
+		"≥10m00s":      "│ ○ s… ≥10m00s │",
+		"≥1h00m00s":    "│ ○  ≥1h00m00s │",
+		"≥10h00m00s":   "│ ○ ≥10h00m00s │",
+	} {
+		if row := ansi.Strip(cardLines(e, age, false, 0, 16)[1]); row != want {
+			t.Errorf("age %s: row 1 = %q; want %q", age, row, want)
+		}
+	}
+}
+
+func TestShortDetailsShowTimeInState(t *testing.T) {
+	for height, want := range map[int]string{
+		16: "pod status harness model pane parent cwd worktree session started elapsed",
+		15: "pod status harness model pane parent cwd worktree session started",
+	} {
+		m := key(t, loaded(t, []list.Entry{entry("w", "", "idle", "pi", "m", 10*time.Minute)}, 80, height), tea.KeyEnter)
+		text := screen(m)
+		var labels []string
+		for _, line := range strings.Split(text, "\n") {
+			if fields := strings.Fields(strings.Trim(strings.TrimSpace(line), "┃")); strings.HasPrefix(strings.TrimSpace(line), "┃ ") && len(fields) > 0 {
+				labels = append(labels, fields[0])
+			}
+		}
+		if got := strings.Join(labels, " "); got != want {
+			t.Errorf("80x%d detail rows = %q; want %q:\n%s", height, got, want, text)
+		}
+		if !strings.Contains(text, "status    ○ idle · ≥10m00s ") {
+			t.Errorf("80x%d status row has no time in state:\n%s", height, text)
+		}
+	}
+}
+
+func TestUpdatedTimeIsWhenTheFetchReturned(t *testing.T) {
+	now := clock
+	m := New(Options{Fetch: fetchOf(fixture()), Now: func() time.Time { return now }})
+	m = update(t, m, tea.WindowSizeMsg{Width: 140, Height: 50})
+	m = update(t, m, clockMsg(clock.Add(time.Second)))
+	now = clock.Add(2500 * time.Millisecond)
+	m = update(t, m, m.fetch()())
+	if text := screen(m); !strings.Contains(text, " updated 14:22:07") {
+		t.Fatalf("status does not show the time when the fetch returned:\n%s", text)
+	}
+}
+
+func TestNarrowDetailsKeepTheWholeStatusRow(t *testing.T) {
+	e := entry("w", "", "working", "pi", "m", 26*time.Hour+4*time.Minute+3*time.Second)
+	m := key(t, loaded(t, []list.Entry{e}, 40, 20), tea.KeyEnter)
+	if text := screen(m); !strings.Contains(text, "┃ status    ⠋ working · ≥26h04m03s ") {
+		t.Fatalf("a 40x20 status row is not whole:\n%s", text)
 	}
 }
