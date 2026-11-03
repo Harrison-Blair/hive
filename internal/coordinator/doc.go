@@ -4,7 +4,9 @@
 // The picker has two steps in one rounded box of 62 × 15 cells with a key
 // line under it, in the palette of internal/lib/style that the agent graph
 // uses. Each step has the same size. In a smaller pane the box takes the pane
-// width, and the model list loses rows until the box and the key line fit.
+// width and loses rows until the box and the key line fit; the harness and
+// model lists scroll so the cursor row stays in the box. A last guard cuts
+// the view to the pane size.
 // The title in the top edge names the step. Step 1 lists the harnesses
 // claude, codex, and pi, each in its harness colour, with the last model of
 // each harness, or – when it has none. Enter lists the models of the chosen

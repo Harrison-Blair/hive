@@ -12,6 +12,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/lib/canvas"
 	"github.com/Harrison-Blair/hive/internal/lib/style"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // Harnesses are the rows of step 1, in order.
@@ -235,20 +236,27 @@ func (p Picker) View() tea.View {
 	case stepHarness:
 		title = []span{{"hive", style.Accent}, {"harness", ""}}
 		keys = "[harness] ↑↓ move · enter next · esc quit"
-		p.drawHarnesses(c, w)
+		p.drawHarnesses(c, w, h)
 	case stepLoading:
 		keys = "[model] esc back"
-		put(c, 2, 2, spinnerFrames[p.frame], style.Working, 1)
-		put(c, 4, 2, "listing models…", style.Dim, w-6)
+		y := min(2, h-2)
+		put(c, 2, y, spinnerFrames[p.frame], style.Working, 1)
+		put(c, 4, y, "listing models…", style.Dim, w-6)
 	case stepModels:
 		keys = "[model] ↑↓ move · type filter · enter start · esc back"
 		p.drawModels(c, w, h)
 	case stepFailure:
-		put(c, 2, 2, "! model list unavailable", style.Error, w-4)
-		put(c, 4, 3, p.failure, style.Dim, w-6)
-		drawInput(c, 5, 2, "model", p.typed, w-2)
+		// In a short box the input row moves up over the cause.
+		y := min(5, h-2)
+		if y > 2 {
+			put(c, 2, 2, "! model list unavailable", style.Error, w-4)
+		}
+		if y > 3 {
+			put(c, 4, 3, p.failure, style.Dim, w-6)
+		}
+		drawInput(c, y, 2, "model", p.typed, w-2)
 	case stepOther:
-		drawInput(c, 2, 2, "model", p.typed, w-2)
+		drawInput(c, min(2, h-2), 2, "model", p.typed, w-2)
 	}
 	// The content stays inside the box: the edges overwrite it, and the
 	// key row is cleared before the key line.
@@ -258,7 +266,21 @@ func (p Picker) View() tea.View {
 		drawTitle(c, title)
 	}
 	put(c, 1, h, keys, style.Dim, w-1)
-	return tea.NewView(strings.Join(c.Lines(), "\n"))
+	lines := c.Lines()
+	if p.width > 0 && p.height > 0 {
+		lines = fit(lines, p.width, p.height)
+	}
+	return tea.NewView(strings.Join(lines, "\n"))
+}
+
+// fit is the last guard of View: it cuts each line to width cells and drops
+// the lines below height.
+func fit(lines []string, width, height int) []string {
+	lines = lines[:min(len(lines), height)]
+	for i, line := range lines {
+		lines[i] = ansi.Truncate(line, width, "")
+	}
+	return lines
 }
 
 // size gives the box size: boxWidth × boxHeight, cut to fit the pane with one
@@ -278,10 +300,18 @@ func (p Picker) size() (int, int) {
 	return w, h
 }
 
-// drawHarnesses draws one row per harness with the last model of each.
-func (p Picker) drawHarnesses(c *canvas.Canvas, w int) {
-	for i, name := range Harnesses {
-		y := 2 + i
+// drawHarnesses draws one row per harness with the last model of each. In a
+// short box the rows start on the first inner row and scroll to the cursor.
+func (p Picker) drawHarnesses(c *canvas.Canvas, w, h int) {
+	top := 2
+	if h-1-top < 1 {
+		top = 1
+	}
+	rows := h - 1 - top
+	first := max(0, min(p.harness-rows/2, len(Harnesses)-rows))
+	for i := first; i < len(Harnesses) && i < first+rows; i++ {
+		name := Harnesses[i]
+		y := top + i - first
 		nameStyle := style.Harness(name)
 		if i == p.harness {
 			put(c, 2, y, "▸", style.Selected, 1)
@@ -304,22 +334,30 @@ func (p Picker) drawHarnesses(c *canvas.Canvas, w int) {
 func (p Picker) drawModels(c *canvas.Canvas, w, h int) {
 	rows := p.visible()
 	count := fmt.Sprintf("%d of %d", len(rows)-1, len(p.models))
-	countX := w - 2 - utf8.RuneCountInString(count)
-	put(c, countX, 1, count, style.Dim, len(count))
-	drawInput(c, 1, 2, "filter", p.filter, countX-1)
-	for x := 1; x < w-1; x++ {
+	countX := w - 2 - ansi.StringWidth(count)
+	// In a short box the list keeps one row: the rule goes first, then the
+	// filter row.
+	top := 3
+	for top > 1 && h-1-top < 1 {
+		top--
+	}
+	if top >= 2 {
+		put(c, countX, 1, count, style.Dim, len(count))
+		drawInput(c, 1, 2, "filter", p.filter, countX-1)
+	}
+	for x := 1; top >= 3 && x < w-1; x++ {
 		c.Set(x, 2, '─', style.Border)
 	}
 	nameWidth := 0
 	for _, model := range rows {
-		nameWidth = max(nameWidth, utf8.RuneCountInString(model))
+		nameWidth = max(nameWidth, ansi.StringWidth(model))
 	}
 	nameWidth = min(nameWidth, w-14)
 	lastModel := p.lastModel(Harnesses[p.harness])
-	list := h - 4
+	list := h - 1 - top
 	first := max(0, min(p.cursor-list/2, len(rows)-list))
 	for i := first; i < len(rows) && i < first+list; i++ {
-		y := 3 + i - first
+		y := top + i - first
 		nameStyle := ""
 		if rows[i] == otherRow {
 			nameStyle = style.Dim
@@ -342,16 +380,21 @@ func (p Picker) drawModels(c *canvas.Canvas, w, h int) {
 // A text that does not fit keeps its end, after a … mark.
 func drawInput(c *canvas.Canvas, y, x int, label, text string, end int) {
 	put(c, x, y, label, style.Dim, end-x)
-	x += utf8.RuneCountInString(label) + 1
+	x += ansi.StringWidth(label) + 1
 	room := end - x - 1
 	if room <= 0 {
 		return
 	}
-	runes := []rune(text)
-	if len(runes) > room {
-		runes = append([]rune("…"), runes[len(runes)-room+1:]...)
+	if width := ansi.StringWidth(text); width > room {
+		// A wide character on the cut stays whole, so cut one more cell
+		// until the end fits after the … mark.
+		tail := text
+		for cut := width - room + 1; ansi.StringWidth(tail) > room-1; cut++ {
+			tail = ansi.TruncateLeft(text, cut, "")
+		}
+		text = "…" + tail
 	}
-	put(c, x, y, string(runes)+"▏", "", room+1)
+	put(c, x, y, text+"▏", "", room+1)
 }
 
 // put writes s at x, y, cut to limit cells with … at the end.
@@ -372,7 +415,7 @@ func drawTitle(c *canvas.Canvas, spans []span) {
 			x += 3
 		}
 		put(c, x, 0, s.text, s.style, end-x)
-		x += utf8.RuneCountInString(s.text)
+		x += ansi.StringWidth(s.text)
 	}
 	if x < end {
 		c.Set(x, 0, ' ', "")

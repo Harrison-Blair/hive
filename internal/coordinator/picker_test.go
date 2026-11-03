@@ -631,3 +631,64 @@ func TestPickerKeepsTheWholeBoxInASmallPane(t *testing.T) {
 		}
 	}
 }
+
+func TestPickerHarnessListScrollsToTheCursorInAShortPane(t *testing.T) {
+	m := steps(t, tea.WindowSizeMsg{Width: 40, Height: 6})["harness"]
+	m = update(t, m, press(tea.KeyUp))
+	m = update(t, m, press(tea.KeyUp))
+	m = update(t, m, press(tea.KeyDown))
+	if !strings.Contains(view(m), "▸ codex") {
+		t.Fatalf("view after Down = %q; want the cursor row ▸ codex", view(m))
+	}
+}
+
+func TestPickerKeepsTheCursorRowOfEachStepInAShortPane(t *testing.T) {
+	want := map[string]string{"harness": "▸ pi", "loading": "listing models", "models": "▸ provider/model-10", "failure": "model ▏", "other": "model ▏"}
+	for height := 5; height <= 9; height++ {
+		for name, m := range steps(t, tea.WindowSizeMsg{Width: 40, Height: height}) {
+			if !strings.Contains(view(m), want[name]) {
+				t.Errorf("%s step at 40 × %d lacks %q:\n%s", name, height, want[name], view(m))
+			}
+		}
+	}
+}
+
+func TestPickerWideFilterTextStaysInTheBox(t *testing.T) {
+	m := steps(t, tea.WindowSizeMsg{Width: 40, Height: 8})["models"]
+	m = typeText(t, m, "日本語中文漢字測試看")
+	for _, line := range strings.Split(raw(m), "\n") {
+		if w := ansi.StringWidth(line); w > 40 {
+			t.Errorf("line %q is %d cells; want at most 40", ansi.Strip(line), w)
+		}
+	}
+	if !strings.Contains(view(m), "看▏") {
+		t.Errorf("view = %q; want the end of the typed text and the cursor", view(m))
+	}
+	m = typeText(t, m, "看看")
+	line := lineWith(t, view(m), "filter")
+	if !strings.Contains(line, "…") || !strings.Contains(line, "看▏") || ansi.StringWidth(line) != 40 {
+		t.Errorf("overflowing filter row = %q; want … then the end of the text and the cursor in 40 cells", line)
+	}
+}
+
+func TestFitCutsLinesToThePaneWidthAndHeight(t *testing.T) {
+	wide := "\x1b[" + style.Dim + "m" + strings.Repeat("x", 30) + "\x1b[0m" + strings.Repeat("日", 10)
+	lines := []string{wide, "b", "c", "d"}
+	got := fit(lines, 12, 2)
+	if len(got) != 2 {
+		t.Fatalf("fit gives %d lines; want 2: %q", len(got), got)
+	}
+	if w := ansi.StringWidth(got[0]); w != 12 || ansi.Strip(got[0]) != strings.Repeat("x", 12) {
+		t.Errorf("first line = %q (%d cells); want 12 x", got[0], w)
+	}
+	if got[1] != "b" {
+		t.Errorf("second line = %q; want b", got[1])
+	}
+}
+
+func TestPickerViewIsUncutBeforeAPaneSize(t *testing.T) {
+	m := NewPicker(Choice{}, false, fakeDiscover(piModels, nil))
+	if w, h := size(raw(m)); w != 62 || h != 16 {
+		t.Fatalf("view before any WindowSizeMsg is %d × %d; want the 62 × 15 box and the key line", w, h)
+	}
+}
