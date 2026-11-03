@@ -10,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/style"
 )
 
 // Harnesses are the rows of step 1, in order.
@@ -18,9 +19,11 @@ var Harnesses = []string{"claude", "codex", "pi"}
 const (
 	otherRow     = "Other…"
 	lastMark     = "✓ last"
-	maxErrorLen  = 48
-	defaultRows  = 15
 	spinnerDelay = 100 * time.Millisecond
+	boxWidth     = 62
+	boxHeight    = 15
+	minBoxWidth  = 24
+	minBoxHeight = 7
 )
 
 var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
@@ -60,7 +63,8 @@ type Picker struct {
 	typed   string
 	failure string
 	frame   int
-	rows    int
+	width   int
+	height  int
 
 	choice Choice
 	done   bool
@@ -68,7 +72,7 @@ type Picker struct {
 
 // NewPicker returns a picker on step 1 with the cursor on the last harness.
 func NewPicker(last Choice, hasLast bool, discover func(string) ([]string, error)) Picker {
-	p := Picker{last: last, hasLast: hasLast, discover: discover, rows: defaultRows}
+	p := Picker{last: last, hasLast: hasLast, discover: discover}
 	if hasLast {
 		if i := slices.Index(Harnesses, last.Harness); i >= 0 {
 			p.harness = i
@@ -87,7 +91,7 @@ func (p Picker) Result() (Choice, bool) { return p.choice, p.done }
 func (p Picker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		p.rows = max(3, msg.Height-6)
+		p.width, p.height = msg.Width, msg.Height
 	case spinnerMsg:
 		if p.step == stepLoading {
 			p.frame = (p.frame + 1) % len(spinnerFrames)
@@ -221,88 +225,133 @@ func (p Picker) visible() []string {
 	return append(rows, otherRow)
 }
 
-// View draws the box of the current step.
+// View draws the box of the current step and the key line under it.
 func (p Picker) View() tea.View {
+	w, h := p.size()
+	c := newCanvas(w, h+1)
+	c.box(w, h)
 	harness := Harnesses[p.harness]
-	title := "hive · " + harness + " · model"
-	var lines []string
+	title := []span{{"hive", style.Accent}, {harness, style.Harness(harness)}, {"model", ""}}
+	keys := "[model] enter start · esc back"
 	switch p.step {
 	case stepHarness:
-		title = "hive · harness"
-		for i, name := range Harnesses {
-			lines = append(lines, row(i == p.harness, name, p.hasLast && name == p.last.Harness, harnessWidth()))
-		}
-		lines = append(lines, "", "↑↓ move · enter next · esc quit")
+		title = []span{{"hive", style.Accent}, {"harness", ""}}
+		keys = "[harness] ↑↓ move · enter next · esc quit"
+		p.drawHarnesses(c, w)
 	case stepLoading:
-		lines = append(lines, spinnerFrames[p.frame]+" listing models…", "", "esc back")
+		keys = "[model] esc back"
+		c.text(2, 2, spinnerFrames[p.frame], style.Working, 1)
+		c.text(4, 2, "listing models…", style.Dim, w-6)
 	case stepModels:
-		lines = p.modelLines(harness)
+		keys = "[model] ↑↓ move · type filter · enter start · esc back"
+		p.drawModels(c, w, h)
 	case stepFailure:
-		lines = append(lines, "! model list unavailable: "+clip(p.failure, maxErrorLen), "type a model name: "+p.typed+"▏", "", "enter start · esc back")
+		c.text(2, 2, "! model list unavailable", style.Error, w-4)
+		c.text(4, 3, p.failure, style.Dim, w-6)
+		drawInput(c, 5, 2, "model", p.typed, w-2)
 	case stepOther:
-		lines = append(lines, "model: "+p.typed+"▏", "", "enter start · esc back")
+		drawInput(c, 2, 2, "model", p.typed, w-2)
 	}
-	return tea.NewView(box(title, lines))
+	c.title(title)
+	c.text(1, h, keys, style.Dim, w-1)
+	return tea.NewView(strings.Join(c.lines(), "\n"))
 }
 
-func (p Picker) modelLines(harness string) []string {
+// size gives the box size: boxWidth × boxHeight, cut to fit the pane with one
+// row left for the shell prompt and one for the key line.
+func (p Picker) size() (int, int) {
+	w, h := boxWidth, boxHeight
+	if p.width > 0 {
+		w = max(minBoxWidth, min(w, p.width))
+	}
+	if p.height > 0 {
+		h = max(minBoxHeight, min(h, p.height-2))
+	}
+	return w, h
+}
+
+// drawHarnesses draws one row per harness with the last model of each.
+func (p Picker) drawHarnesses(c *canvas, w int) {
+	for i, name := range Harnesses {
+		y := 2 + i
+		nameStyle := style.Harness(name)
+		if i == p.harness {
+			c.text(2, y, "▸", style.Selected, 1)
+			nameStyle = bold(nameStyle)
+		}
+		c.text(4, y, name, nameStyle, 8)
+		if p.hasLast && name == p.last.Harness {
+			c.text(12, y, lastMark, style.Dim, 6)
+		}
+		model := p.lastModel(name)
+		if model == "" {
+			model = "–"
+		}
+		c.text(21, y, model, style.Dim, w-23)
+	}
+}
+
+// drawModels draws the filter row, a rule, and the rows of the list that fit
+// the box around the cursor.
+func (p Picker) drawModels(c *canvas, w, h int) {
 	rows := p.visible()
-	width := 0
-	for _, model := range rows {
-		width = max(width, utf8.RuneCountInString(model))
-	}
 	count := fmt.Sprintf("%d of %d", len(rows)-1, len(p.models))
-	filter := p.filter + "▏"
-	gap := max(2, width+4+len(lastMark)-utf8.RuneCountInString(filter)-len(count))
-	lines := []string{filter + strings.Repeat(" ", gap) + count}
-	first := max(0, min(p.cursor-p.rows/2, len(rows)-p.rows))
-	for i := first; i < len(rows) && i < first+p.rows; i++ {
-		isLast := p.hasLast && harness == p.last.Harness && rows[i] == p.last.Model
-		lines = append(lines, row(i == p.cursor, rows[i], isLast, width))
+	countX := w - 2 - utf8.RuneCountInString(count)
+	c.text(countX, 1, count, style.Dim, len(count))
+	drawInput(c, 1, 2, "filter", p.filter, countX-1)
+	for x := 1; x < w-1; x++ {
+		c.set(x, 2, '─', style.Border)
 	}
-	return append(lines, "", "↑↓ move · type filter · enter start · esc back")
+	nameWidth := 0
+	for _, model := range rows {
+		nameWidth = max(nameWidth, utf8.RuneCountInString(model))
+	}
+	nameWidth = min(nameWidth, w-14)
+	lastHarness := p.hasLast && Harnesses[p.harness] == p.last.Harness
+	list := h - 4
+	first := max(0, min(p.cursor-list/2, len(rows)-list))
+	for i := first; i < len(rows) && i < first+list; i++ {
+		y := 3 + i - first
+		nameStyle := ""
+		if rows[i] == otherRow {
+			nameStyle = style.Dim
+		}
+		if i == p.cursor {
+			c.text(2, y, "▸", style.Selected, 1)
+			nameStyle = bold(nameStyle)
+			if rows[i] != otherRow {
+				nameStyle = style.Selected
+			}
+		}
+		c.text(4, y, rows[i], nameStyle, nameWidth)
+		if lastHarness && rows[i] == p.last.Model {
+			c.text(6+nameWidth, y, lastMark, style.Dim, 6)
+		}
+	}
 }
 
-func harnessWidth() int {
-	width := 0
-	for _, name := range Harnesses {
-		width = max(width, len(name))
+// drawInput draws label at x, then text and the ▏ cursor, ending before end.
+// A text that does not fit keeps its end, after a … mark.
+func drawInput(c *canvas, y, x int, label, text string, end int) {
+	c.text(x, y, label, style.Dim, end-x)
+	x += utf8.RuneCountInString(label) + 1
+	room := end - x - 1
+	if room <= 0 {
+		return
 	}
-	return width + 10
+	runes := []rune(text)
+	if len(runes) > room {
+		runes = append([]rune("…"), runes[len(runes)-room+1:]...)
+	}
+	c.text(x, y, string(runes)+"▏", "", room+1)
 }
 
-// row draws one list row: ▸ marks the cursor and ✓ last marks the last choice.
-func row(cursor bool, name string, last bool, width int) string {
-	text := "  " + name
-	if cursor {
-		text = "▸ " + name
+// bold adds bold to an SGR style.
+func bold(s string) string {
+	if s == "" {
+		return "1"
 	}
-	if last {
-		text += strings.Repeat(" ", width-utf8.RuneCountInString(name)+1) + lastMark
-	}
-	return text
-}
-
-// box draws lines in a single-line border with the title in the top edge.
-func box(title string, lines []string) string {
-	width := utf8.RuneCountInString(title) + 2
-	for _, line := range lines {
-		width = max(width, utf8.RuneCountInString(line))
-	}
-	var b strings.Builder
-	b.WriteString("┌ " + title + " " + strings.Repeat("─", width-utf8.RuneCountInString(title)) + "┐\n")
-	for _, line := range lines {
-		b.WriteString("│ " + line + strings.Repeat(" ", width-utf8.RuneCountInString(line)) + " │\n")
-	}
-	b.WriteString("└" + strings.Repeat("─", width+2) + "┘\n")
-	return b.String()
-}
-
-func clip(text string, limit int) string {
-	if utf8.RuneCountInString(text) <= limit {
-		return text
-	}
-	return string([]rune(text)[:limit-1]) + "…"
+	return "1;" + s
 }
 
 func trimLast(text string) string {

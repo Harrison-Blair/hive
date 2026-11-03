@@ -1,19 +1,26 @@
 // Package coordinator runs bare hive: it picks the harness and the model,
 // writes the coordinator record, and replaces the process with the harness.
 //
-// The picker has two steps in one bordered box. Step 1 lists the harnesses
-// claude, codex, and pi. Enter lists the models of the chosen harness behind a
-// spinner. Step 2 lists the models with a type-to-filter line and an Other…
-// row for a typed model name. When the model list fails, step 2 asks for a
-// typed name. ▸ marks the cursor, and "✓ last" marks the last choice, where
-// the cursor starts. Enter on a model ends the picker with the choice. Esc
-// goes back one step, or clears the filter first, and quits on step 1. Ctrl+C
-// quits from any step.
+// The picker has two steps in one rounded box of 62 × 15 cells with a key
+// line under it, in the palette of internal/lib/style that the agent graph
+// uses. Each step has the same size. In a smaller pane the box takes the pane
+// width, and the model list loses rows until the box and the key line fit.
+// The title in the top edge names the step. Step 1 lists the harnesses
+// claude, codex, and pi, each in its harness colour, with the last model of
+// each harness, or – when it has none. Enter lists the models of the chosen
+// harness behind a spinner. Step 2 lists the models under a type-to-filter
+// row, with an Other… row for a typed model name. The cursor starts on the
+// last model of that harness. When the model list fails, step 2 shows the
+// cause and asks for a typed name. ▸ and bold mark the cursor, and "✓ last"
+// marks the last choice. Enter on a model ends the picker with the choice.
+// Esc goes back one step, or clears the filter first, and quits on step 1.
+// Ctrl+C quits from any step.
 //
 // discover.go lists the models of each harness from pi and opencode.
 // choice.go reads and writes the last choice and the last model of each
 // harness at <home>/coordinator-choice.json.
 // picker.go is the Bubble Tea picker.
+// canvas.go is the cell grid that the picker draws its box on.
 // name.go resolves the coordinator name from the start directory and guards
 // the record of that name.
 // launch.go saves the coordinator record, labels its tab, and starts the harness
