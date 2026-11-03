@@ -152,7 +152,7 @@ func TestElapsedHasSeconds(t *testing.T) {
 }
 
 func TestViewDrawsPodsTreesAndClock(t *testing.T) {
-	text := screen(loaded(t, fixture(), 140, 50))
+	text := screen(listed(t, fixture(), 140, 50))
 	for _, want := range []string{
 		"14:22:05", "╭─ api ", "╭─ hive ", "╭─ home ",
 		"├──", "├┤ ✓ hive-reviewer", "╰┤ × hive-worker ", "╰┤ ○ hive-worker-kid",
@@ -168,7 +168,7 @@ func TestViewDrawsPodsTreesAndClock(t *testing.T) {
 }
 
 func TestSelectedCardHasHeavyBorder(t *testing.T) {
-	m := loaded(t, fixture(), 140, 50)
+	m := listed(t, fixture(), 140, 50)
 	text := screen(m)
 	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ○ api-coordinator") {
 		t.Fatalf("first card is not the one heavy card:\n%s", text)
@@ -181,7 +181,7 @@ func TestSelectedCardHasHeavyBorder(t *testing.T) {
 }
 
 func TestNavigation(t *testing.T) {
-	m := loaded(t, fixture(), 140, 50)
+	m := listed(t, fixture(), 140, 50)
 	if m.selected != "api-coordinator" {
 		t.Fatalf("selected = %q; want the first card", m.selected)
 	}
@@ -243,7 +243,7 @@ func TestQuitKeys(t *testing.T) {
 }
 
 func TestNarrowStacksPodsInTheWidth(t *testing.T) {
-	m := loaded(t, fixture(), 36, 120)
+	m := listed(t, fixture(), 36, 120)
 	content := m.View().Content
 	for _, line := range strings.Split(content, "\n") {
 		if w := ansi.StringWidth(line); w > 36 {
@@ -261,7 +261,7 @@ func TestNarrowStacksPodsInTheWidth(t *testing.T) {
 }
 
 func TestViewScrollsToTheSelection(t *testing.T) {
-	m := loaded(t, fixture(), 36, 20)
+	m := listed(t, fixture(), 36, 20)
 	for range 7 {
 		m = key(t, m, tea.KeyDown)
 	}
@@ -406,7 +406,7 @@ func TestSpinnerStopsWhenWorkingCardsScrollOff(t *testing.T) {
 	for _, name := range []string{"b", "c", "d", "e", "f", "g"} {
 		entries = append(entries, entry(name, "", "idle", "pi", "m", 0))
 	}
-	m := loaded(t, entries, 40, 16)
+	m := listed(t, entries, 40, 16)
 	for range 6 {
 		m = key(t, m, tea.KeyDown)
 	}
@@ -680,7 +680,7 @@ func TestNarrowDetailsKeepTheWholeStatusRow(t *testing.T) {
 }
 
 func TestEscHidesTheOutlineAndAMoveKeyShowsIt(t *testing.T) {
-	m := key(t, loaded(t, fixture(), 140, 50), tea.KeyDown)
+	m := key(t, listed(t, fixture(), 140, 50), tea.KeyDown)
 	m = key(t, m, tea.KeyEscape)
 	if text := screen(m); strings.ContainsAny(text, "┏┨") {
 		t.Fatalf("esc did not hide the outline:\n%s", text)
@@ -739,7 +739,7 @@ func TestEscInDetailsClosesAndKeepsTheOutline(t *testing.T) {
 }
 
 func TestHiddenOutlineDoesNotScroll(t *testing.T) {
-	m := loaded(t, fixture(), 36, 20)
+	m := listed(t, fixture(), 36, 20)
 	for range 7 {
 		m = key(t, m, tea.KeyDown)
 	}
@@ -758,7 +758,11 @@ func TestHiddenOutlineDoesNotScroll(t *testing.T) {
 }
 
 func TestGraphKeysShowEscHide(t *testing.T) {
-	if text := screen(loaded(t, fixture(), 140, 50)); !strings.Contains(text, "enter details · esc hide · r refresh") {
-		t.Fatalf("key hints have no esc hide:\n%s", text)
+	m := loaded(t, fixture(), 140, 50)
+	if text := screen(m); !strings.Contains(text, " [tree] ←↑↓→ move · enter details · esc hide · g list · r refresh · q quit") {
+		t.Fatalf("tree key hints have no esc hide:\n%s", text)
+	}
+	if text := screen(key(t, m, 'g')); !strings.Contains(text, " [list] ←↑↓→ move · enter details · esc hide · g tree · r refresh · q quit") {
+		t.Fatalf("list key hints have no esc hide:\n%s", text)
 	}
 }
