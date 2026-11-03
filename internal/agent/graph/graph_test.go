@@ -417,8 +417,8 @@ func TestSpinnerStopsWhenWorkingCardsScrollOff(t *testing.T) {
 		t.Fatal("spinner runs with the working card off screen")
 	}
 	m = key(t, m, tea.KeyEnter)
+	m = key(t, m, tea.KeyEscape)
 	for range 6 {
-		m = key(t, m, tea.KeyEscape)
 		m = key(t, m, tea.KeyUp)
 	}
 	if !m.spinning {
@@ -676,5 +676,89 @@ func TestNarrowDetailsKeepTheWholeStatusRow(t *testing.T) {
 	m := key(t, loaded(t, []list.Entry{e}, 40, 20), tea.KeyEnter)
 	if text := screen(m); !strings.Contains(text, "┃ status    ⠋ working · ≥26h04m03s ") {
 		t.Fatalf("a 40x20 status row is not whole:\n%s", text)
+	}
+}
+
+func TestEscHidesTheOutlineAndAMoveKeyShowsIt(t *testing.T) {
+	m := key(t, loaded(t, fixture(), 140, 50), tea.KeyDown)
+	m = key(t, m, tea.KeyEscape)
+	if text := screen(m); strings.ContainsAny(text, "┏┨") {
+		t.Fatalf("esc did not hide the outline:\n%s", text)
+	}
+	m = key(t, m, tea.KeyDown)
+	if text := screen(m); strings.Count(text, "┏") != 1 || !strings.Contains(text, "╰┨ ⠋ api-worker") {
+		t.Fatalf("the first down after esc does not show the outline on api-worker:\n%s", text)
+	}
+	m = key(t, m, tea.KeyDown)
+	if m.selected != "hive-coordinator" {
+		t.Fatalf("the second down did not move: selected = %q; want hive-coordinator", m.selected)
+	}
+	if text := screen(m); strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ⠋ hive-coordinator") {
+		t.Fatalf("the second down did not move the outline:\n%s", text)
+	}
+}
+
+func TestEnterWhileHiddenShowsTheOutlineAndNoDetails(t *testing.T) {
+	m := key(t, loaded(t, fixture(), 140, 50), tea.KeyEscape)
+	m = key(t, m, tea.KeyEnter)
+	text := screen(m)
+	if strings.Contains(text, "esc close") {
+		t.Fatalf("enter while hidden opened the details:\n%s", text)
+	}
+	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ○ api-coordinator") {
+		t.Fatalf("enter while hidden does not show the outline on api-coordinator:\n%s", text)
+	}
+}
+
+func TestRefreshKeepsTheOutlineHidden(t *testing.T) {
+	m := key(t, loaded(t, fixture(), 140, 50), tea.KeyEscape)
+	m = update(t, m, fetchedMsg{entries: fixture(), at: clock})
+	if text := screen(m); strings.ContainsAny(text, "┏┨") {
+		t.Fatalf("a refresh showed the hidden outline:\n%s", text)
+	}
+	m = update(t, m, fetchedMsg{entries: fixture()[2:], at: clock})
+	if text := screen(m); strings.ContainsAny(text, "┏┨") {
+		t.Fatalf("a refresh that dropped the selection showed the hidden outline:\n%s", text)
+	}
+	m = key(t, m, tea.KeyDown)
+	if text := screen(m); m.selected != "hive-coordinator" || strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ⠋ hive-coordinator") {
+		t.Fatalf("down after the refresh does not show the outline on the first card (selected %q):\n%s", m.selected, text)
+	}
+}
+
+func TestEscInDetailsClosesAndKeepsTheOutline(t *testing.T) {
+	m := key(t, loaded(t, fixture(), 140, 50), tea.KeyEnter)
+	m = key(t, m, tea.KeyEscape)
+	text := screen(m)
+	if strings.Contains(text, "esc close") {
+		t.Fatalf("esc did not close the details:\n%s", text)
+	}
+	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ○ api-coordinator") {
+		t.Fatalf("esc in the details hid the outline:\n%s", text)
+	}
+}
+
+func TestHiddenOutlineDoesNotScroll(t *testing.T) {
+	m := loaded(t, fixture(), 36, 20)
+	for range 7 {
+		m = key(t, m, tea.KeyDown)
+	}
+	m = key(t, m, tea.KeyEscape)
+	if m.scroll == 0 {
+		t.Fatalf("the view did not scroll to loose")
+	}
+	m = update(t, m, fetchedMsg{entries: fixture()[:7], at: clock})
+	if text := screen(m); m.selected != "api-coordinator" || strings.Contains(text, "api-coordinator") {
+		t.Fatalf("selected %q; the view followed the selection while hidden:\n%s", m.selected, text)
+	}
+	m = key(t, m, tea.KeyDown)
+	if text := screen(m); !strings.Contains(text, "┃ ○ api-coordinator") {
+		t.Fatalf("the view does not follow the outline when it shows:\n%s", text)
+	}
+}
+
+func TestGraphKeysShowEscHide(t *testing.T) {
+	if text := screen(loaded(t, fixture(), 140, 50)); !strings.Contains(text, "enter details · esc hide · r refresh") {
+		t.Fatalf("key hints have no esc hide:\n%s", text)
 	}
 }

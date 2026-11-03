@@ -77,6 +77,7 @@ type Model struct {
 	selected      string
 	details       bool
 	scroll        int
+	hidden        bool // hides the outline of the selected card; the selection stays
 
 	spinning bool
 	frame    int
@@ -162,6 +163,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.spinning, m.frame = false, 0
 		return m, nil
 	case tea.KeyPressMsg:
+		if m.hidden && !m.details {
+			switch msg.String() {
+			case "enter", "down", "j", "up", "k", "right", "l", "left", "h":
+				m.hidden = false
+				m.follow()
+				return m, m.syncSpinner()
+			}
+		}
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
@@ -170,6 +179,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			m.details = !m.details && m.selected != ""
 		case "esc":
+			m.hidden = m.hidden || !m.details
 			m.details = false
 		case "down", "j":
 			m.step(1)
@@ -279,10 +289,15 @@ func (m Model) board() board {
 	for _, e := range m.entries {
 		ages[e.Name] = m.inState(e)
 	}
-	return drawBoard(m.pods, m.screenWidth(), ages, m.selected, m.frame, m.checkouts)
+	selected := m.selected
+	if m.hidden {
+		selected = ""
+	}
+	return drawBoard(m.pods, m.screenWidth(), ages, selected, m.frame, m.checkouts)
 }
 
-// follow scrolls the pod area so that the selected card shows.
+// follow scrolls the pod area so that the selected card shows. While the
+// outline is hidden, it only keeps the scroll in the pod area.
 func (m *Model) follow() {
 	area := m.area()
 	if area == 0 {
@@ -290,7 +305,7 @@ func (m *Model) follow() {
 		return
 	}
 	b := m.board()
-	if card, ok := b.cards[m.selected]; ok {
+	if card, ok := b.cards[m.selected]; ok && !m.hidden {
 		if card.top < m.scroll {
 			m.scroll = card.top
 		}
@@ -385,7 +400,7 @@ func (m Model) keys() string {
 	if m.details {
 		return color(styleDim, " [details] esc close · ↑↓ move · r refresh · q quit")
 	}
-	return color(styleDim, " [graph] ←↑↓→ move · enter details · r refresh · q quit")
+	return color(styleDim, " [graph] ←↑↓→ move · enter details · esc hide · r refresh · q quit")
 }
 
 // legend shows the glyph of each status. The working glyph follows frame.
