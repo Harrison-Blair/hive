@@ -1,5 +1,10 @@
 package graph
 
+import (
+	"github.com/Harrison-Blair/hive/internal/lib/canvas"
+	"github.com/Harrison-Blair/hive/internal/lib/style"
+)
+
 // span is the place of one card in the pod area: its first row, its first
 // column, and its width.
 type span struct {
@@ -85,7 +90,7 @@ func drawBoard(pods []Pod, width int, ages map[string]string, selected string, f
 		tops[i] = total
 		total += h
 	}
-	d.c = newCanvas(boardWidth, total)
+	d.c = canvas.New(boardWidth, total)
 	for i, p := range pods {
 		x, y, h := at[i][0], tops[at[i][1]], rowHeights[at[i][1]]
 		d.box(p, x, y, sizes[i][0], h)
@@ -99,11 +104,11 @@ func drawBoard(pods []Pod, width int, ages map[string]string, selected string, f
 			top += treeHeight(root) + 1
 		}
 	}
-	return board{lines: d.c.lines(), width: boardWidth, cards: d.cards}
+	return board{lines: d.c.Lines(), width: boardWidth, cards: d.cards}
 }
 
 type drawer struct {
-	c         *canvas
+	c         *canvas.Canvas
 	ages      map[string]string
 	selected  string
 	frame     int
@@ -114,8 +119,8 @@ type drawer struct {
 
 // box draws the border and the title of p.
 func (d *drawer) box(p Pod, x, y, w, h int) {
-	d.c.box(x, y, w, h, []rune("╭╮╰╯─│"), styleBorder)
-	d.c.text(x+2, y, " "+clip(p.Title, w-6)+" ", "", w-4)
+	d.c.Box(x, y, w, h, []rune("╭╮╰╯─│"), style.Border)
+	d.c.Text(x+2, y, " "+canvas.Clip(p.Title, w-6)+" ", "", w-4)
 }
 
 // card draws the card of n at x, y and records its span.
@@ -137,17 +142,17 @@ func (d *drawer) tree(n *Node, x, y int) {
 		top := row + 1
 		join := top + 1
 		for r := row; r < join; r++ {
-			d.c.set(x, r, '│', styleBorder)
+			d.c.Set(x, r, '│', style.Border)
 		}
 		branch := '├'
 		if last {
 			branch = '╰'
 		}
-		d.c.set(x, join, branch, styleBorder)
+		d.c.Set(x, join, branch, style.Border)
 		h := treeHeight(child)
 		if !last {
 			for r := join + 1; r < top+h; r++ {
-				d.c.set(x, r, '│', styleBorder)
+				d.c.Set(x, r, '│', style.Border)
 			}
 		}
 		d.tree(child, x+1, top)

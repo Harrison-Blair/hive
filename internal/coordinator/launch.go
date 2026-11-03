@@ -109,7 +109,13 @@ func Run(opts Options) error {
 	// picker is open. Under the layout lock, a taken name gives the next free
 	// name of the directory.
 	err = agent.Hold(opts.Home, func() error {
-		if err := SaveChoice(opts.Home, choice); err != nil {
+		// Read the choice again under the lock: another bare hive can have
+		// saved a model since the picker opened.
+		current, _, err := LoadChoice(opts.Home)
+		if err != nil {
+			logger.Warn("last choice unreadable", "error", err.Error())
+		}
+		if err := SaveChoice(opts.Home, current.remember(choice)); err != nil {
 			return err
 		}
 		if checkName(opts.Home, name, opts.Pane, logger) != nil {

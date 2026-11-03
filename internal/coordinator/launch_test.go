@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -48,9 +49,9 @@ func TestRunWritesRecordAndExecsHarness(t *testing.T) {
 		wantBinary string
 		wantArgs   []string
 	}{
-		{Choice{"pi", "openai-codex/gpt-6-sol"}, "pi", []string{"--model", "openai-codex/gpt-6-sol", "-e", "<home>/extensions/hive-inbox.ts"}},
-		{Choice{"claude", "claude-opus-5-5"}, "claude", []string{"--dangerously-skip-permissions", "--settings", `{"crossSessionInbound":"accept"}`, "--model", "claude-opus-5-5"}},
-		{Choice{"codex", "gpt-6-sol"}, "codex", []string{"--no-daemon", "--dangerously-bypass-approvals-and-sandbox", "--model", "gpt-6-sol"}},
+		{Choice{Harness: "pi", Model: "openai-codex/gpt-6-sol"}, "pi", []string{"--model", "openai-codex/gpt-6-sol", "-e", "<home>/extensions/hive-inbox.ts"}},
+		{Choice{Harness: "claude", Model: "claude-opus-5-5"}, "claude", []string{"--dangerously-skip-permissions", "--settings", `{"crossSessionInbound":"accept"}`, "--model", "claude-opus-5-5"}},
+		{Choice{Harness: "codex", Model: "gpt-6-sol"}, "codex", []string{"--no-daemon", "--dangerously-bypass-approvals-and-sandbox", "--model", "gpt-6-sol"}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.choice.Harness, func(t *testing.T) {
@@ -77,7 +78,7 @@ func TestRunWritesRecordAndExecsHarness(t *testing.T) {
 				t.Fatalf("exec calls = %+v; want one %s %v in %s", calls, tc.wantBinary, wantArgs, dir)
 			}
 			saved, ok, err := LoadChoice(home)
-			if err != nil || !ok || saved != tc.choice {
+			if err != nil || !ok || saved.Harness != tc.choice.Harness || saved.Model != tc.choice.Model {
 				t.Fatalf("saved choice = %+v %v %v; want %+v", saved, ok, err, tc.choice)
 			}
 		})
@@ -86,7 +87,7 @@ func TestRunWritesRecordAndExecsHarness(t *testing.T) {
 
 func TestRunPassesLastChoiceToPicker(t *testing.T) {
 	home := t.TempDir()
-	last := Choice{"claude", "claude-sonnet-5-5"}
+	last := Choice{Harness: "claude", Model: "claude-sonnet-5-5", Models: map[string]string{"claude": "claude-sonnet-5-5", "codex": "gpt-6.1-sol"}}
 	if err := SaveChoice(home, last); err != nil {
 		t.Fatal(err)
 	}
@@ -100,8 +101,54 @@ func TestRunPassesLastChoiceToPicker(t *testing.T) {
 	if err := Run(opts); err != nil {
 		t.Fatal(err)
 	}
-	if !gotOK || got != last {
+	if !gotOK || got.Harness != last.Harness || got.Model != last.Model || !maps.Equal(got.Models, last.Models) {
 		t.Fatalf("picker got %+v %v; want %+v true", got, gotOK, last)
+	}
+}
+
+func TestRunSavesTheChosenModelAndKeepsTheOtherHarnesses(t *testing.T) {
+	home := t.TempDir()
+	last := Choice{Harness: "claude", Model: "claude-opus-5-5", Models: map[string]string{"claude": "claude-opus-5-5", "codex": "gpt-6.1-sol", "pi": "old/model"}}
+	if err := SaveChoice(home, last); err != nil {
+		t.Fatal(err)
+	}
+	var calls []execCall
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) {
+		return Choice{Harness: "pi", Model: "a/b"}, true, nil
+	}, &calls)
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	got, ok, err := LoadChoice(home)
+	want := map[string]string{"claude": "claude-opus-5-5", "codex": "gpt-6.1-sol", "pi": "a/b"}
+	if err != nil || !ok || got.Harness != "pi" || got.Model != "a/b" || !maps.Equal(got.Models, want) {
+		t.Fatalf("saved choice = %+v, %v, %v; want pi a/b with models %v", got, ok, err, want)
+	}
+}
+
+// TestRunSaveKeepsAModelThatAnotherPickerSavedMeanwhile proves that the save
+// reads the file again: a second bare hive saved claude while this picker
+// was open with the older snapshot.
+func TestRunSaveKeepsAModelThatAnotherPickerSavedMeanwhile(t *testing.T) {
+	home := t.TempDir()
+	if err := SaveChoice(home, Choice{Harness: "codex", Model: "gpt-6-sol", Models: map[string]string{"codex": "gpt-6-sol"}}); err != nil {
+		t.Fatal(err)
+	}
+	var calls []execCall
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) {
+		other := Choice{Harness: "claude", Model: "claude-opus-5-5", Models: map[string]string{"codex": "gpt-6-sol", "claude": "claude-opus-5-5"}}
+		if err := SaveChoice(home, other); err != nil {
+			t.Fatal(err)
+		}
+		return Choice{Harness: "codex", Model: "gpt-6.1-sol"}, true, nil
+	}, &calls)
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	got, _, err := LoadChoice(home)
+	want := map[string]string{"claude": "claude-opus-5-5", "codex": "gpt-6.1-sol"}
+	if err != nil || got.Harness != "codex" || got.Model != "gpt-6.1-sol" || !maps.Equal(got.Models, want) {
+		t.Fatalf("saved choice = %+v, %v; want codex gpt-6.1-sol with models %v", got, err, want)
 	}
 }
 
@@ -130,7 +177,7 @@ func TestRunReturnsPickerAndExecErrors(t *testing.T) {
 	if err := Run(opts); err == nil || err.Error() != "picker: tty gone" {
 		t.Fatalf("Run = %v; want picker: tty gone", err)
 	}
-	opts = launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts = launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "pi", Model: "a/b"}, true, nil }, &calls)
 	opts.Exec = func(string, string, []string, []string) error { return errors.New("no such file") }
 	if err := Run(opts); err == nil {
 		t.Fatal("Run = nil; want the exec error")
@@ -140,7 +187,7 @@ func TestRunReturnsPickerAndExecErrors(t *testing.T) {
 func TestRunRejectsUnknownHarness(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"vim", "x"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "vim", Model: "x"}, true, nil }, &calls)
 	if err := Run(opts); err == nil || len(calls) != 0 {
 		t.Fatalf("Run = %v, calls %v; want error and no exec", err, calls)
 	}
@@ -152,7 +199,7 @@ func TestRunRejectsUnknownHarness(t *testing.T) {
 func TestRunLabelsItsTabCoordinatorBeforeExec(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "pi", Model: "a/b"}, true, nil }, &calls)
 	// This fake replaces the fake of launchOptions as HERDR_SOCKET_PATH.
 	fake := agenttest.NewHerdr(t)
 	_, pane := fake.AddWorkspace("my workspace", home, false)
@@ -182,7 +229,7 @@ func TestRunExecsWhenTheTabLabelFails(t *testing.T) {
 			home := t.TempDir()
 			var calls []execCall
 			var logs strings.Builder
-			opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+			opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "pi", Model: "a/b"}, true, nil }, &calls)
 			fake := agenttest.NewHerdr(t)
 			_, pane := fake.AddWorkspace("w", home, false)
 			fake.Fail(method, "internal_error", "boom")
@@ -207,7 +254,7 @@ func TestRunExecsWhenTheTabLabelFails(t *testing.T) {
 func TestRunWithoutPaneDoesNotLabelATab(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "pi", Model: "a/b"}, true, nil }, &calls)
 	fake := agenttest.NewHerdr(t)
 	opts.Pane = ""
 	if err := Run(opts); err != nil {
@@ -225,7 +272,7 @@ func TestRunExecsTheHarnessWithTheGuide(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
 	var logs strings.Builder
-	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"codex", "gpt-x"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "codex", Model: "gpt-x"}, true, nil }, &calls)
 	opts.Guide = "say \"hi\"\nnow"
 	opts.Logger = slog.New(slog.NewJSONHandler(&logs, nil))
 	if err := Run(opts); err != nil {
@@ -244,7 +291,7 @@ func TestRunGivesTheHarnessTheHome(t *testing.T) {
 	t.Setenv("HIVE_HOME", "relative-home")
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "pi", Model: "a/b"}, true, nil }, &calls)
 	if err := Run(opts); err != nil {
 		t.Fatal(err)
 	}
@@ -272,7 +319,7 @@ func TestRunUsesItsNameEverywhere(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
 	var logs strings.Builder
-	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "pi", Model: "a/b"}, true, nil }, &calls)
 	fake := agenttest.NewHerdr(t)
 	_, pane := fake.AddWorkspace("w", home, false)
 	opts.Pane = pane.ID
@@ -306,7 +353,7 @@ func TestRunUsesItsNameEverywhere(t *testing.T) {
 func TestRunReplacesTheOldCoordinatorRecordOfItsPane(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "pi", Model: "a/b"}, true, nil }, &calls)
 	opts.Name = "hive-coordinator"
 	for _, record := range []agent.Record{
 		{Name: "coordinator", Pane: opts.Pane, Harness: "pi", Model: "old"},
@@ -339,7 +386,7 @@ func TestRunReplacesTheOldCoordinatorRecordOfItsPane(t *testing.T) {
 func TestRunKeepsAnOldCoordinatorOfAnotherPane(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "pi", Model: "a/b"}, true, nil }, &calls)
 	opts.Name = "hive-coordinator"
 	old := agent.Record{Name: "coordinator", Pane: "w9:p9", Harness: "pi", Model: "old"}
 	if err := agent.Save(home, old); err != nil {
@@ -365,7 +412,10 @@ func TestRunTakesTheNextNameWhenTheNameIsLiveBeforeThePicker(t *testing.T) {
 	}
 	var calls []execCall
 	picked := false
-	opts := launchOptions(t, home, dir, func(Choice, bool) (Choice, bool, error) { picked = true; return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts := launchOptions(t, home, dir, func(Choice, bool) (Choice, bool, error) {
+		picked = true
+		return Choice{Harness: "pi", Model: "a/b"}, true, nil
+	}, &calls)
 	fake := agenttest.NewHerdr(t)
 	ws, mine := fake.AddWorkspace("w", dir, false)
 	other := fake.AddPane(ws.ID, dir)
@@ -412,7 +462,7 @@ func TestRunTakesTheNextNameWhenTheNameIsLiveBeforeThePicker(t *testing.T) {
 func TestRunReplacesItsOwnRecordOnARerun(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "new/model"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "pi", Model: "new/model"}, true, nil }, &calls)
 	opts.Name = "hive-coordinator"
 	if err := agent.Save(home, agent.Record{Name: opts.Name, Pane: opts.Pane, Harness: "pi", Model: "old/model"}); err != nil {
 		t.Fatal(err)
@@ -453,7 +503,7 @@ func TestConcurrentLaunchesInOneDirectoryGetTwoNames(t *testing.T) {
 				Pick: func(Choice, bool) (Choice, bool, error) {
 					picking.Done()
 					picking.Wait()
-					return Choice{"pi", "a/b"}, true, nil
+					return Choice{Harness: "pi", Model: "a/b"}, true, nil
 				},
 				Exec:   func(string, string, []string, []string) error { return nil },
 				Now:    time.Now,

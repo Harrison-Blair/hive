@@ -11,7 +11,7 @@
 // scrolls down and sideways to keep the selected card on the screen.
 //
 //   - pods.go groups the entries into pods of card trees.
-//   - card.go draws one card on a canvas: glyphs, palette, and spinner frames.
+//   - card.go draws one card on a canvas: glyphs and spinner frames.
 //   - checkout.go reads the Git state of an agent's start directory.
 //   - layout.go puts the pods in rows that fit the width and draws the
 //     indented lists of list mode.

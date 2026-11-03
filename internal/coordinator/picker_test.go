@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"strings"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/style"
+	"github.com/charmbracelet/x/ansi"
 )
 
 var piModels = []string{"opencode-go/deepseek-v4.1-flash", "opencode-go/deepseek-v4-pro", "openai-codex/gpt-6-sol"}
@@ -58,7 +61,10 @@ func runCmd(cmd tea.Cmd) []tea.Msg {
 	return []tea.Msg{msg}
 }
 
-func view(m Picker) string { return m.View().Content }
+// view is the screen text without SGR codes. raw keeps them.
+func view(m Picker) string { return ansi.Strip(raw(m)) }
+
+func raw(m Picker) string { return m.View().Content }
 
 func lineWith(t *testing.T, screen, part string) string {
 	t.Helper()
@@ -95,11 +101,39 @@ func TestPickerRule1PreselectsLastChoiceAndEnterEnterStartsIt(t *testing.T) {
 	}
 	next, cmd := m.Update(press(tea.KeyEnter))
 	choice, ok := next.(Picker).Result()
-	if !ok || choice != (Choice{"pi", "opencode-go/deepseek-v4-pro"}) {
+	if !ok || choice.Harness != "pi" || choice.Model != "opencode-go/deepseek-v4-pro" {
 		t.Fatalf("Result = %+v %v; want the last choice", choice, ok)
 	}
 	if cmd == nil || cmd() != tea.Quit() {
 		t.Fatal("Enter on a model does not quit the program")
+	}
+}
+
+func TestPickerEnterPutsTheCursorOnTheRememberedModelOfThatHarness(t *testing.T) {
+	last := Choice{Harness: "claude", Model: "claude-opus-5-5", Models: map[string]string{"claude": "claude-opus-5-5", "pi": "opencode-go/deepseek-v4-pro"}}
+	m := NewPicker(last, true, fakeDiscover(piModels, nil))
+	m = update(t, m, press(tea.KeyDown))
+	m = update(t, m, press(tea.KeyDown))
+	m = enterAndDiscover(t, m)
+	if line := lineWith(t, view(m), "deepseek-v4-pro"); !strings.Contains(line, "▸ opencode-go/deepseek-v4-pro") {
+		t.Fatalf("pi model line = %q; want the cursor on the remembered pi model", line)
+	}
+}
+
+func TestPickerModelStepMarksTheRememberedModelOfTheOpenHarness(t *testing.T) {
+	last := Choice{Harness: "claude", Model: "claude-opus-5-5", Models: map[string]string{"claude": "claude-opus-5-5", "pi": "opencode-go/deepseek-v4-pro"}}
+	m := NewPicker(last, true, fakeDiscover(piModels, nil))
+	if line := lineWith(t, view(m), " pi "); strings.Contains(line, "✓ last") {
+		t.Errorf("harness step pi row = %q; want ✓ last only on the last-started harness", line)
+	}
+	m = update(t, m, press(tea.KeyDown))
+	m = update(t, m, press(tea.KeyDown))
+	m = enterAndDiscover(t, m)
+	if line := lineWith(t, view(m), "deepseek-v4-pro"); !strings.Contains(line, "✓ last") {
+		t.Fatalf("pi model line = %q; want ✓ last on the remembered pi model", line)
+	}
+	if strings.Count(view(m), "✓ last") != 1 {
+		t.Fatalf("model step has more than one ✓ last:\n%s", view(m))
 	}
 }
 
@@ -253,21 +287,21 @@ func TestPickerRule4FailureShowsErrorAndTypedEntry(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			m := enterAndDiscover(t, NewPicker(Choice{}, false, discover))
 			line := lineWith(t, view(m), "!")
-			if !strings.Contains(line, "! model list unavailable:") {
+			if !strings.Contains(line, "│ ! model list unavailable ") {
 				t.Fatalf("failure line = %q", line)
 			}
-			if !strings.Contains(view(m), "│ type a model name: ▏") {
+			if !strings.Contains(view(m), "│ model ▏") {
 				t.Fatalf("view = %q; want the typed-entry field", view(m))
 			}
-			if name == "error" && !strings.Contains(line, "opencode models: not found") {
-				t.Fatalf("failure line = %q; want the error", line)
+			if lines := strings.Split(view(m), "\n"); name == "error" && !strings.HasPrefix(lines[3], "│   opencode models: not found ") {
+				t.Fatalf("view = %q; want the error on the row under the failure line", view(m))
 			}
 			m = typeText(t, m, "claude-opus-5-5")
-			if !strings.Contains(view(m), "type a model name: claude-opus-5-5▏") {
+			if !strings.Contains(view(m), "│ model claude-opus-5-5▏") {
 				t.Fatalf("view = %q; want the typed name", view(m))
 			}
 			m = update(t, m, press(tea.KeyEnter))
-			if choice, ok := m.Result(); !ok || choice != (Choice{"claude", "claude-opus-5-5"}) {
+			if choice, ok := m.Result(); !ok || choice.Harness != "claude" || choice.Model != "claude-opus-5-5" {
 				t.Fatalf("Result = %+v %v", choice, ok)
 			}
 		})
@@ -304,14 +338,14 @@ func TestPickerOtherRowTakesAnyTypedName(t *testing.T) {
 	}
 	m = update(t, m, press(tea.KeyEnter))
 	screen := view(m)
-	if !strings.Contains(screen, "model: ▏") || !strings.Contains(screen, "enter start · esc back") {
+	if !strings.Contains(screen, "│ model ▏") || !strings.Contains(screen, "[model] enter start · esc back") {
 		t.Fatalf("Other… view = %q", screen)
 	}
 	m = typeText(t, m, "glm-5.3:xhigx")
 	m = update(t, m, press(tea.KeyBackspace))
 	m = typeText(t, m, "h")
 	m = update(t, m, press(tea.KeyEnter))
-	if choice, ok := m.Result(); !ok || choice != (Choice{"pi", "glm-5.3:xhigh"}) {
+	if choice, ok := m.Result(); !ok || choice.Harness != "pi" || choice.Model != "glm-5.3:xhigh" {
 		t.Fatalf("Result = %+v %v; want the typed name", choice, ok)
 	}
 }
@@ -335,11 +369,7 @@ func TestPickerRule5GlyphsCarryStateWithNoColour(t *testing.T) {
 	next, _ := m.Update(press(tea.KeyEnter))
 	screens = append(screens, view(next.(Picker)), view(enterAndDiscover(t, m)))
 	screens = append(screens, view(enterAndDiscover(t, NewPicker(Choice{}, false, fakeDiscover(nil, errors.New("boom"))))))
-	for _, screen := range screens {
-		if strings.Contains(screen, "\x1b") {
-			t.Fatalf("view has an escape code; state must read without colour: %q", screen)
-		}
-	}
+	screens = append(screens, view(NewPicker(Choice{Harness: "claude", Model: "claude-opus-5-5"}, true, fakeDiscover(piModels, nil))))
 	for i, glyph := range []string{"▸", "⠋", "▸", "!"} {
 		if !strings.Contains(screens[i], glyph) {
 			t.Errorf("screen %d lacks %q:\n%s", i, glyph, screens[i])
@@ -348,30 +378,33 @@ func TestPickerRule5GlyphsCarryStateWithNoColour(t *testing.T) {
 	if !strings.Contains(screens[0], "✓ last") || !strings.Contains(screens[2], "✓ last") {
 		t.Error("a screen lacks ✓ last")
 	}
+	if !strings.Contains(lineWith(t, screens[4], "codex"), "–") {
+		t.Errorf("codex row without a model lacks –:\n%s", screens[4])
+	}
 }
 
 func TestPickerRule6TitleShowsStep(t *testing.T) {
 	m := newPiPicker()
-	if top := strings.SplitN(view(m), "\n", 2)[0]; !strings.HasPrefix(top, "┌ hive · harness ") || !strings.HasSuffix(top, "┐") {
+	if top := strings.SplitN(view(m), "\n", 2)[0]; !strings.HasPrefix(top, "╭─ hive · harness ") || !strings.HasSuffix(top, "╮") {
 		t.Fatalf("step 1 top = %q", top)
 	}
-	if !strings.Contains(view(m), "↑↓ move · enter next · esc quit") {
+	if !strings.Contains(view(m), "\n [harness] ↑↓ move · enter next · esc quit") {
 		t.Fatalf("step 1 view = %q; want the step 1 keys", view(m))
 	}
 	m = enterAndDiscover(t, m)
-	if top := strings.SplitN(view(m), "\n", 2)[0]; !strings.HasPrefix(top, "┌ hive · pi · model ") {
+	if top := strings.SplitN(view(m), "\n", 2)[0]; !strings.HasPrefix(top, "╭─ hive · pi · model ") {
 		t.Fatalf("step 2 top = %q", top)
 	}
-	if !strings.Contains(view(m), "↑↓ move · type filter · enter start · esc back") {
+	if !strings.Contains(view(m), "\n [model] ↑↓ move · type filter · enter start · esc back") {
 		t.Fatalf("step 2 view = %q; want the step 2 keys", view(m))
 	}
 }
 
 func TestPickerBoxLinesHaveOneWidth(t *testing.T) {
 	m := enterAndDiscover(t, newPiPicker())
-	lines := strings.Split(strings.TrimRight(view(m), "\n"), "\n")
+	lines := strings.Split(view(m), "\n")
 	width := len([]rune(lines[0]))
-	for _, line := range lines {
+	for _, line := range lines[:len(lines)-1] {
 		if len([]rune(line)) != width {
 			t.Fatalf("line %q has width %d; want %d", line, len([]rune(line)), width)
 		}
@@ -383,7 +416,7 @@ func TestPickerLogsTheFullDiscoveryErrorAndShowsItClipped(t *testing.T) {
 	var out bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&out, nil))
 	m := enterAndDiscover(t, NewPicker(Choice{}, false, logFailures(fakeDiscover(nil, long), logger)))
-	if !strings.Contains(view(m), clip(long.Error(), maxErrorLen)) || strings.Contains(view(m), long.Error()) {
+	if !strings.Contains(view(m), `opencode models: exec: "opencode": executable file not …`) || strings.Contains(view(m), long.Error()) {
 		t.Fatalf("view does not show the clipped error:\n%s", view(m))
 	}
 	var event map[string]any
@@ -392,5 +425,380 @@ func TestPickerLogsTheFullDiscoveryErrorAndShowsItClipped(t *testing.T) {
 	}
 	if event["error"] != long.Error() || event["harness"] != "claude" || event["level"] != "ERROR" {
 		t.Fatalf("log event = %v; want the full error and harness claude at ERROR", event)
+	}
+}
+
+// manyModels is a list longer than the box.
+func manyModels() []string {
+	var models []string
+	for i := range 20 {
+		models = append(models, fmt.Sprintf("provider/model-%02d", i))
+	}
+	return models
+}
+
+// steps returns the picker in each step, after msgs.
+func steps(t *testing.T, msgs ...tea.Msg) map[string]Picker {
+	t.Helper()
+	last := Choice{Harness: "pi", Model: "provider/model-10", Models: map[string]string{"pi": "provider/model-10"}}
+	fresh := func(discover func(string) ([]string, error)) Picker {
+		m := NewPicker(last, true, discover)
+		for _, msg := range msgs {
+			m = update(t, m, msg)
+		}
+		return m
+	}
+	harness := fresh(fakeDiscover(manyModels(), nil))
+	loading, _ := harness.Update(press(tea.KeyEnter))
+	models := enterAndDiscover(t, harness)
+	other := models
+	for range 21 {
+		other = update(t, other, press(tea.KeyDown))
+	}
+	other = update(t, other, press(tea.KeyEnter))
+	if other.step != stepOther {
+		t.Fatalf("other step not reached:\n%s", view(other))
+	}
+	return map[string]Picker{
+		"harness": harness,
+		"loading": loading.(Picker),
+		"models":  models,
+		"failure": enterAndDiscover(t, fresh(fakeDiscover(nil, errors.New("boom")))),
+		"other":   other,
+	}
+}
+
+// size gives the widest line and the line count of a view.
+func size(screen string) (int, int) {
+	lines := strings.Split(screen, "\n")
+	width := 0
+	for _, line := range lines {
+		width = max(width, ansi.StringWidth(line))
+	}
+	return width, len(lines)
+}
+
+func TestPickerEveryStepHasTheSameSize(t *testing.T) {
+	for _, msgs := range [][]tea.Msg{nil, {tea.WindowSizeMsg{Width: 80, Height: 24}}} {
+		for name, m := range steps(t, msgs...) {
+			w, h := size(raw(m))
+			if w != 62 || h != 16 {
+				t.Errorf("%s step after %v is %d × %d; want 62 × 16 (a 62 × 15 box and the key line):\n%s", name, msgs, w, h, view(m))
+			}
+			lines := strings.Split(raw(m), "\n")
+			for _, line := range lines[:15] {
+				if ansi.StringWidth(line) != 62 {
+					t.Errorf("%s box line %q is %d cells; want 62", name, ansi.Strip(line), ansi.StringWidth(line))
+				}
+			}
+		}
+	}
+}
+
+func TestPickerShrinksToASmallPaneAndGrowsBack(t *testing.T) {
+	small := tea.WindowSizeMsg{Width: 48, Height: 11}
+	for name, m := range steps(t, small) {
+		if w, h := size(raw(m)); w > 48 || h > 11 {
+			t.Errorf("%s step in a 48 × 11 pane is %d × %d:\n%s", name, w, h, view(m))
+		}
+		m = update(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
+		if w, h := size(raw(m)); w != 62 || h != 16 {
+			t.Errorf("%s step after the pane grows is %d × %d; want 62 × 16", name, w, h)
+		}
+	}
+	models := steps(t, small)["models"]
+	if !strings.Contains(view(models), "▸ provider/model-10") {
+		t.Errorf("small models step hides the cursor row:\n%s", view(models))
+	}
+	if strings.Count(view(models), "provider/model-") >= strings.Count(view(steps(t)["models"]), "provider/model-") {
+		t.Errorf("small models step does not lose list rows:\n%s", view(models))
+	}
+}
+
+func TestPickerHarnessRowsShowTheLastModelOfEachHarness(t *testing.T) {
+	last := Choice{Harness: "claude", Model: "claude-opus-5-5", Models: map[string]string{"claude": "claude-opus-5-5", "codex": "gpt-6.1-sol"}}
+	m := NewPicker(last, true, fakeDiscover(piModels, nil))
+	screen := view(m)
+	if line := lineWith(t, screen, "claude "); !strings.Contains(line, "▸ claude") || !strings.Contains(line, "✓ last") || !strings.Contains(line, "claude-opus-5-5") {
+		t.Errorf("claude row = %q; want cursor, ✓ last, and claude-opus-5-5", line)
+	}
+	if line := lineWith(t, screen, "codex"); !strings.Contains(line, "gpt-6.1-sol") || strings.Contains(line, "✓ last") {
+		t.Errorf("codex row = %q; want gpt-6.1-sol and no ✓ last", line)
+	}
+	if line := lineWith(t, raw(m), " pi"); !strings.Contains(line, "\x1b["+style.Dim+"m–\x1b[0m") {
+		t.Errorf("pi row = %q; want a dim –", line)
+	}
+}
+
+func TestPickerColoursFollowTheGraphPalette(t *testing.T) {
+	last := Choice{Harness: "codex", Model: "gpt-6-sol", Models: map[string]string{"codex": "gpt-6-sol"}}
+	m := NewPicker(last, true, fakeDiscover([]string{"gpt-6-sol", "gpt-6-luna"}, nil))
+	screen := raw(m)
+	top := strings.SplitN(screen, "\n", 2)[0]
+	if !strings.Contains(top, "\x1b["+style.Accent+"mhive\x1b[0m") || !strings.Contains(top, "\x1b["+style.Dim+"m · \x1b[0m") {
+		t.Errorf("harness title = %q; want hive in the accent and a dim separator", top)
+	}
+	for _, want := range []string{
+		"\x1b[" + style.Selected + "m▸\x1b[0m",
+		"\x1b[1;" + style.Codex + "mcodex\x1b[0m",
+		"\x1b[" + style.Claude + "mclaude\x1b[0m",
+		"\x1b[" + style.Dim + "m✓ last\x1b[0m",
+		"\x1b[" + style.Border + "m╭",
+		"\n \x1b[" + style.Dim + "m[harness] ",
+	} {
+		if !strings.Contains(screen, want) {
+			t.Errorf("harness step lacks %q:\n%q", want, screen)
+		}
+	}
+	next, _ := m.Update(press(tea.KeyEnter))
+	loading := raw(next.(Picker))
+	if !strings.Contains(loading, "\x1b["+style.Working+"m⠋\x1b[0m") || !strings.Contains(loading, "\x1b["+style.Dim+"mlisting models…") {
+		t.Errorf("loading step = %q; want a green spinner and dim text", loading)
+	}
+	if top := strings.SplitN(loading, "\n", 2)[0]; !strings.Contains(top, "\x1b["+style.Codex+"mcodex\x1b[0m") {
+		t.Errorf("model title = %q; want codex in its harness colour", top)
+	}
+	models := raw(enterAndDiscover(t, m))
+	for _, want := range []string{
+		"\x1b[" + style.Selected + "mgpt-6-sol\x1b[0m",
+		"\x1b[" + style.Dim + "mOther…\x1b[0m",
+		"\x1b[" + style.Dim + "mfilter\x1b[0m",
+		"\x1b[" + style.Dim + "m2 of 2\x1b[0m",
+		"\x1b[" + style.Border + "m│" + strings.Repeat("─", 60) + "│\x1b[0m",
+	} {
+		if !strings.Contains(models, want) {
+			t.Errorf("models step lacks %q:\n%q", want, models)
+		}
+	}
+	failure := raw(enterAndDiscover(t, NewPicker(Choice{}, false, fakeDiscover(nil, errors.New("boom")))))
+	if !strings.Contains(failure, "\x1b["+style.Error+"m! model list unavailable\x1b[0m") || !strings.Contains(failure, "\x1b["+style.Dim+"mboom\x1b[0m") {
+		t.Errorf("failure step = %q; want the red failure line and the dim cause", failure)
+	}
+}
+
+func TestPickerClipsALongModelName(t *testing.T) {
+	long := "provider/" + strings.Repeat("x", 80)
+	m := enterAndDiscover(t, NewPicker(Choice{}, false, fakeDiscover([]string{long, "short"}, nil)))
+	line := lineWith(t, view(m), "provider/")
+	if !strings.Contains(line, "x…") || ansi.StringWidth(line) != 62 {
+		t.Fatalf("long model row = %q (%d cells); want it clipped with … in the 62-cell box", line, ansi.StringWidth(line))
+	}
+}
+
+func TestPickerKeyLines(t *testing.T) {
+	want := map[string]string{
+		"harness": " [harness] ↑↓ move · enter next · esc quit",
+		"loading": " [model] esc back",
+		"models":  " [model] ↑↓ move · type filter · enter start · esc back",
+		"failure": " [model] enter start · esc back",
+		"other":   " [model] enter start · esc back",
+	}
+	for name, m := range steps(t) {
+		lines := strings.Split(view(m), "\n")
+		if got := lines[len(lines)-1]; got != want[name] {
+			t.Errorf("%s key line = %q; want %q", name, got, want[name])
+		}
+	}
+}
+
+func TestPickerNeverGoesBeyondATinyPane(t *testing.T) {
+	for _, pane := range []tea.WindowSizeMsg{{Width: 20, Height: 8}, {Width: 10, Height: 4}, {Width: 3, Height: 2}, {Width: 1, Height: 1}} {
+		for name, m := range steps(t, pane) {
+			lines := strings.Split(raw(m), "\n")
+			if len(lines) > pane.Height {
+				t.Errorf("%s step in a %d × %d pane has %d lines:\n%s", name, pane.Width, pane.Height, len(lines), view(m))
+			}
+			for _, line := range lines {
+				if w := ansi.StringWidth(line); w > pane.Width {
+					t.Errorf("%s step in a %d × %d pane has a line of %d cells: %q", name, pane.Width, pane.Height, w, ansi.Strip(line))
+				}
+			}
+		}
+	}
+}
+
+func TestPickerKeepsTheWholeBoxInASmallPane(t *testing.T) {
+	for name, m := range steps(t, tea.WindowSizeMsg{Width: 20, Height: 8}) {
+		lines := strings.Split(view(m), "\n")
+		box := lines[:len(lines)-1]
+		if !strings.HasPrefix(box[0], "╭") || !strings.HasPrefix(box[len(box)-1], "╰") {
+			t.Errorf("%s box has no top or bottom edge:\n%s", name, view(m))
+		}
+		for _, line := range box {
+			if w := ansi.StringWidth(line); w != 20 || !strings.ContainsAny(string([]rune(line)[19]), "╮│╯") {
+				t.Errorf("%s box line %q (%d cells) lacks the right edge at column 20", name, line, w)
+			}
+		}
+	}
+}
+
+func TestPickerHarnessListScrollsToTheCursorInAShortPane(t *testing.T) {
+	m := steps(t, tea.WindowSizeMsg{Width: 40, Height: 6})["harness"]
+	m = update(t, m, press(tea.KeyUp))
+	m = update(t, m, press(tea.KeyUp))
+	m = update(t, m, press(tea.KeyDown))
+	if !strings.Contains(view(m), "▸ codex") {
+		t.Fatalf("view after Down = %q; want the cursor row ▸ codex", view(m))
+	}
+}
+
+func TestPickerKeepsTheCursorRowOfEachStepInAShortPane(t *testing.T) {
+	want := map[string]string{"harness": "▸ pi", "loading": "listing models", "models": "▸ provider/model-10", "failure": "model ▏", "other": "model ▏"}
+	for height := 5; height <= 9; height++ {
+		for name, m := range steps(t, tea.WindowSizeMsg{Width: 40, Height: height}) {
+			if !strings.Contains(view(m), want[name]) {
+				t.Errorf("%s step at 40 × %d lacks %q:\n%s", name, height, want[name], view(m))
+			}
+		}
+	}
+}
+
+func TestPickerWideFilterTextStaysInTheBox(t *testing.T) {
+	m := steps(t, tea.WindowSizeMsg{Width: 40, Height: 8})["models"]
+	m = typeText(t, m, "日本語中文漢字測試看")
+	for _, line := range strings.Split(raw(m), "\n") {
+		if w := ansi.StringWidth(line); w > 40 {
+			t.Errorf("line %q is %d cells; want at most 40", ansi.Strip(line), w)
+		}
+	}
+	if !strings.Contains(view(m), "看▏") {
+		t.Errorf("view = %q; want the end of the typed text and the cursor", view(m))
+	}
+	m = typeText(t, m, "看看看看看看看看")
+	line := strings.Split(view(m), "\n")[1]
+	if !strings.Contains(line, "…") || !strings.Contains(line, "看▏") || ansi.StringWidth(line) != 40 {
+		t.Errorf("overflowing filter row = %q; want … then the end of the text and the cursor in 40 cells", line)
+	}
+}
+
+func TestFitCutsLinesToThePaneWidthAndHeight(t *testing.T) {
+	wide := "\x1b[" + style.Dim + "m" + strings.Repeat("x", 30) + "\x1b[0m" + strings.Repeat("日", 10)
+	lines := []string{wide, "b", "c", "d"}
+	got := fit(lines, 12, 2)
+	if len(got) != 2 {
+		t.Fatalf("fit gives %d lines; want 2: %q", len(got), got)
+	}
+	if w := ansi.StringWidth(got[0]); w != 12 || ansi.Strip(got[0]) != strings.Repeat("x", 12) {
+		t.Errorf("first line = %q (%d cells); want 12 x", got[0], w)
+	}
+	if got[1] != "b" {
+		t.Errorf("second line = %q; want b", got[1])
+	}
+}
+
+func TestPickerViewIsUncutBeforeAPaneSize(t *testing.T) {
+	m := NewPicker(Choice{}, false, fakeDiscover(piModels, nil))
+	if w, h := size(raw(m)); w != 62 || h != 16 {
+		t.Fatalf("view before any WindowSizeMsg is %d × %d; want the 62 × 15 box and the key line", w, h)
+	}
+}
+
+// rowAt returns the stripped row of a picker in a w × 24 pane that holds part.
+func rowAt(t *testing.T, m Picker, w int, part string) string {
+	t.Helper()
+	return lineWith(t, view(update(t, m, tea.WindowSizeMsg{Width: w, Height: 24})), part)
+}
+
+func TestPickerHarnessRowsDropPartsInOrderWhenNarrow(t *testing.T) {
+	last := Choice{Harness: "claude", Model: "claude-opus-5-5", Models: map[string]string{"claude": "claude-opus-5-5", "codex": "gpt-6.1-sol"}}
+	m := NewPicker(last, true, fakeDiscover(piModels, nil))
+	for _, tc := range []struct {
+		width int
+		want  string // the claude cursor row, without the right edge
+	}{
+		{62, "│ ▸ claude  ✓ last   claude-opus-5-5"},
+		{25, "│ ▸ claude  ✓ last   c…"},
+		{24, "│ ▸ claude  ✓ last  "}, // (1) the second column drops
+		{17, "│ ▸ claude      "},     // (2) ✓ last drops, the name stays whole
+		{10, "│ ▸ cla…"},             // (3) the name is cut
+		{7, "│ ▸ c"},                 // the first cell of the name stays
+	} {
+		row := rowAt(t, m, tc.width, "▸")
+		if row != tc.want+strings.Repeat(" ", tc.width-1-ansi.StringWidth(tc.want))+"│" {
+			t.Errorf("claude row at width %d = %q; want %q and the right edge", tc.width, row, tc.want)
+		}
+	}
+}
+
+func TestPickerModelRowsDropPartsInOrderWhenNarrow(t *testing.T) {
+	m := steps(t)["models"]
+	for _, tc := range []struct {
+		width int
+		want  string // the cursor row on the remembered model
+	}{
+		{40, "│ ▸ provider/model-10  ✓ last"},
+		{31, "│ ▸ provider/model-10  ✓ last"},
+		{30, "│ ▸ provider/model-10"}, // (2) ✓ last drops, the name stays whole
+		{20, "│ ▸ provider/mode…"},    // (3) the name is cut
+		{14, "│ ▸ provide…"},
+		{7, "│ ▸ p"},
+	} {
+		row := rowAt(t, m, tc.width, "▸")
+		if row != tc.want+strings.Repeat(" ", tc.width-1-ansi.StringWidth(tc.want))+"│" {
+			t.Errorf("model cursor row at width %d = %q; want %q and the right edge", tc.width, row, tc.want)
+		}
+	}
+	if row := lineWith(t, view(update(t, m, tea.WindowSizeMsg{Width: 14, Height: 15})), "▸"); !strings.Contains(row, "▸ provide…") {
+		t.Errorf("cursor row at 14 × 15 = %q; want the start of its name", row)
+	}
+	lines := strings.Split(view(update(t, m, tea.WindowSizeMsg{Width: 14, Height: 24})), "\n")
+	for i, line := range lines {
+		if strings.Contains(line, "▸") && lines[i+1] != "│   provide… │" {
+			t.Errorf("row under the cursor at width 14 = %q; want its name cut", lines[i+1])
+		}
+	}
+}
+
+func TestPickerFilterRowDropsPartsInOrderWhenNarrow(t *testing.T) {
+	models := steps(t)["models"]
+	opus := typeText(t, models, "opus")
+	for _, tc := range []struct {
+		m     Picker
+		width int
+		want  string // the filter row: left part, then the right part before the edge
+		right string
+	}{
+		{models, 40, "│ filter ▏", "20 of 20 │"},
+		{opus, 40, "│ filter opus▏", "0 of 20 │"},
+		{opus, 24, "│ filter opus▏", "0 of 20 │"},
+		{opus, 23, "│ filter opus▏", "│"}, // the count drops
+		{opus, 16, "│ filter opus▏", "│"},
+		{opus, 15, "│ opus▏", "│"}, // the label drops
+		{opus, 9, "│ opus▏", "│"},
+		{opus, 8, "│ …us▏", "│"}, // the start of the text is cut
+		{models, 7, "│ ▏", "│"},
+	} {
+		lines := strings.Split(view(update(t, tc.m, tea.WindowSizeMsg{Width: tc.width, Height: 24})), "\n")
+		want := tc.want + strings.Repeat(" ", tc.width-ansi.StringWidth(tc.want)-ansi.StringWidth(tc.right)) + tc.right
+		if lines[1] != want {
+			t.Errorf("filter row at width %d = %q; want %q", tc.width, lines[1], want)
+		}
+	}
+}
+
+func TestPickerModelInputDropsTheLabelBeforeTheText(t *testing.T) {
+	all := steps(t)
+	for _, name := range []string{"other", "failure"} {
+		typed := typeText(t, all[name], "my/model")
+		for _, tc := range []struct {
+			m     Picker
+			width int
+			want  string
+		}{
+			{typed, 40, "│ model my/model▏"},
+			{typed, 19, "│ model my/model▏"},
+			{typed, 18, "│ my/model▏"}, // the label drops
+			{typed, 13, "│ my/model▏"},
+			{typed, 12, "│ …/model▏"}, // the start of the text is cut
+			{typed, 10, "│ …odel▏"},
+			{all[name], 11, "│ model ▏"},
+			{all[name], 10, "│ ▏"}, // the label drops, ▏ alone stays
+		} {
+			line := lineWith(t, view(update(t, tc.m, tea.WindowSizeMsg{Width: tc.width, Height: 24})), "▏")
+			want := tc.want + strings.Repeat(" ", tc.width-1-ansi.StringWidth(tc.want)) + "│"
+			if line != want {
+				t.Errorf("%s input row at width %d = %q; want %q", name, tc.width, line, want)
+			}
+		}
 	}
 }

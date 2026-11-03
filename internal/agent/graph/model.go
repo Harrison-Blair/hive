@@ -8,6 +8,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/agent/list"
+	"github.com/Harrison-Blair/hive/internal/lib/style"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -408,33 +409,33 @@ func (m Model) View() tea.View {
 func (m Model) status() string {
 	switch {
 	case m.err != "" && m.loaded:
-		return color(styleError, " ! refresh failed: "+m.err+" · showing "+m.fetchedAt.Format("15:04:05"))
+		return style.Color(style.Error, " ! refresh failed: "+m.err+" · showing "+m.fetchedAt.Format("15:04:05"))
 	case m.err != "":
-		return color(styleError, " ! "+m.err)
+		return style.Color(style.Error, " ! "+m.err)
 	case !m.loaded:
-		return color(styleDim, " loading…")
+		return style.Color(style.Dim, " loading…")
 	}
-	return color(styleDim, " updated "+m.fetchedAt.Format("15:04:05"))
+	return style.Color(style.Dim, " updated "+m.fetchedAt.Format("15:04:05"))
 }
 
 func (m Model) keys() string {
 	if m.details {
-		return color(styleDim, " [details] esc close · ↑↓ move · r refresh · q quit")
+		return style.Color(style.Dim, " [details] esc close · ↑↓ move · r refresh · q quit")
 	}
 	if m.list {
-		return color(styleDim, " [list] ←↑↓→ move · enter details · esc hide · g tree · r refresh · q quit")
+		return style.Color(style.Dim, " [list] ←↑↓→ move · enter details · esc hide · g tree · r refresh · q quit")
 	}
-	return color(styleDim, " [tree] ←↑↓→ move · enter details · esc hide · g list · r refresh · q quit")
+	return style.Color(style.Dim, " [tree] ←↑↓→ move · enter details · esc hide · g list · r refresh · q quit")
 }
 
 // legend shows the glyph of each status. The working glyph follows frame.
 func legend(frame int) string {
 	parts := make([]string, 0, len(statuses))
 	for _, s := range statuses {
-		mark, style := glyph(s.status, frame)
-		parts = append(parts, color(style, mark)+" "+s.status)
+		mark, markStyle := glyph(s.status, frame)
+		parts = append(parts, style.Color(markStyle, mark)+" "+s.status)
 	}
-	return " " + color(styleBorder, "──") + " " + strings.Join(parts, "   ")
+	return " " + style.Color(style.Border, "──") + " " + strings.Join(parts, "   ")
 }
 
 func (m Model) selectedEntry() (list.Entry, bool) {
@@ -452,7 +453,7 @@ func (m Model) detailLines(width int) []string {
 	}
 	e := m.pods[at[0]].Order()[at[1]].Entry
 	mark, markStyle := glyph(e.Status, m.frame)
-	status := color(markStyle, mark) + " " + e.Status
+	status := style.Color(markStyle, mark) + " " + e.Status
 	if age := m.inState(e); age != "" {
 		status += " · " + age
 	}
@@ -477,17 +478,17 @@ func (m Model) detailLines(width int) []string {
 	inner := w - 4
 	head := "┏━ " + e.Name + " · esc close "
 	head += strings.Repeat("━", max(0, w-1-ansi.StringWidth(head))) + "┓"
-	lines := []string{" " + color(styleSelected, head)}
+	lines := []string{" " + style.Color(style.Selected, head)}
 	for _, row := range rows {
 		value := row[1]
 		if value == "" {
-			value = color(styleDim, "-")
+			value = style.Color(style.Dim, "-")
 		}
 		text := ansi.Truncate(fmt.Sprintf("%-9s %s", row[0], value), inner, "…")
 		pad := max(0, inner-ansi.StringWidth(text))
-		lines = append(lines, " "+color(styleSelected, "┃")+" "+text+strings.Repeat(" ", pad)+" "+color(styleSelected, "┃"))
+		lines = append(lines, " "+style.Color(style.Selected, "┃")+" "+text+strings.Repeat(" ", pad)+" "+style.Color(style.Selected, "┃"))
 	}
-	lines = append(lines, " "+color(styleSelected, "┗"+strings.Repeat("━", max(0, w-2))+"┛"))
+	lines = append(lines, " "+style.Color(style.Selected, "┗"+strings.Repeat("━", max(0, w-2))+"┛"))
 	return lines
 }
 
@@ -499,10 +500,6 @@ func split(left, right string, width int) string {
 		left = ansi.Truncate(left, max(0, room-1), "…")
 	}
 	return left + strings.Repeat(" ", max(0, room-ansi.StringWidth(left))) + right
-}
-
-func color(style, text string) string {
-	return "\x1b[" + style + "m" + text + "\x1b[0m"
 }
 
 func plural(n int, word string) string {

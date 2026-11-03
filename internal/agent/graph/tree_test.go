@@ -7,6 +7,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/agent/list"
+	"github.com/Harrison-Blair/hive/internal/lib/canvas"
+	"github.com/Harrison-Blair/hive/internal/lib/style"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -75,13 +77,13 @@ func TestTreeJoinsOfTheSelectedAndOfAWorkingParent(t *testing.T) {
 	entries := smallTree()
 	entries[1].Status = "working"
 	b := drawBoard(Pods(entries), 38, nil, "c", 0, nil, true)
-	if row := b.lines[5]; !strings.Contains(row, "\x1b["+styleSelected+"m┗━━━━━━━━━━━━━━┛") {
+	if row := b.lines[5]; !strings.Contains(row, "\x1b["+style.Selected+"m┗━━━━━━━━━━━━━━┛") {
 		t.Errorf("selected parent bottom = %q; want a whole heavy edge in the selected style", row)
 	}
-	if row := b.lines[7]; !strings.Contains(row, "\x1b["+styleWorking+"m╭──────────────╮") {
+	if row := b.lines[7]; !strings.Contains(row, "\x1b["+style.Working+"m╭──────────────╮") {
 		t.Errorf("working child top = %q; want a whole edge in the working style", row)
 	}
-	if row := b.lines[11]; !strings.Contains(row, "\x1b["+styleWorking+"m╰──────────────╯") {
+	if row := b.lines[11]; !strings.Contains(row, "\x1b["+style.Working+"m╰──────────────╯") {
 		t.Errorf("working parent bottom = %q; want a whole edge in the working style", row)
 	}
 	b = drawBoard(Pods(entries), 38, nil, "b", 0, nil, true)
@@ -237,8 +239,8 @@ func TestHiddenTreeKeepsTheSideScrollAndAMoveKeyShowsWithoutMoving(t *testing.T)
 
 // parseCells reads a rendered line back into one cell per rune with its SGR
 // style.
-func parseCells(line string) []cell {
-	var out []cell
+func parseCells(line string) []canvas.Cell {
+	var out []canvas.Cell
 	style := ""
 	for i := 0; i < len(line); {
 		if strings.HasPrefix(line[i:], "\x1b[") {
@@ -251,7 +253,7 @@ func parseCells(line string) []cell {
 			continue
 		}
 		r, n := utf8.DecodeRuneInString(line[i:])
-		out = append(out, cell{r, style})
+		out = append(out, canvas.Cell{R: r, Style: style})
 		i += n
 	}
 	return out
@@ -266,29 +268,29 @@ func TestJoinsLeaveTheCardBordersWhole(t *testing.T) {
 	for _, tree := range []bool{true, false} {
 		for _, selected := range []string{"c", "a", "b", "w"} {
 			b := drawBoard(Pods(entries), 38, nil, selected, 0, nil, tree)
-			rows := make([][]cell, len(b.lines))
+			rows := make([][]canvas.Cell, len(b.lines))
 			for i, line := range b.lines {
 				rows[i] = parseCells(line)
 			}
 			for name, s := range b.cards {
-				box, style := []rune("╭╮╰╯─│"), styleBorder
+				box, edge := []rune("╭╮╰╯─│"), style.Border
 				switch {
 				case name == selected:
-					box, style = []rune("┏┓┗┛━┃"), styleSelected
+					box, edge = []rune("┏┓┗┛━┃"), style.Selected
 				case s.status == "working":
-					style = styleWorking
+					edge = style.Working
 				}
-				want := newCanvas(s.left+s.width, s.top+cardHeight)
-				want.box(s.left, s.top, s.width, cardHeight, box, style)
+				want := canvas.New(s.left+s.width, s.top+cardHeight)
+				want.Box(s.left, s.top, s.width, cardHeight, box, edge)
 				for y := s.top; y < s.top+cardHeight; y++ {
 					for x := s.left; x < s.left+s.width; x++ {
-						w := want.cells[y][x]
-						if w.r == 0 {
+						w := want.Cells[y][x]
+						if w.R == 0 {
 							continue
 						}
 						if got := rows[y][x]; got != w {
 							t.Errorf("tree %v, selected %s: card %s cell %d,%d = %q in %q; want %q in %q",
-								tree, selected, name, x, y, got.r, got.style, w.r, w.style)
+								tree, selected, name, x, y, got.R, got.Style, w.R, w.Style)
 						}
 					}
 				}

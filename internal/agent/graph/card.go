@@ -2,10 +2,11 @@ package graph
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/agent/list"
+	"github.com/Harrison-Blair/hive/internal/lib/canvas"
+	"github.com/Harrison-Blair/hive/internal/lib/style"
 )
 
 // The card size of the historical Agents graph, widened so that a name of 16
@@ -15,17 +16,6 @@ const (
 	cardWidth    = 33
 	minCardWidth = 16
 	cardHeight   = 5
-)
-
-// The SGR parameters of the historical palette. Each state also has a glyph
-// or a border shape, so colour only adds.
-const (
-	styleBorder   = "38;2;61;58;51"
-	styleDim      = "38;2;163;157;144"
-	styleAccent   = "38;2;245;185;66"
-	styleSelected = "1;38;2;245;185;66"
-	styleWorking  = "38;2;110;230;154"
-	styleError    = "38;2;232;112;95"
 )
 
 // frameInterval is the frame interval of the Pi working indicator.
@@ -38,26 +28,26 @@ var workingFrames = [...]string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦",
 // statuses gives the glyph and the glyph style of each herdr status, in
 // legend order.
 var statuses = []struct{ status, glyph, style string }{
-	{"working", workingFrames[0], styleWorking},
-	{"idle", "○", styleAccent},
-	{"blocked", "×", styleError},
-	{"done", "✓", styleDim},
-	{"unknown", "·", styleDim},
-	{"gone", "–", styleDim},
+	{"working", workingFrames[0], style.Working},
+	{"idle", "○", style.Accent},
+	{"blocked", "×", style.Error},
+	{"done", "✓", style.Dim},
+	{"unknown", "·", style.Dim},
+	{"gone", "–", style.Dim},
 }
 
 // glyph gives the status glyph and its style. The working glyph is the
 // braille frame of frame.
 func glyph(status string, frame int) (string, string) {
 	if status == "working" {
-		return workingFrames[frame%len(workingFrames)], styleWorking
+		return workingFrames[frame%len(workingFrames)], style.Working
 	}
 	for _, s := range statuses {
 		if s.status == status {
 			return s.glyph, s.style
 		}
 	}
-	return "·", styleDim
+	return "·", style.Dim
 }
 
 // elapsed formats a duration with seconds: 7s, 4m05s, 26h04m03s.
@@ -83,142 +73,47 @@ func since(e list.Entry, now time.Time) string {
 // drawCard draws the card of e at x, y with width w. Row 1 has the status
 // glyph, the name, and age, the time in the current state. The age shows only
 // when it fits after the glyph, and the name gets the room that is left. Row 2 has the checkout, and row 3
-// has the harness and the model.
+// has the harness in its harness colour and the model.
 // A selected card has a heavy border.
-func drawCard(c *canvas, x, y, w int, e list.Entry, age string, selected bool, frame int, checkout string) {
-	border, edge := styleBorder, "╭╮╰╯─│"
+func drawCard(c *canvas.Canvas, x, y, w int, e list.Entry, age string, selected bool, frame int, checkout string) {
+	border, edge := style.Border, "╭╮╰╯─│"
 	switch {
 	case selected:
-		border, edge = styleSelected, "┏┓┗┛━┃"
+		border, edge = style.Selected, "┏┓┗┛━┃"
 	case e.Status == "working":
-		border = styleWorking
+		border = style.Working
 	}
 	corners := []rune(edge)
-	c.box(x, y, w, cardHeight, corners, border)
+	c.Box(x, y, w, cardHeight, corners, border)
 	inner := w - 4
 	mark, markStyle := glyph(e.Status, frame)
-	c.text(x+2, y+1, mark, markStyle, 1)
+	c.Text(x+2, y+1, mark, markStyle, 1)
 	room := inner - 2
 	if cells := len([]rune(age)); cells > 0 && cells <= room {
 		room -= cells + 1
-		c.text(x+w-2-cells, y+1, age, styleDim, cells)
+		c.Text(x+w-2-cells, y+1, age, style.Dim, cells)
 	}
 	nameStyle := ""
 	switch {
 	case selected:
-		nameStyle = styleSelected
+		nameStyle = style.Selected
 	case e.Status == "done" || e.Status == "gone":
-		nameStyle = styleDim
+		nameStyle = style.Dim
 	}
-	c.text(x+4, y+1, clip(e.Name, room), nameStyle, room)
-	c.text(x+2, y+2, clip(checkout, inner), styleDim, inner)
+	c.Text(x+4, y+1, canvas.Clip(e.Name, room), nameStyle, room)
+	c.Text(x+2, y+2, canvas.Clip(checkout, inner), style.Dim, inner)
 	sub := e.Harness
 	if e.Model != "" {
 		sub += " · " + e.Model
 	}
-	c.text(x+2, y+3, clip(sub, inner), styleDim, inner)
+	sub = canvas.Clip(sub, inner)
+	c.Text(x+2, y+3, sub, style.Dim, inner)
+	c.Text(x+2, y+3, sub, style.Harness(e.Harness), min(len([]rune(e.Harness)), len([]rune(sub))))
 }
 
 // cardLines renders one card alone.
 func cardLines(e list.Entry, age string, selected bool, frame, w int) []string {
-	c := newCanvas(w, cardHeight)
+	c := canvas.New(w, cardHeight)
 	drawCard(c, 0, 0, w, e, age, selected, frame, "")
-	return c.lines()
-}
-
-// clip cuts text to limit cells with … at the end.
-func clip(text string, limit int) string {
-	runes := []rune(text)
-	if limit <= 0 {
-		return ""
-	}
-	if len(runes) <= limit {
-		return text
-	}
-	return string(runes[:limit-1]) + "…"
-}
-
-type cell struct {
-	r     rune
-	style string
-}
-
-// canvas is a grid of one-cell runes, each with an SGR style.
-type canvas struct {
-	w, h  int
-	cells [][]cell
-}
-
-func newCanvas(w, h int) *canvas {
-	c := &canvas{w: w, h: h, cells: make([][]cell, h)}
-	for y := range c.cells {
-		c.cells[y] = make([]cell, w)
-	}
-	return c
-}
-
-func (c *canvas) set(x, y int, r rune, style string) {
-	if x >= 0 && y >= 0 && x < c.w && y < c.h {
-		c.cells[y][x] = cell{r, style}
-	}
-}
-
-// text writes at most limit runes of s from x.
-func (c *canvas) text(x, y int, s, style string, limit int) {
-	for i, r := range []rune(s) {
-		if i >= limit {
-			return
-		}
-		c.set(x+i, y, r, style)
-	}
-}
-
-// box draws a border of w×h. Corners holds ╭╮╰╯ then the horizontal and the
-// vertical edge.
-func (c *canvas) box(x, y, w, h int, corners []rune, style string) {
-	for i := 1; i < w-1; i++ {
-		c.set(x+i, y, corners[4], style)
-		c.set(x+i, y+h-1, corners[4], style)
-	}
-	for j := 1; j < h-1; j++ {
-		c.set(x, y+j, corners[5], style)
-		c.set(x+w-1, y+j, corners[5], style)
-	}
-	c.set(x, y, corners[0], style)
-	c.set(x+w-1, y, corners[1], style)
-	c.set(x, y+h-1, corners[2], style)
-	c.set(x+w-1, y+h-1, corners[3], style)
-}
-
-// lines renders each row with SGR sequences, without trailing blanks.
-func (c *canvas) lines() []string {
-	out := make([]string, c.h)
-	for y, row := range c.cells {
-		end := len(row)
-		for end > 0 && row[end-1].r == 0 {
-			end--
-		}
-		var b strings.Builder
-		style := ""
-		for _, cl := range row[:end] {
-			if cl.r == 0 {
-				cl = cell{' ', ""}
-			}
-			if cl.style != style {
-				if style != "" {
-					b.WriteString("\x1b[0m")
-				}
-				if cl.style != "" {
-					b.WriteString("\x1b[" + cl.style + "m")
-				}
-				style = cl.style
-			}
-			b.WriteRune(cl.r)
-		}
-		if style != "" {
-			b.WriteString("\x1b[0m")
-		}
-		out[y] = b.String()
-	}
-	return out
+	return c.Lines()
 }
