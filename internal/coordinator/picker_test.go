@@ -775,3 +775,30 @@ func TestPickerFilterRowDropsPartsInOrderWhenNarrow(t *testing.T) {
 		}
 	}
 }
+
+func TestPickerModelInputDropsTheLabelBeforeTheText(t *testing.T) {
+	all := steps(t)
+	for _, name := range []string{"other", "failure"} {
+		typed := typeText(t, all[name], "my/model")
+		for _, tc := range []struct {
+			m     Picker
+			width int
+			want  string
+		}{
+			{typed, 40, "│ model my/model▏"},
+			{typed, 19, "│ model my/model▏"},
+			{typed, 18, "│ my/model▏"}, // the label drops
+			{typed, 13, "│ my/model▏"},
+			{typed, 12, "│ …/model▏"}, // the start of the text is cut
+			{typed, 10, "│ …odel▏"},
+			{all[name], 11, "│ model ▏"},
+			{all[name], 10, "│ ▏"}, // the label drops, ▏ alone stays
+		} {
+			line := lineWith(t, view(update(t, tc.m, tea.WindowSizeMsg{Width: tc.width, Height: 24})), "▏")
+			want := tc.want + strings.Repeat(" ", tc.width-1-ansi.StringWidth(tc.want)) + "│"
+			if line != want {
+				t.Errorf("%s input row at width %d = %q; want %q", name, tc.width, line, want)
+			}
+		}
+	}
+}

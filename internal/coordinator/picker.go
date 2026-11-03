@@ -254,9 +254,9 @@ func (p Picker) View() tea.View {
 		if y > 3 {
 			put(c, 4, 3, p.failure, style.Dim, w-6)
 		}
-		drawInput(c, y, 2, "model", p.typed, w-2)
+		drawInput(c, y, w, p.typed)
 	case stepOther:
-		drawInput(c, min(2, h-2), 2, "model", p.typed, w-2)
+		drawInput(c, min(2, h-2), w, p.typed)
 	}
 	// The content stays inside the box: the edges overwrite it, and the
 	// key row is cleared before the key line.
@@ -417,11 +417,19 @@ func drawName(c *canvas.Canvas, y int, name, nameStyle string, limit int) {
 	put(c, 4, y, name, nameStyle, limit)
 }
 
-// drawInput draws label at x, then text and the ▏ cursor, ending before end.
-func drawInput(c *canvas.Canvas, y, x int, label, text string, end int) {
-	put(c, x, y, label, style.Dim, end-x)
-	x += ansi.StringWidth(label) + 1
-	put(c, x, y, field(text, end-x), "", end-x)
+// drawInput draws the model label, then text and the ▏ cursor, in a box of
+// width w. When the row is too narrow, it drops the label first and then cuts
+// the start of the text. The ▏ cursor always stays.
+func drawInput(c *canvas.Canvas, y, w int, text string) {
+	const label = "model"
+	room := w - 4
+	labelWidth := ansi.StringWidth(label) + 1
+	if labelWidth+ansi.StringWidth(text)+1 > room {
+		put(c, 2, y, field(text, room), "", room)
+		return
+	}
+	put(c, 2, y, label, style.Dim, labelWidth)
+	put(c, 2+labelWidth, y, text+"▏", "", room-labelWidth)
 }
 
 // drawFilter draws the filter row in a box of width w: the filter label, the
