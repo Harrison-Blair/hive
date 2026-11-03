@@ -120,6 +120,23 @@ func TestPickerEnterPutsTheCursorOnTheRememberedModelOfThatHarness(t *testing.T)
 	}
 }
 
+func TestPickerModelStepMarksTheRememberedModelOfTheOpenHarness(t *testing.T) {
+	last := Choice{Harness: "claude", Model: "claude-opus-5-5", Models: map[string]string{"claude": "claude-opus-5-5", "pi": "opencode-go/deepseek-v4-pro"}}
+	m := NewPicker(last, true, fakeDiscover(piModels, nil))
+	if line := lineWith(t, view(m), " pi "); strings.Contains(line, "✓ last") {
+		t.Errorf("harness step pi row = %q; want ✓ last only on the last-started harness", line)
+	}
+	m = update(t, m, press(tea.KeyDown))
+	m = update(t, m, press(tea.KeyDown))
+	m = enterAndDiscover(t, m)
+	if line := lineWith(t, view(m), "deepseek-v4-pro"); !strings.Contains(line, "✓ last") {
+		t.Fatalf("pi model line = %q; want ✓ last on the remembered pi model", line)
+	}
+	if strings.Count(view(m), "✓ last") != 1 {
+		t.Fatalf("model step has more than one ✓ last:\n%s", view(m))
+	}
+}
+
 func TestPickerRule1NoLastStartsOnFirstRows(t *testing.T) {
 	m := NewPicker(Choice{}, false, fakeDiscover(piModels, nil))
 	if !strings.Contains(view(m), "▸ claude") || strings.Contains(view(m), "✓ last") {

@@ -11,8 +11,9 @@
 // harness behind a spinner. Step 2 lists the models under a type-to-filter
 // row, with an Other… row for a typed model name. The cursor starts on the
 // last model of that harness. When the model list fails, step 2 shows the
-// cause and asks for a typed name. ▸ and bold mark the cursor, and "✓ last"
-// marks the last choice. Enter on a model ends the picker with the choice.
+// cause and asks for a typed name. ▸ and bold mark the cursor. "✓ last"
+// marks the last-started harness on step 1 and the last model of the open
+// harness on step 2. Enter on a model ends the picker with the choice.
 // Esc goes back one step, or clears the filter first, and quits on step 1.
 // Ctrl+C quits from any step.
 //

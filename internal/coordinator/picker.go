@@ -315,7 +315,7 @@ func (p Picker) drawModels(c *canvas.Canvas, w, h int) {
 		nameWidth = max(nameWidth, utf8.RuneCountInString(model))
 	}
 	nameWidth = min(nameWidth, w-14)
-	lastHarness := p.hasLast && Harnesses[p.harness] == p.last.Harness
+	lastModel := p.lastModel(Harnesses[p.harness])
 	list := h - 4
 	first := max(0, min(p.cursor-list/2, len(rows)-list))
 	for i := first; i < len(rows) && i < first+list; i++ {
@@ -332,7 +332,7 @@ func (p Picker) drawModels(c *canvas.Canvas, w, h int) {
 			}
 		}
 		put(c, 4, y, rows[i], nameStyle, nameWidth)
-		if lastHarness && rows[i] == p.last.Model {
+		if lastModel != "" && rows[i] == lastModel {
 			put(c, 6+nameWidth, y, lastMark, style.Dim, 6)
 		}
 	}
