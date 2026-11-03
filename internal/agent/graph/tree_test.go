@@ -3,6 +3,7 @@ package graph
 import (
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/agent/list"
@@ -44,15 +45,15 @@ func TestTreeDrawsSiblingsInOneRowUnderACenteredParent(t *testing.T) {
 		"│          │ ○ c          │          │",
 		"│          │              │          │",
 		"│          │ pi · m       │          │",
-		"│          ╰───────┬──────╯          │",
+		"│          ╰──────────────╯          │",
 		"│         ╭────────┴────────╮        │",
-		"│ ╭───────┴──────╮  ╭───────┴──────╮ │",
+		"│ ╭──────────────╮  ╭──────────────╮ │",
 		"│ │ ○ a          │  │ ○ b          │ │",
 		"│ │              │  │              │ │",
 		"│ │ pi · m       │  │ pi · m       │ │",
-		"│ ╰───────┬──────╯  ╰──────────────╯ │",
+		"│ ╰──────────────╯  ╰──────────────╯ │",
 		"│         │                          │",
-		"│ ╭───────┴──────╮                   │",
+		"│ ╭──────────────╮                   │",
 		"│ │ ○ w          │                   │",
 		"│ │              │                   │",
 		"│ │ pi · m       │                   │",
@@ -74,18 +75,18 @@ func TestTreeJoinsOfTheSelectedAndOfAWorkingParent(t *testing.T) {
 	entries := smallTree()
 	entries[1].Status = "working"
 	b := drawBoard(Pods(entries), 38, nil, "c", 0, nil, true)
-	if row := b.lines[5]; !strings.Contains(row, "\x1b["+styleSelected+"m┗━━━━━━━┳━━━━━━┛") {
-		t.Errorf("selected parent bottom = %q; want a heavy ┳ in the selected style", row)
+	if row := b.lines[5]; !strings.Contains(row, "\x1b["+styleSelected+"m┗━━━━━━━━━━━━━━┛") {
+		t.Errorf("selected parent bottom = %q; want a whole heavy edge in the selected style", row)
 	}
-	if row := b.lines[7]; !strings.Contains(row, "\x1b["+styleWorking+"m╭───────┴──────╮") {
-		t.Errorf("working child top = %q; want ┴ in the working style", row)
+	if row := b.lines[7]; !strings.Contains(row, "\x1b["+styleWorking+"m╭──────────────╮") {
+		t.Errorf("working child top = %q; want a whole edge in the working style", row)
 	}
-	if row := b.lines[11]; !strings.Contains(row, "\x1b["+styleWorking+"m╰───────┬──────╯") {
-		t.Errorf("working parent bottom = %q; want ┬ in the working style", row)
+	if row := b.lines[11]; !strings.Contains(row, "\x1b["+styleWorking+"m╰──────────────╯") {
+		t.Errorf("working parent bottom = %q; want a whole edge in the working style", row)
 	}
 	b = drawBoard(Pods(entries), 38, nil, "b", 0, nil, true)
-	if row := ansi.Strip(b.lines[7]); !strings.Contains(row, "┏━━━━━━━┻━━━━━━┓") {
-		t.Errorf("selected child top = %q; want a heavy ┻", row)
+	if row := ansi.Strip(b.lines[7]); !strings.Contains(row, "┏━━━━━━━━━━━━━━┓") {
+		t.Errorf("selected child top = %q; want a whole heavy edge", row)
 	}
 }
 
@@ -105,16 +106,16 @@ func TestGraphOpensInTreeModeAndGSwitches(t *testing.T) {
 	if !strings.Contains(text, " [tree] ←↑↓→ move · enter details · esc hide · g list · r refresh · q quit") {
 		t.Fatalf("the graph does not open in tree mode:\n%s", text)
 	}
-	if strings.Contains(text, "├┤ ✓ hive-reviewer") || !strings.Contains(text, "┴") {
+	if strings.Contains(text, "├│ ✓ hive-reviewer") || !strings.Contains(text, "┴") {
 		t.Fatalf("tree mode draws the list:\n%s", text)
 	}
 	m = key(t, m, 'g')
 	text = screen(m)
-	if !strings.Contains(text, " [list] ←↑↓→ move · enter details · esc hide · g tree · r refresh · q quit") || !strings.Contains(text, "├┤ ✓ hive-reviewer") {
+	if !strings.Contains(text, " [list] ←↑↓→ move · enter details · esc hide · g tree · r refresh · q quit") || !strings.Contains(text, "├│ ✓ hive-reviewer") {
 		t.Fatalf("g does not switch to the list:\n%s", text)
 	}
 	m = key(t, m, 'g')
-	if text := screen(m); !strings.Contains(text, " [tree] ") || strings.Contains(text, "├┤ ✓ hive-reviewer") {
+	if text := screen(m); !strings.Contains(text, " [tree] ") || strings.Contains(text, "├│ ✓ hive-reviewer") {
 		t.Fatalf("a second g does not switch back to the tree:\n%s", text)
 	}
 }
@@ -219,7 +220,7 @@ func TestHiddenTreeKeepsTheSideScrollAndAMoveKeyShowsWithoutMoving(t *testing.T)
 		t.Fatalf("selected = %q, xscroll = %d; want k6 with xscroll 46", m.selected, m.xscroll)
 	}
 	m = key(t, m, tea.KeyEscape)
-	if text := screen(m); strings.ContainsAny(text, "┏┻") {
+	if text := screen(m); strings.ContainsAny(text, "┏┃") {
 		t.Fatalf("esc did not hide the outline in tree mode:\n%s", text)
 	}
 	// The refresh replaces k6 with k7, so the selection goes to a, left of
@@ -231,5 +232,67 @@ func TestHiddenTreeKeepsTheSideScrollAndAMoveKeyShowsWithoutMoving(t *testing.T)
 	m = key(t, m, tea.KeyDown)
 	if text := screen(m); m.selected != "a" || !strings.Contains(text, "┃ ○ a ") {
 		t.Fatalf("down while hidden: selected = %q; want the outline back on a without a move:\n%s", m.selected, text)
+	}
+}
+
+// parseCells reads a rendered line back into one cell per rune with its SGR
+// style.
+func parseCells(line string) []cell {
+	var out []cell
+	style := ""
+	for i := 0; i < len(line); {
+		if strings.HasPrefix(line[i:], "\x1b[") {
+			end := strings.IndexByte(line[i:], 'm')
+			style = line[i+2 : i+end]
+			if style == "0" {
+				style = ""
+			}
+			i += end + 1
+			continue
+		}
+		r, n := utf8.DecodeRuneInString(line[i:])
+		out = append(out, cell{r, style})
+		i += n
+	}
+	return out
+}
+
+// TestJoinsLeaveTheCardBordersWhole checks, in both modes, that each cell of
+// the border of a selected, a working, and an idle card with joins is the
+// plain box rune of that card in the style of that card.
+func TestJoinsLeaveTheCardBordersWhole(t *testing.T) {
+	entries := smallTree()
+	entries[1].Status = "working"
+	for _, tree := range []bool{true, false} {
+		for _, selected := range []string{"c", "a", "b", "w"} {
+			b := drawBoard(Pods(entries), 38, nil, selected, 0, nil, tree)
+			rows := make([][]cell, len(b.lines))
+			for i, line := range b.lines {
+				rows[i] = parseCells(line)
+			}
+			for name, s := range b.cards {
+				box, style := []rune("╭╮╰╯─│"), styleBorder
+				switch {
+				case name == selected:
+					box, style = []rune("┏┓┗┛━┃"), styleSelected
+				case s.status == "working":
+					style = styleWorking
+				}
+				want := newCanvas(s.left+s.width, s.top+cardHeight)
+				want.box(s.left, s.top, s.width, cardHeight, box, style)
+				for y := s.top; y < s.top+cardHeight; y++ {
+					for x := s.left; x < s.left+s.width; x++ {
+						w := want.cells[y][x]
+						if w.r == 0 {
+							continue
+						}
+						if got := rows[y][x]; got != w {
+							t.Errorf("tree %v, selected %s: card %s cell %d,%d = %q in %q; want %q in %q",
+								tree, selected, name, x, y, got.r, got.style, w.r, w.style)
+						}
+					}
+				}
+			}
+		}
 	}
 }

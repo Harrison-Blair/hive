@@ -68,14 +68,6 @@ func (d *drawer) subtree(n *Node, x, y int) int {
 func (d *drawer) joins(n *Node, x, y int, xs []int) {
 	half := d.cw / 2
 	center, bar := x+half, y+cardHeight
-	down, style := '┬', styleBorder
-	switch {
-	case n.Entry.Name == d.selected:
-		down, style = '┳', styleSelected
-	case n.Entry.Status == "working":
-		style = styleWorking
-	}
-	d.c.set(center, bar-1, down, style)
 	first, last := xs[0]+half, xs[len(xs)-1]+half
 	for col := first; col <= last; col++ {
 		d.c.set(col, bar, '─', styleBorder)
@@ -95,16 +87,6 @@ func (d *drawer) joins(n *Node, x, y int, xs []int) {
 			}
 		}
 		d.c.set(center, bar, up, styleBorder)
-	}
-	for i, child := range n.Children {
-		up, style := '┴', styleBorder
-		switch {
-		case child.Entry.Name == d.selected:
-			up, style = '┻', styleSelected
-		case child.Entry.Status == "working":
-			style = styleWorking
-		}
-		d.c.set(xs[i]+half, bar+1, up, style)
 	}
 }
 
