@@ -35,6 +35,9 @@ func New() *cobra.Command {
 	flags.StringVar(&opts.Request, "request", "", "request ID")
 	flags.IntVar(&opts.Limit, "limit", 200, "maximum matches to print")
 	flags.BoolVar(&opts.Follow, "follow", false, "print new events as they arrive")
+	for _, name := range []string{"component", "level", "request", "follow", "limit"} {
+		_ = flags.SetAnnotation(name, common.GuideOmit, []string{"true"})
+	}
 	return command
 }
 

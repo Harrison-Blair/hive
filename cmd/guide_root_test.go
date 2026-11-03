@@ -19,8 +19,8 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 	}
 	text := stdout.String()
 	for _, command := range []string{
-		"hive", "hive agent", "hive agent graph", "hive agent list", "hive agent send NAME TEXT", "hive agent spawn", "hive agent stop NAME",
-		"hive guide", "hive logs", "hive version", "hive worktree", "hive worktree create BRANCH", "hive worktree remove BRANCH",
+		"hive agent list", "hive agent send NAME TEXT", "hive agent spawn", "hive agent stop NAME",
+		"hive logs", "hive worktree create BRANCH", "hive worktree remove BRANCH",
 	} {
 		if !strings.Contains(text, "\n"+command+": ") {
 			t.Errorf("guide has no command %q", command)
@@ -34,14 +34,18 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 		"  --directory string: start in this existing directory",
 		"  --base string: start commit of a new branch (default: HEAD)",
 		"  --wait bool: wait until the agent is idle or done again",
-		"  --limit int=200: maximum matches to print",
 		"  --agent string: agent name: matches agent_id or target",
+		"  --since string: duration or RFC 3339 cutoff",
 	} {
 		if !strings.Contains(text, flag+"\n") {
 			t.Errorf("guide has no flag line %q", flag)
 		}
 	}
-	for _, absent := range []string{"\nhive completion", "\nhive help", "\nhive project", "--project", "--worktree", "--remove-worktree"} {
+	for _, absent := range []string{
+		"\nhive completion", "\nhive help", "\nhive project", "--project", "--worktree", "--remove-worktree",
+		"\nhive: ", "\nhive agent: ", "\nhive agent graph", "\nhive guide", "\nhive version", "\nhive worktree: ",
+		"--component", "--level", "--request", "--follow", "--limit",
+	} {
 		if strings.Contains(text, absent) {
 			t.Errorf("guide has %q", absent)
 		}
@@ -65,6 +69,32 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 	}
 	if envelope.Outcome != "ok" || envelope.Result.Text != text {
 		t.Fatalf("envelope = %+v; want ok with the text of hive guide", envelope)
+	}
+}
+
+func TestRootHelpKeepsTheCommandsAndFlagsLeftOutOfTheGuide(t *testing.T) {
+	testHome(t)
+	for _, test := range []struct {
+		args []string
+		want []string
+	}{
+		{[]string{"--help"}, []string{"pick a harness and a model", "\n  agent ", "\n  guide ", "\n  version ", "\n  worktree "}},
+		{[]string{"agent", "--help"}, []string{"manage agents in herdr panes", "\n  graph "}},
+		{[]string{"agent", "graph", "--help"}, []string{"show a live graph of the agents"}},
+		{[]string{"guide", "--help"}, []string{"print the hive guide"}},
+		{[]string{"version", "--help"}, []string{"Print the hive version"}},
+		{[]string{"worktree", "--help"}, []string{"manage the branch checkouts"}},
+		{[]string{"logs", "--help"}, []string{"--component string", "--level string", "--request string", "--follow ", "--limit int"}},
+	} {
+		var stdout, stderr bytes.Buffer
+		if status := executeWithStreams(test.args, strings.NewReader(""), &stdout, &stderr); status != 0 {
+			t.Fatalf("%v: status = %d, stderr = %q; want 0", test.args, status, stderr.String())
+		}
+		for _, want := range test.want {
+			if !strings.Contains(stdout.String(), want) {
+				t.Errorf("%v: help has no %q in:\n%s", test.args, want, stdout.String())
+			}
+		}
 	}
 }
 

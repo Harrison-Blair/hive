@@ -28,6 +28,7 @@ func NewRootCmd() *cobra.Command {
 		Use:           "hive",
 		Short:         "pick a harness and a model, then run the coordinator in this pane",
 		Args:          cobra.NoArgs,
+		Annotations:   map[string]string{common.GuideOmit: "true"},
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {

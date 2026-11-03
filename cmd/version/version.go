@@ -4,6 +4,7 @@ package version
 import (
 	"fmt"
 
+	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/version"
 	"github.com/spf13/cobra"
@@ -19,9 +20,10 @@ type versionResult struct {
 // New returns the version command.
 func New() *cobra.Command {
 	return &cobra.Command{
-		Use:   "version",
-		Short: "Print the hive version",
-		Args:  cobra.NoArgs,
+		Use:         "version",
+		Short:       "Print the hive version",
+		Annotations: map[string]string{common.GuideOmit: "true"},
+		Args:        cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			info := version.Info()
 			jsonOutput, err := cmd.Root().PersistentFlags().GetBool("json")
