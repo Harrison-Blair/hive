@@ -126,6 +126,32 @@ func TestRunSavesTheChosenModelAndKeepsTheOtherHarnesses(t *testing.T) {
 	}
 }
 
+// TestRunSaveKeepsAModelThatAnotherPickerSavedMeanwhile proves that the save
+// reads the file again: a second bare hive saved claude while this picker
+// was open with the older snapshot.
+func TestRunSaveKeepsAModelThatAnotherPickerSavedMeanwhile(t *testing.T) {
+	home := t.TempDir()
+	if err := SaveChoice(home, Choice{Harness: "codex", Model: "gpt-6-sol", Models: map[string]string{"codex": "gpt-6-sol"}}); err != nil {
+		t.Fatal(err)
+	}
+	var calls []execCall
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) {
+		other := Choice{Harness: "claude", Model: "claude-opus-5-5", Models: map[string]string{"codex": "gpt-6-sol", "claude": "claude-opus-5-5"}}
+		if err := SaveChoice(home, other); err != nil {
+			t.Fatal(err)
+		}
+		return Choice{Harness: "codex", Model: "gpt-6.1-sol"}, true, nil
+	}, &calls)
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	got, _, err := LoadChoice(home)
+	want := map[string]string{"claude": "claude-opus-5-5", "codex": "gpt-6.1-sol"}
+	if err != nil || got.Harness != "codex" || got.Model != "gpt-6.1-sol" || !maps.Equal(got.Models, want) {
+		t.Fatalf("saved choice = %+v, %v; want codex gpt-6.1-sol with models %v", got, err, want)
+	}
+}
+
 func TestRunQuitWritesNothingAndDoesNotExec(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
