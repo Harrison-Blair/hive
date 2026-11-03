@@ -116,11 +116,23 @@ func (p *Picker) openModels(msg modelsMsg) {
 		return
 	}
 	p.step, p.models = stepModels, msg.models
-	if p.hasLast && p.last.Harness == msg.harness {
-		if i := slices.Index(p.models, p.last.Model); i >= 0 {
-			p.cursor = i
-		}
+	if i := slices.Index(p.models, p.lastModel(msg.harness)); i >= 0 {
+		p.cursor = i
 	}
+}
+
+// lastModel gives the remembered model of harness, or "" when it has none.
+func (p Picker) lastModel(harness string) string {
+	if !p.hasLast {
+		return ""
+	}
+	if model, ok := p.last.Models[harness]; ok {
+		return model
+	}
+	if harness == p.last.Harness {
+		return p.last.Model
+	}
+	return ""
 }
 
 func (p Picker) key(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {

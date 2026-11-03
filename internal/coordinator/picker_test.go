@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/charmbracelet/x/ansi"
 )
 
 var piModels = []string{"opencode-go/deepseek-v4.1-flash", "opencode-go/deepseek-v4-pro", "openai-codex/gpt-6-sol"}
@@ -95,11 +96,22 @@ func TestPickerRule1PreselectsLastChoiceAndEnterEnterStartsIt(t *testing.T) {
 	}
 	next, cmd := m.Update(press(tea.KeyEnter))
 	choice, ok := next.(Picker).Result()
-	if !ok || choice != (Choice{"pi", "opencode-go/deepseek-v4-pro"}) {
+	if !ok || choice.Harness != "pi" || choice.Model != "opencode-go/deepseek-v4-pro" {
 		t.Fatalf("Result = %+v %v; want the last choice", choice, ok)
 	}
 	if cmd == nil || cmd() != tea.Quit() {
 		t.Fatal("Enter on a model does not quit the program")
+	}
+}
+
+func TestPickerEnterPutsTheCursorOnTheRememberedModelOfThatHarness(t *testing.T) {
+	last := Choice{Harness: "claude", Model: "claude-opus-5-5", Models: map[string]string{"claude": "claude-opus-5-5", "pi": "opencode-go/deepseek-v4-pro"}}
+	m := NewPicker(last, true, fakeDiscover(piModels, nil))
+	m = update(t, m, press(tea.KeyDown))
+	m = update(t, m, press(tea.KeyDown))
+	m = enterAndDiscover(t, m)
+	if line := lineWith(t, ansi.Strip(view(m)), "deepseek-v4-pro"); !strings.Contains(line, "▸ opencode-go/deepseek-v4-pro") {
+		t.Fatalf("pi model line = %q; want the cursor on the remembered pi model", line)
 	}
 }
 
@@ -267,7 +279,7 @@ func TestPickerRule4FailureShowsErrorAndTypedEntry(t *testing.T) {
 				t.Fatalf("view = %q; want the typed name", view(m))
 			}
 			m = update(t, m, press(tea.KeyEnter))
-			if choice, ok := m.Result(); !ok || choice != (Choice{"claude", "claude-opus-5-5"}) {
+			if choice, ok := m.Result(); !ok || choice.Harness != "claude" || choice.Model != "claude-opus-5-5" {
 				t.Fatalf("Result = %+v %v", choice, ok)
 			}
 		})
@@ -311,7 +323,7 @@ func TestPickerOtherRowTakesAnyTypedName(t *testing.T) {
 	m = update(t, m, press(tea.KeyBackspace))
 	m = typeText(t, m, "h")
 	m = update(t, m, press(tea.KeyEnter))
-	if choice, ok := m.Result(); !ok || choice != (Choice{"pi", "glm-5.3:xhigh"}) {
+	if choice, ok := m.Result(); !ok || choice.Harness != "pi" || choice.Model != "glm-5.3:xhigh" {
 		t.Fatalf("Result = %+v %v; want the typed name", choice, ok)
 	}
 }
