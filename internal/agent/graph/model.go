@@ -415,7 +415,7 @@ func (m Model) detailLines(width int) []string {
 	mark, markStyle := glyph(e.Status, m.frame)
 	status := color(markStyle, mark) + " " + e.Status
 	if age := m.inState(e); age != "" {
-		status += " · in state " + age
+		status += " · " + age
 	}
 	started := ""
 	if !e.StartedAt.IsZero() {

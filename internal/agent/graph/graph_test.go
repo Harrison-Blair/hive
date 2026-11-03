@@ -589,13 +589,13 @@ func TestReplacedRecordStartsAFreshTimer(t *testing.T) {
 func TestDetailsShowTimeInState(t *testing.T) {
 	e := entry("w", "", "idle", "pi", "m", 10*time.Minute)
 	m := key(t, loaded(t, []list.Entry{e}, 120, 40), tea.KeyEnter)
-	if text := screen(m); !strings.Contains(text, "status    ○ idle · in state ≥10m00s ") || !strings.Contains(text, "elapsed   10m00s") {
+	if text := screen(m); !strings.Contains(text, "status    ○ idle · ≥10m00s ") || !strings.Contains(text, "elapsed   10m00s") {
 		t.Fatalf("details before a change:\n%s", text)
 	}
 	e.Status = "working"
 	m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock})
 	m = update(t, m, clockMsg(clock.Add(4*time.Second)))
-	if text := screen(m); !strings.Contains(text, "status    ⠋ working · in state 4s ") || !strings.Contains(text, "elapsed   10m04s") {
+	if text := screen(m); !strings.Contains(text, "status    ⠋ working · 4s ") || !strings.Contains(text, "elapsed   10m04s") {
 		t.Fatalf("details after a change:\n%s", text)
 	}
 }
@@ -653,7 +653,7 @@ func TestShortDetailsShowTimeInState(t *testing.T) {
 		if got := strings.Join(labels, " "); got != want {
 			t.Errorf("80x%d detail rows = %q; want %q:\n%s", height, got, want, text)
 		}
-		if !strings.Contains(text, "status    ○ idle · in state ≥10m00s ") {
+		if !strings.Contains(text, "status    ○ idle · ≥10m00s ") {
 			t.Errorf("80x%d status row has no time in state:\n%s", height, text)
 		}
 	}
@@ -668,5 +668,13 @@ func TestUpdatedTimeIsWhenTheFetchReturned(t *testing.T) {
 	m = update(t, m, m.fetch()())
 	if text := screen(m); !strings.Contains(text, " updated 14:22:07") {
 		t.Fatalf("status does not show the time when the fetch returned:\n%s", text)
+	}
+}
+
+func TestNarrowDetailsKeepTheWholeStatusRow(t *testing.T) {
+	e := entry("w", "", "working", "pi", "m", 26*time.Hour+4*time.Minute+3*time.Second)
+	m := key(t, loaded(t, []list.Entry{e}, 40, 20), tea.KeyEnter)
+	if text := screen(m); !strings.Contains(text, "┃ status    ⠋ working · ≥26h04m03s ") {
+		t.Fatalf("a 40x20 status row is not whole:\n%s", text)
 	}
 }
