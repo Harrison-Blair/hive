@@ -48,14 +48,14 @@ func podHeight(p Pod) int {
 
 // drawBoard draws the pods in rows that fit width, as trees when tree is
 // true and else as indented lists. A pod goes beside the pod before it when
-// it fits, else it starts a new row. Each card narrows down to minCardWidth to
-// fit the widest pod in the width. A board that is still too wide is wider
-// than the screen, and the view scrolls it sideways.
+// it fits, else it starts a new row. Tree cards keep their full width; list
+// cards narrow down to minCardWidth to fit. A board wider than the screen
+// scrolls sideways.
 func drawBoard(pods []Pod, width int, ages map[string]string, selected string, frame int, checkouts map[string]string, tree bool) board {
 	d := drawer{ages: ages, selected: selected, frame: frame, cards: map[string]span{}, checkouts: checkouts}
 	sizes := make([][2]int, len(pods))
 	if tree {
-		d.cw = treeCardWidth(pods, width)
+		d.cw = cardWidth
 		for i, p := range pods {
 			sizes[i] = [2]int{forestWidth(p.Roots, d.cw) + 4, treePodHeight(p)}
 		}
