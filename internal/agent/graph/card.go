@@ -2,6 +2,7 @@ package graph
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/agent/list"
@@ -104,7 +105,16 @@ func drawCard(c *canvas.Canvas, x, y, w int, e list.Entry, age string, selected 
 	c.Text(x+2, y+2, canvas.Clip(checkout, inner), style.Dim, inner)
 	sub := e.Harness
 	if e.Model != "" {
-		sub += " · " + e.Model
+		model := e.Model
+		if _, name, ok := strings.Cut(model, "/"); ok {
+			model = name
+		}
+		if strings.HasPrefix(model, "gpt-") {
+			model = strings.TrimPrefix(model, "gpt-")
+		} else {
+			model = strings.TrimPrefix(model, "claude-")
+		}
+		sub += " · " + model
 	}
 	sub = canvas.Clip(sub, inner)
 	c.Text(x+2, y+3, sub, style.Dim, inner)

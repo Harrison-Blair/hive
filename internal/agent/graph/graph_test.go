@@ -96,10 +96,45 @@ func TestPodsSurviveAParentCycle(t *testing.T) {
 	}
 }
 
+func TestGraphCardsShortenModelLabelsAndDetailsKeepFullValue(t *testing.T) {
+	for _, tc := range []struct{ model, label string }{
+		{"openai-codex/gpt-6-sol", "6-sol"},
+		{"claude-opus-5-5", "opus-5-5"},
+		{"opencode-go/deepseek-v4-pro", "deepseek-v4-pro"},
+		{"anthropic/claude-opus-5-5", "opus-5-5"},
+		{"gpt-6", "6"},
+		{"deepseek-v4-pro", "deepseek-v4-pro"},
+		{"", ""},
+	} {
+		t.Run(tc.model, func(t *testing.T) {
+			e := entry("solo", "", "idle", "pi", tc.model, time.Minute)
+			m := loaded(t, []list.Entry{e}, 100, 25)
+			for _, mode := range []string{"tree", "list"} {
+				text := screen(m)
+				want := "pi"
+				if tc.label != "" {
+					want += " · " + tc.label
+				}
+				if !strings.Contains(text, want+" ") {
+					t.Errorf("%s card missing %q:\n%s", mode, want, text)
+				}
+				m = key(t, m, 'g')
+			}
+			m = key(t, m, tea.KeyEnter)
+			if tc.model != "" && !strings.Contains(screen(m), tc.model) {
+				t.Errorf("details missing full model %q:\n%s", tc.model, screen(m))
+			}
+			if e.Model != tc.model || m.entries[0].Model != tc.model {
+				t.Errorf("model record changed: entry %q, graph %q; want %q", e.Model, m.entries[0].Model, tc.model)
+			}
+		})
+	}
+}
+
 func TestCardRow3ColoursTheHarnessNameAndKeepsTheModelDim(t *testing.T) {
 	for _, tc := range []struct{ harness, model, want string }{
 		{"claude", "opus", "\x1b[" + style.Claude + "mclaude\x1b[0m\x1b[" + style.Dim + "m · opus"},
-		{"codex", "gpt-6.1-sol", "\x1b[" + style.Codex + "mcodex\x1b[0m\x1b[" + style.Dim + "m · gpt-6.1-sol"},
+		{"codex", "gpt-6.1-sol", "\x1b[" + style.Codex + "mcodex\x1b[0m\x1b[" + style.Dim + "m · 6.1-sol"},
 		{"pi", "luna", " pi\x1b[" + style.Dim + "m · luna"},
 	} {
 		e := entry("solo", "", "idle", tc.harness, tc.model, time.Minute)
