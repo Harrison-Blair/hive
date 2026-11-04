@@ -5,21 +5,6 @@ import "github.com/Harrison-Blair/hive/internal/lib/style"
 // treeGap is the number of columns between two subtrees side by side.
 const treeGap = 2
 
-// treeCardWidth is the largest card width up to cardWidth at which the
-// widest pod fits width, and at least minCardWidth.
-func treeCardWidth(pods []Pod, width int) int {
-	for cw := cardWidth; cw > minCardWidth; cw-- {
-		fits := true
-		for _, p := range pods {
-			fits = fits && forestWidth(p.Roots, cw)+4 <= width
-		}
-		if fits {
-			return cw
-		}
-	}
-	return minCardWidth
-}
-
 // forestWidth is the width of the subtrees of nodes side by side.
 func forestWidth(nodes []*Node, cw int) int {
 	w := -treeGap

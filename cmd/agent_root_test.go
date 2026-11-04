@@ -43,7 +43,7 @@ func TestRootAgentGraphJSONIsTheListSnapshot(t *testing.T) {
 	fake.AddWorkspace("mine", "", false)
 	pane := fake.AddPane("w1", "")
 	fake.StartAgent(pane.ID, "hive-coordinator", "claude", "working")
-	if err := agent.Save(home, agent.Record{Name: "hive-coordinator", Pane: pane.ID, Harness: "claude", Model: "opus"}); err != nil {
+	if err := agent.Save(home, agent.Record{Name: "hive-coordinator", Pane: pane.ID, Harness: "claude", Model: "anthropic/claude-opus-5-5"}); err != nil {
 		t.Fatal(err)
 	}
 	run := func(args ...string) string {
@@ -59,5 +59,8 @@ func TestRootAgentGraphJSONIsTheListSnapshot(t *testing.T) {
 	}
 	if !strings.Contains(graph, `"status":"working"`) {
 		t.Fatalf("graph --json = %s; want the live status", graph)
+	}
+	if !strings.Contains(graph, `"model":"anthropic/claude-opus-5-5"`) {
+		t.Fatalf("graph --json = %s; want the full model value", graph)
 	}
 }
