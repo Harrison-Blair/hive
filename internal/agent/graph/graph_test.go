@@ -158,7 +158,7 @@ func TestCardShowsNameCheckoutThenHarnessAndModel(t *testing.T) {
 		t.Fatalf("card has %d lines; want 5", len(lines))
 	}
 	row1, row3 := ansi.Strip(lines[1]), ansi.Strip(lines[3])
-	if !strings.HasPrefix(row1, "│ ○ hive-coordinator") || !strings.HasSuffix(row1, " 4m05s │") {
+	if !strings.HasPrefix(row1, "│ ○ coordinator") || !strings.HasSuffix(row1, " 4m05s │") {
 		t.Errorf("row 1 = %q; want the idle glyph, the name, and 4m05s", row1)
 	}
 	if row3 != "│ claude · opus"+strings.Repeat(" ", 12)+"│" {
@@ -171,19 +171,19 @@ func TestCardShowsNameCheckoutThenHarnessAndModel(t *testing.T) {
 	}
 }
 
-func TestCardKeepsACoordinatorNameWithALongElapsedTime(t *testing.T) {
+func TestCardKeepsASixteenCellNameWithALongElapsedTime(t *testing.T) {
 	for age, want := range map[time.Duration]string{10 * time.Minute: "10m00s", 26*time.Hour + 4*time.Minute + 3*time.Second: "26h04m03s"} {
-		e := entry("hive-coordinator", "", "idle", "claude", "opus", time.Hour)
+		e := entry("hive-worker-long", "", "idle", "claude", "opus", time.Hour)
 		m := loaded(t, []list.Entry{e}, 140, 20)
 		e.Status = "working"
 		m = update(t, m, fetchedMsg{entries: []list.Entry{e}, at: clock})
 		m = update(t, m, clockMsg(clock.Add(age)))
-		if row := cardRow1(t, m, "hive-coordinator"); !strings.Contains(row, " "+want+" ") {
+		if row := cardRow1(t, m, "hive-worker-long"); !strings.Contains(row, " "+want+" ") {
 			t.Errorf("age %v: card row 1 %q has no full name and time in state", age, row)
 		}
 	}
-	e := entry("hive-coordinator", "", "idle", "claude", "opus", 26*time.Hour+4*time.Minute+3*time.Second)
-	if text := screen(loaded(t, []list.Entry{e}, 140, 20)); !strings.Contains(text, " hive-coordinator ≥26h04m03s ") {
+	e := entry("hive-worker-long", "", "idle", "claude", "opus", 26*time.Hour+4*time.Minute+3*time.Second)
+	if text := screen(loaded(t, []list.Entry{e}, 140, 20)); !strings.Contains(text, " hive-worker-long ≥26h04m03s ") {
 		t.Errorf("a long time with ≥ does not fit whole beside the full name:\n%s", text)
 	}
 }
@@ -206,7 +206,7 @@ func TestViewDrawsPodsTreesAndClock(t *testing.T) {
 	for _, want := range []string{
 		"14:22:05", "╭─ api ", "╭─ hive ", "╭─ home ",
 		"│ │╭─", "├│ ✓ hive-reviewer", "╰│ × hive-worker ", "╰│ ○ hive-worker-kid",
-		"┃ ○ api-coordinator", "⠋ working", "○ idle", "× blocked", "✓ done", "– gone",
+		"┃ ○ coordinator", "⠋ working", "○ idle", "× blocked", "✓ done", "– gone",
 	} {
 		if !strings.Contains(text, want) {
 			t.Errorf("view has no %q:\n%s", want, text)
@@ -220,7 +220,7 @@ func TestViewDrawsPodsTreesAndClock(t *testing.T) {
 func TestSelectedCardHasHeavyBorder(t *testing.T) {
 	m := listed(t, fixture(), 140, 50)
 	text := screen(m)
-	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ○ api-coordinator") {
+	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ○ coordinator") {
 		t.Fatalf("first card is not the one heavy card:\n%s", text)
 	}
 	m = key(t, m, tea.KeyDown)
@@ -437,7 +437,7 @@ func TestSpinnerRunsOnlyWhileAWorkingCardIsVisible(t *testing.T) {
 	if !strings.Contains(before, "⠋ api-worker") || !strings.Contains(after, "⠙ api-worker") {
 		t.Fatalf("frame 1 does not show the second braille frame:\nbefore\n%s\nafter\n%s", before, after)
 	}
-	if !strings.Contains(after, "○ api-coordinator") {
+	if !strings.Contains(after, "○ coordinator") {
 		t.Fatalf("an idle card spins:\n%s", after)
 	}
 
@@ -743,7 +743,7 @@ func TestEscHidesTheOutlineAndAMoveKeyShowsIt(t *testing.T) {
 	if m.selected != "hive-coordinator" {
 		t.Fatalf("the second down did not move: selected = %q; want hive-coordinator", m.selected)
 	}
-	if text := screen(m); strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ⠋ hive-coordinator") {
+	if text := screen(m); strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ⠋ coordinator") {
 		t.Fatalf("the second down did not move the outline:\n%s", text)
 	}
 }
@@ -755,8 +755,8 @@ func TestEnterWhileHiddenShowsTheOutlineAndNoDetails(t *testing.T) {
 	if strings.Contains(text, "esc close") {
 		t.Fatalf("enter while hidden opened the details:\n%s", text)
 	}
-	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ○ api-coordinator") {
-		t.Fatalf("enter while hidden does not show the outline on api-coordinator:\n%s", text)
+	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ○ coordinator") {
+		t.Fatalf("enter while hidden does not show the outline on the api coordinator:\n%s", text)
 	}
 }
 
@@ -771,7 +771,7 @@ func TestRefreshKeepsTheOutlineHidden(t *testing.T) {
 		t.Fatalf("a refresh that dropped the selection showed the hidden outline:\n%s", text)
 	}
 	m = key(t, m, tea.KeyDown)
-	if text := screen(m); m.selected != "hive-coordinator" || strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ⠋ hive-coordinator") {
+	if text := screen(m); m.selected != "hive-coordinator" || strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ⠋ coordinator") {
 		t.Fatalf("down after the refresh does not show the outline on the first card (selected %q):\n%s", m.selected, text)
 	}
 }
@@ -783,7 +783,7 @@ func TestEscInDetailsClosesAndKeepsTheOutline(t *testing.T) {
 	if strings.Contains(text, "esc close") {
 		t.Fatalf("esc did not close the details:\n%s", text)
 	}
-	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ○ api-coordinator") {
+	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ○ coordinator") {
 		t.Fatalf("esc in the details hid the outline:\n%s", text)
 	}
 }
@@ -798,11 +798,11 @@ func TestHiddenOutlineDoesNotScroll(t *testing.T) {
 		t.Fatalf("the view did not scroll to loose")
 	}
 	m = update(t, m, fetchedMsg{entries: fixture()[:7], at: clock})
-	if text := screen(m); m.selected != "api-coordinator" || strings.Contains(text, "api-coordinator") {
+	if text := screen(m); m.selected != "api-coordinator" || strings.Contains(text, "╭─ api ") {
 		t.Fatalf("selected %q; the view followed the selection while hidden:\n%s", m.selected, text)
 	}
 	m = key(t, m, tea.KeyDown)
-	if text := screen(m); !strings.Contains(text, "┃ ○ api-coordinator") {
+	if text := screen(m); !strings.Contains(text, "┃ ○ coordinator") {
 		t.Fatalf("the view does not follow the outline when it shows:\n%s", text)
 	}
 }
@@ -814,5 +814,35 @@ func TestGraphKeysShowEscHide(t *testing.T) {
 	}
 	if text := screen(key(t, m, 'g')); !strings.Contains(text, " [list] ←↑↓→ move · enter details · esc hide · g tree · r refresh · q quit") {
 		t.Fatalf("list key hints have no esc hide:\n%s", text)
+	}
+}
+
+func TestCardOfAProjectCoordinatorDropsTheProject(t *testing.T) {
+	for name, want := range map[string]string{
+		"hive-coordinator":   "coordinator",
+		"hive-2-coordinator": "coordinator",
+		"coordinator":        "coordinator",
+		"coordinator-2":      "coordinator-2",
+		"hive-worker":        "hive-worker",
+		"-coordinator":       "-coordinator",
+	} {
+		row := ansi.Strip(cardLines(entry(name, "", "idle", "claude", "opus", time.Minute), "", false, 0, cardWidth)[1])
+		if !strings.HasPrefix(row, "│ ○ "+want+" ") {
+			t.Errorf("card of %s: row 1 = %q; want the name %s", name, row, want)
+		}
+	}
+}
+
+func TestProjectCoordinatorKeepsItsFullNameOutsideTheCard(t *testing.T) {
+	m := loaded(t, fixture(), 120, 40)
+	text := screen(m)
+	if strings.Contains(text, "api-coordinator") {
+		t.Errorf("a card shows the full coordinator name:\n%s", text)
+	}
+	if !strings.Contains(text, "api ") || !strings.Contains(text, "┃ ○ coordinator") {
+		t.Errorf("the pod title or the short card name is missing:\n%s", text)
+	}
+	if head := screen(key(t, m, tea.KeyEnter)); !strings.Contains(head, "┏━ api-coordinator · esc close") {
+		t.Errorf("the details header has no full name:\n%s", head)
 	}
 }
