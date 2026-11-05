@@ -11,7 +11,7 @@ import (
 )
 
 // The card size of the historical Agents graph, widened so that a name of 16
-// cells, such as hive-coordinator, and a time in state with the ≥ mark and
+// cells, such as hive-worker-long, and a time in state with the ≥ mark and
 // seconds up to ≥99h59m59s fit on row 1.
 const (
 	cardWidth    = 33
@@ -71,6 +71,15 @@ func since(e list.Entry, now time.Time) string {
 	return elapsed(now.Sub(e.StartedAt))
 }
 
+// cardName gives the name on the card of an agent. A project coordinator shows
+// only coordinator, because the title of its pod names the project.
+func cardName(name string) string {
+	if project, ok := strings.CutSuffix(name, coordinatorSuffix); ok && project != "" {
+		return strings.TrimPrefix(coordinatorSuffix, "-")
+	}
+	return name
+}
+
 // drawCard draws the card of e at x, y with width w. Row 1 has the status
 // glyph, the name, and age, the time in the current state. The age shows only
 // when it fits after the glyph, and the name gets the room that is left. Row 2 has the checkout, and row 3
@@ -101,7 +110,7 @@ func drawCard(c *canvas.Canvas, x, y, w int, e list.Entry, age string, selected 
 	case e.Status == "done" || e.Status == "gone":
 		nameStyle = style.Dim
 	}
-	c.Text(x+4, y+1, canvas.Clip(e.Name, room), nameStyle, room)
+	c.Text(x+4, y+1, canvas.Clip(cardName(e.Name), room), nameStyle, room)
 	c.Text(x+2, y+2, canvas.Clip(checkout, inner), style.Dim, inner)
 	sub := e.Harness
 	if e.Model != "" {
