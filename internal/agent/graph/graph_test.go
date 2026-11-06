@@ -41,12 +41,20 @@ func fetchOf(entries []list.Entry) func(context.Context) ([]list.Entry, error) {
 	return func(context.Context) ([]list.Entry, error) { return entries, nil }
 }
 
-// loaded returns a model of size width×height that has the entries.
-func loaded(t *testing.T, entries []list.Entry, width, height int) Model {
+// opened returns a model of size width×height just after its first fetch, as
+// a user sees it at open.
+func opened(t *testing.T, entries []list.Entry, width, height int) Model {
 	t.Helper()
 	m := New(Options{Fetch: fetchOf(entries), Now: func() time.Time { return clock }})
 	m = update(t, m, tea.WindowSizeMsg{Width: width, Height: height})
 	return update(t, m, fetchedMsg{entries: entries, at: clock})
+}
+
+// loaded returns an opened model after the key press that shows the outline
+// on the first card.
+func loaded(t *testing.T, entries []list.Entry, width, height int) Model {
+	t.Helper()
+	return key(t, opened(t, entries, width, height), tea.KeyDown)
 }
 
 func update(t *testing.T, m Model, msg tea.Msg) Model {
@@ -659,6 +667,7 @@ func TestStateChangeTimeIsWhenTheFetchSawIt(t *testing.T) {
 	m := New(Options{Fetch: func(context.Context) ([]list.Entry, error) { return entries, nil }, Now: func() time.Time { return now }})
 	m = update(t, m, tea.WindowSizeMsg{Width: 140, Height: 30})
 	m = update(t, m, m.fetch()())
+	m = key(t, m, tea.KeyDown)
 	m = update(t, m, clockMsg(clock.Add(time.Second)))
 	entries = []list.Entry{entry("w", "", "working", "pi", "m", time.Hour)}
 	now = clock.Add(1900 * time.Millisecond)
@@ -726,6 +735,72 @@ func TestNarrowDetailsKeepTheWholeStatusRow(t *testing.T) {
 	m := key(t, loaded(t, []list.Entry{e}, 40, 20), tea.KeyEnter)
 	if text := screen(m); !strings.Contains(text, "┃ status    ⠋ working · ≥26h04m03s ") {
 		t.Fatalf("a 40x20 status row is not whole:\n%s", text)
+	}
+}
+
+func TestOpenShowsNoOutlineAndTheFirstKeyShowsItWithoutAMove(t *testing.T) {
+	for _, code := range []rune{tea.KeyDown, tea.KeyEnter} {
+		m := opened(t, fixture(), 140, 50)
+		if text := screen(m); strings.ContainsAny(text, "┏┃") {
+			t.Fatalf("the graph opened with an outline:\n%s", text)
+		}
+		m = key(t, m, code)
+		text := screen(m)
+		if m.selected != "api-coordinator" || strings.Contains(text, "esc close") {
+			t.Fatalf("key %q: selected = %q; want api-coordinator and no details:\n%s", code, m.selected, text)
+		}
+		if strings.Count(text, "┏") != 1 || !strings.Contains(text, "┃ ○ coordinator") {
+			t.Fatalf("key %q does not show the outline on the api coordinator:\n%s", code, text)
+		}
+	}
+}
+
+func TestOpenAfterAFailedFetchShowsNoOutline(t *testing.T) {
+	m := New(Options{Fetch: fetchOf(nil), Now: func() time.Time { return clock }})
+	m = update(t, m, tea.WindowSizeMsg{Width: 140, Height: 50})
+	m = update(t, m, fetchedMsg{err: errors.New("herdr: boom")})
+	m = update(t, m, fetchedMsg{entries: fixture(), at: clock})
+	if text := screen(m); !strings.Contains(text, "api-worker") || strings.ContainsAny(text, "┏┃") {
+		t.Fatalf("the first good fetch does not show the cards with no outline:\n%s", text)
+	}
+}
+
+func TestRefreshKeepsAVisibleOutline(t *testing.T) {
+	m := loaded(t, fixture(), 140, 50)
+	m = update(t, m, fetchedMsg{entries: fixture(), at: clock})
+	if text := screen(m); strings.Count(text, "┏") != 1 {
+		t.Fatalf("a refresh hid the outline:\n%s", text)
+	}
+}
+
+// TestWideTreeOpensAsAfterEsc draws one root with six children at 80 columns.
+// Its root card is right of the first 80 columns of the board.
+func TestWideTreeOpensAsAfterEsc(t *testing.T) {
+	entries := []list.Entry{entry("r", "", "idle", "pi", "m", 0)}
+	for _, name := range []string{"k1", "k2", "k3", "k4", "k5", "k6"} {
+		entries = append(entries, entry(name, "r", "idle", "pi", "m", 0))
+	}
+	text := screen(opened(t, entries, 80, 30))
+	if !strings.Contains(text, "○ r ") || strings.ContainsAny(text, "┏┃") {
+		t.Fatalf("want the root card in view with no outline:\n%s", text)
+	}
+	if esc := screen(key(t, loaded(t, entries, 80, 30), tea.KeyEscape)); text != esc {
+		t.Fatalf("open differs from a visible outline and esc:\n%s\n---\n%s", text, esc)
+	}
+}
+
+func TestHintOmitsEscHideWhileNoOutlineShows(t *testing.T) {
+	m := opened(t, fixture(), 140, 50)
+	if text := screen(m); !strings.Contains(text, " [tree] ←↑↓→ move · enter details · g list · r refresh · q quit") {
+		t.Fatalf("tree hint at open:\n%s", text)
+	}
+	m = key(t, m, 'g')
+	if text := screen(m); !strings.Contains(text, " [list] ←↑↓→ move · enter details · g tree · r refresh · q quit") {
+		t.Fatalf("list hint while hidden:\n%s", text)
+	}
+	m = key(t, m, tea.KeyDown)
+	if text := screen(m); !strings.Contains(text, " [list] ←↑↓→ move · enter details · esc hide · g tree · r refresh · q quit") {
+		t.Fatalf("list hint with an outline:\n%s", text)
 	}
 }
 

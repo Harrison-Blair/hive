@@ -144,6 +144,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.err = msg.err.Error()
 			break
 		}
+		first := !m.loaded
 		m.err, m.loaded, m.fetchedAt = "", true, msg.at
 		m.entries, m.pods, m.checkouts = msg.entries, Pods(msg.entries), msg.checkouts
 		m.states = m.track(msg.entries, msg.at)
@@ -152,6 +153,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if order := m.order(); len(order) > 0 {
 				m.selected = order[0].Entry.Name
 			}
+		}
+		if first {
+			m.follow()
+			m.hide()
 		}
 	case clockMsg:
 		m.now = time.Time(msg)
@@ -183,8 +188,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			m.details = !m.details && m.selected != ""
 		case "esc":
-			m.hidden = m.hidden || !m.details
-			m.details = false
+			m.hide()
 		case "g":
 			m.list = !m.list
 		case "down", "j":
@@ -200,6 +204,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.follow()
 	cmds = append(cmds, m.syncSpinner())
 	return m, tea.Batch(cmds...)
+}
+
+// hide closes the details, or hides the outline when no details show.
+func (m *Model) hide() {
+	m.hidden = m.hidden || !m.details
+	m.details = false
 }
 
 // track returns the state of each agent in entries after a refresh that
@@ -422,10 +432,14 @@ func (m Model) keys() string {
 	if m.details {
 		return style.Color(style.Dim, " [details] esc close · ↑↓ move · r refresh · q quit")
 	}
-	if m.list {
-		return style.Color(style.Dim, " [list] ←↑↓→ move · enter details · esc hide · g tree · r refresh · q quit")
+	esc := " esc hide ·"
+	if m.hidden {
+		esc = ""
 	}
-	return style.Color(style.Dim, " [tree] ←↑↓→ move · enter details · esc hide · g list · r refresh · q quit")
+	if m.list {
+		return style.Color(style.Dim, " [list] ←↑↓→ move · enter details ·"+esc+" g tree · r refresh · q quit")
+	}
+	return style.Color(style.Dim, " [tree] ←↑↓→ move · enter details ·"+esc+" g list · r refresh · q quit")
 }
 
 // legend shows the glyph of each status. The working glyph follows frame.
