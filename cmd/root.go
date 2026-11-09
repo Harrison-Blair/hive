@@ -28,7 +28,6 @@ func NewRootCmd() *cobra.Command {
 		Use:           "hive",
 		Short:         "pick a harness and a model, then run the coordinator in this pane",
 		Args:          cobra.NoArgs,
-		Annotations:   map[string]string{common.GuideOmit: "true"},
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -41,7 +40,7 @@ func NewRootCmd() *cobra.Command {
 				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", err)
 				return &common.StatusError{Status: 1}
 			}
-			return coordinator.Main(resolved, cwd, common.Guide(cmd.Root()), cmd.InOrStdin(), cmd.OutOrStdout())
+			return coordinator.Main(resolved, cwd, common.StartupGuide(cmd.Root()), cmd.InOrStdin(), cmd.OutOrStdout())
 		},
 	}
 	root.PersistentFlags().Bool("json", false, "write JSON output")

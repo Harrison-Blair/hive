@@ -29,15 +29,12 @@ func New() *cobra.Command {
 	}
 	flags := command.Flags()
 	flags.StringVar(&opts.Since, "since", "", "duration or RFC 3339 cutoff")
-	flags.StringVar(&opts.Level, "level", "", "minimum level")
-	flags.StringVar(&opts.Component, "component", "", "component")
+	flags.StringVar(&opts.Level, "level", "", "minimum level: debug, info, warn, or error")
+	flags.StringVar(&opts.Component, "component", "", "filter by component")
 	flags.StringVar(&opts.Agent, "agent", "", "agent name: matches agent_id or target")
-	flags.StringVar(&opts.Request, "request", "", "request ID")
+	flags.StringVar(&opts.Request, "request", "", "filter by request ID")
 	flags.IntVar(&opts.Limit, "limit", 200, "maximum matches to print")
 	flags.BoolVar(&opts.Follow, "follow", false, "print new events as they arrive")
-	for _, name := range []string{"component", "level", "request", "follow", "limit"} {
-		_ = flags.SetAnnotation(name, common.GuideOmit, []string{"true"})
-	}
 	return command
 }
 

@@ -45,7 +45,7 @@ func New() *cobra.Command {
 				Directory:  value("directory"),
 				CallerPane: os.Getenv("HERDR_PANE_ID"),
 				Cwd:        cwd,
-				Guide:      common.Guide(cmd.Root()),
+				Guide:      common.StartupGuide(cmd.Root()),
 				Logger:     logger,
 			})
 			return envelope, agentspawn.Text(envelope), nil

@@ -1,6 +1,5 @@
-// Package guide renders the hive command guide: the command reference and the
-// usage notes. Hive gives the guide to each agent in its system prompt, and
-// hive guide prints it.
+// Package guide renders Hive command references and usage notes for startup
+// instructions and hive guide.
 package guide
 
 import (
@@ -38,13 +37,11 @@ type Result struct {
 // Notes returns the usage notes.
 func Notes() string { return notes }
 
-// Render returns the guide as dense Markdown: the global flags, one line for
-// each command with one indented line for each of its flags, and then the
-// usage notes. The guide goes on one start command line, which herdr types
-// into a shell, so each byte counts.
+// Render returns dense Markdown: global flags, one line per command with
+// indented flags, and the usage notes. Startup references share this format.
 func Render(commands []Command, global []Flag) string {
 	var b strings.Builder
-	b.WriteString("# hive guide\n## Commands\nEach command takes -h/--help. Global flags:\n")
+	b.WriteString("# hive guide\n## Commands\nUse hive guide for the full reference and -h/--help for command details. Global flags:\n")
 	writeFlags(&b, global)
 	for _, command := range commands {
 		fmt.Fprintf(&b, "%s: %s\n", command.Use, command.Short)

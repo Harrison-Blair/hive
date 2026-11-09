@@ -134,7 +134,7 @@ result object.
 | `hive worktree create B [--base REF]` | Print the checkout of branch B of the repository of the current directory. When no checkout has B, make one, as `spawn --branch` does. |
 | `hive worktree remove B` | Remove the checkout of branch B that hive made, and close the herdr workspaces on it. Hive refuses a checkout that it did not make, a checkout with changes, untracked files, or ignored files, and a checkout with a live agent. Stop each other process that writes into the checkout first: a file written during the removal can be lost. The branch stays. |
 | `hive logs` | Read the daily log files in `<home>/logs/`. |
-| `hive guide` | Print the hive guide: each command with its flags, except those marked to stay out of the guide, and the usage notes. Each agent that hive starts gets this text in its system prompt. |
+| `hive guide` | Print the full agent-friendly command reference and usage notes. Agents start with a compact reference to the most-used agent commands and the same notes. |
 | `hive version` | Print the hive version. |
 
 ## Links
