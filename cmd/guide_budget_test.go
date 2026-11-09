@@ -12,10 +12,10 @@ import (
 const longModel = "openrouter/deepseek/deepseek-v4.1-flash-thinking-preview:xhigh"
 
 // TestGuideStartLineFitsTheBudget checks the full start line of each harness
-// with the guide, a long model, and the inbox arguments of a long home against
+// with the startup guide, a long model, and the inbox arguments of a long home against
 // harness.MaxStartLine.
 func TestGuideStartLineFitsTheBudget(t *testing.T) {
-	guide := common.Guide(NewRootCmd())
+	guide := common.StartupGuide(NewRootCmd())
 	home := filepath.Join(t.TempDir(), "home", "a-long-user-name", ".hive")
 	for _, kind := range harness.KnownKinds() {
 		profile, err := harness.Lookup(kind)

@@ -7,6 +7,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Harrison-Blair/hive/cmd/agent/list"
+	"github.com/Harrison-Blair/hive/cmd/agent/send"
+	"github.com/Harrison-Blair/hive/cmd/agent/stop"
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/agent/agenttest"
@@ -17,10 +20,18 @@ func execute(t *testing.T, args ...string) (int, string, string) {
 	t.Helper()
 	root := &cobra.Command{Use: "hive", SilenceUsage: true, SilenceErrors: true}
 	root.PersistentFlags().Bool("json", false, "")
-	root.AddCommand(New())
+	agentCmd := &cobra.Command{Use: "agent"}
+	agentCmd.AddCommand(New(), list.New(), send.New(), stop.New())
+	root.AddCommand(agentCmd)
 	var stdout, stderr bytes.Buffer
 	root.SetOut(&stdout)
 	root.SetErr(&stderr)
+	for i, arg := range args {
+		if arg == "spawn" {
+			args = append(args[:i], append([]string{"agent"}, args[i:]...)...)
+			break
+		}
+	}
 	root.SetArgs(args)
 	err := root.Execute()
 	var status *common.StatusError
@@ -65,6 +76,19 @@ func TestSpawnCLIUsesHerdrPaneAsCaller(t *testing.T) {
 	record, err := agent.Load(home, "kid")
 	if err != nil || record.Parent != "boss" {
 		t.Fatalf("record %+v, err %v", record, err)
+	}
+	spawnedPane, ok := fake.Pane(record.Pane)
+	if !ok {
+		t.Fatal("spawned pane missing")
+	}
+	args := strings.Join(spawnedPane.Args, " ")
+	for _, want := range []string{"hive agent list:", "hive agent spawn:", "same checkout and herdr workspace as the worker", "hive guide for the full reference"} {
+		if !strings.Contains(args, want) {
+			t.Errorf("start arguments missing %q", want)
+		}
+	}
+	if strings.Contains(args, `\nhive agent graph:`) {
+		t.Error("start arguments contain the full guide")
 	}
 	if got := fake.Requests("tab.create"); len(got) != 1 || got[0].Params["workspace_id"] != ws.ID {
 		t.Fatalf("tab.create = %+v", got)

@@ -7,17 +7,15 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/agent/send"
 	"github.com/Harrison-Blair/hive/cmd/agent/spawn"
 	"github.com/Harrison-Blair/hive/cmd/agent/stop"
-	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/spf13/cobra"
 )
 
 // New creates the agent command tree.
 func New() *cobra.Command {
 	command := &cobra.Command{
-		Use:         "agent",
-		Short:       "manage agents in herdr panes",
-		Annotations: map[string]string{common.GuideOmit: "true"},
-		Args:        cobra.NoArgs,
+		Use:   "agent",
+		Short: "manage agents in herdr panes",
+		Args:  cobra.NoArgs,
 	}
 	command.AddCommand(spawn.New(), stop.New(), send.New(), list.New(), graph.New())
 	return command

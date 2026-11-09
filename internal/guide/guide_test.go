@@ -32,7 +32,7 @@ func TestRenderListsCommandsThenNotes(t *testing.T) {
 	global := []Flag{{Name: "json", Type: "bool", Default: "false", Usage: "write JSON output"}}
 	want := "# hive guide\n" +
 		"## Commands\n" +
-		"Each command takes -h/--help. Global flags:\n" +
+		"Use hive guide for the full reference and -h/--help for command details. Global flags:\n" +
 		"  --json bool: write JSON output\n" +
 		"hive demo NAME: run the demo\n" +
 		"  --count int=3: how many\n" +

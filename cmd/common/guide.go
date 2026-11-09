@@ -8,29 +8,17 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// GuideOmit is the annotation key that leaves a command line or a flag line
-// out of the hive guide. Set it in cobra.Command.Annotations or with
-// pflag.FlagSet.SetAnnotation. The item stays in --help.
-const GuideOmit = "hive_guide_omit"
-
-// Guide renders the hive guide from the command tree of root: each command
-// except help, completion, and the hidden commands, and then the usage notes.
-// It leaves out the line of a command annotated with GuideOmit, but keeps its
-// children, and each flag annotated with GuideOmit.
+// Guide renders the full public command tree and the usage notes.
 func Guide(root *cobra.Command) string {
+	root.InitDefaultHelpCmd()
+	root.InitDefaultCompletionCmd()
 	var commands []guide.Command
 	var walk func(*cobra.Command)
 	walk = func(command *cobra.Command) {
-		if command.Hidden || command.Name() == "help" || command.Name() == "completion" {
+		if command.Hidden {
 			return
 		}
-		if _, omit := command.Annotations[GuideOmit]; !omit {
-			commands = append(commands, guide.Command{
-				Use:   strings.TrimSuffix(command.UseLine(), " [flags]"),
-				Short: command.Short,
-				Flags: guideFlags(command.LocalNonPersistentFlags()),
-			})
-		}
+		commands = append(commands, guideCommand(command))
 		for _, child := range command.Commands() {
 			walk(child)
 		}
@@ -39,18 +27,48 @@ func Guide(root *cobra.Command) string {
 	return guide.Render(commands, guideFlags(root.PersistentFlags()))
 }
 
+// StartupGuide renders the four most-used agent commands and usage notes.
+func StartupGuide(root *cobra.Command) string {
+	var commands []guide.Command
+	for _, name := range []string{"list", "send", "spawn", "stop"} {
+		command, _, err := root.Find([]string{"agent", name})
+		if err != nil || command.Name() != name {
+			panic("missing agent command: " + name)
+		}
+		entry := guideCommand(command)
+		inherited := pflag.NewFlagSet("inherited", pflag.ContinueOnError)
+		command.InheritedFlags().VisitAll(func(flag *pflag.Flag) {
+			if root.PersistentFlags().Lookup(flag.Name) != flag {
+				inherited.AddFlag(flag)
+			}
+		})
+		entry.Flags = append(entry.Flags, guideFlags(inherited)...)
+		commands = append(commands, entry)
+	}
+	return guide.Render(commands, guideFlags(root.PersistentFlags()))
+}
+
+func guideCommand(command *cobra.Command) guide.Command {
+	flags := command.LocalFlags()
+	if command.Parent() == nil {
+		flags = command.LocalNonPersistentFlags()
+	}
+	return guide.Command{
+		Use:   strings.TrimSuffix(command.UseLine(), " [flags]"),
+		Short: command.Short,
+		Flags: guideFlags(flags),
+	}
+}
+
 func guideFlags(set *pflag.FlagSet) []guide.Flag {
 	var flags []guide.Flag
 	set.VisitAll(func(flag *pflag.Flag) {
-		if _, omit := flag.Annotations[GuideOmit]; omit || flag.Hidden || flag.Name == "help" {
+		if flag.Hidden || flag.Name == "help" {
 			return
 		}
 		flags = append(flags, guide.Flag{
-			Name:      flag.Name,
-			Shorthand: flag.Shorthand,
-			Type:      flag.Value.Type(),
-			Default:   flag.DefValue,
-			Usage:     flag.Usage,
+			Name: flag.Name, Shorthand: flag.Shorthand, Type: flag.Value.Type(),
+			Default: flag.DefValue, Usage: flag.Usage,
 		})
 	})
 	return flags

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/agent/agenttest"
 )
 
@@ -20,7 +21,10 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 	text := stdout.String()
 	for _, command := range []string{
 		"hive agent list", "hive agent send NAME TEXT", "hive agent spawn", "hive agent stop NAME",
+		"hive", "hive agent", "hive agent graph", "hive guide", "hive version", "hive worktree",
 		"hive logs", "hive worktree create BRANCH", "hive worktree remove BRANCH",
+		"hive help [command]", "hive completion", "hive completion bash", "hive completion fish",
+		"hive completion powershell", "hive completion zsh",
 	} {
 		if !strings.Contains(text, "\n"+command+": ") {
 			t.Errorf("guide has no command %q", command)
@@ -30,28 +34,37 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 		"  --json bool: write JSON output",
 		"  --harness string: harness: claude, codex, or pi (required)",
 		"  --prompt-file string: file with the first prompt text",
+		"  --prompt string: first prompt text",
+		"  --model string: model name (required)",
+		"  --name string: agent name (required)",
 		"  --branch string: start in the checkout of the branch; make one if none",
 		"  --directory string: start in this existing directory",
 		"  --base string: start commit of a new branch (default: HEAD)",
 		"  --wait bool: wait until the agent is idle or done again",
 		"  --agent string: agent name: matches agent_id or target",
 		"  --since string: duration or RFC 3339 cutoff",
+		"  --component string: filter by component",
+		"  --follow bool: print new events as they arrive",
+		"  --limit int=200: maximum matches to print",
+		"  --level string: minimum level: debug, info, warn, or error",
+		"  --request string: filter by request ID",
+		"  --no-descriptions bool: disable completion descriptions",
 	} {
 		if !strings.Contains(text, flag+"\n") {
 			t.Errorf("guide has no flag line %q", flag)
 		}
 	}
 	for _, absent := range []string{
-		"\nhive completion", "\nhive help", "\nhive project", "--project", "--worktree", "--remove-worktree",
-		"\nhive: ", "\nhive agent: ", "\nhive agent graph", "\nhive guide", "\nhive version", "\nhive worktree: ",
-		"--component", "--level", "--request", "--follow", "--limit",
+		"\nhive project", "--project", "--worktree", "--remove-worktree",
 	} {
 		if strings.Contains(text, absent) {
 			t.Errorf("guide has %q", absent)
 		}
 	}
-	if !strings.Contains(text, "## Usage notes") {
-		t.Errorf("guide has no usage notes")
+	for _, want := range []string{"## Usage notes", "Reviewers should normally run in the same checkout and herdr workspace as the worker", "unless a specific review needs them elsewhere", "unless their brief authorizes changes"} {
+		if !strings.Contains(text, want) {
+			t.Errorf("guide has no %q", want)
+		}
 	}
 
 	stdout.Reset()
@@ -72,7 +85,33 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 	}
 }
 
-func TestRootHelpKeepsTheCommandsAndFlagsLeftOutOfTheGuide(t *testing.T) {
+func TestStartupGuideIncludesCoreAndNotes(t *testing.T) {
+	text := common.StartupGuide(NewRootCmd())
+	for _, want := range []string{
+		"hive agent list: list the agent records", "hive agent send NAME TEXT: send a prompt",
+		"hive agent spawn: start an agent", "hive agent stop NAME: stop an agent",
+		"--json bool: write JSON output", "--wait bool: wait until the agent is idle or done again",
+		"--base string: start commit of a new branch (default: HEAD)",
+		"--branch string: start in the checkout of the branch; make one if none",
+		"--directory string: start in this existing directory", "--harness string: harness: claude, codex, or pi (required)",
+		"--model string: model name (required)", "--name string: agent name (required)",
+		"--prompt string: first prompt text", "--prompt-file string: file with the first prompt text",
+		"hive guide for the full reference", "-h/--help for command details", "⬢ user:",
+		"same checkout and herdr workspace as the worker", "unless a specific review needs them elsewhere",
+		"unless their brief authorizes changes", "`send --wait`", "After you delegate, end your turn",
+	} {
+		if !strings.Contains(text, want) {
+			t.Errorf("startup guide missing %q", want)
+		}
+	}
+	for _, absent := range []string{"\nhive agent graph:", "\nhive worktree", "\nhive logs:", "\nhive guide:"} {
+		if strings.Contains(text, absent) {
+			t.Errorf("startup guide contains %q", absent)
+		}
+	}
+}
+
+func TestRootHelpDescribesPublicCommandsAndFlags(t *testing.T) {
 	testHome(t)
 	for _, test := range []struct {
 		args []string
@@ -81,7 +120,7 @@ func TestRootHelpKeepsTheCommandsAndFlagsLeftOutOfTheGuide(t *testing.T) {
 		{[]string{"--help"}, []string{"pick a harness and a model", "\n  agent ", "\n  guide ", "\n  version ", "\n  worktree "}},
 		{[]string{"agent", "--help"}, []string{"manage agents in herdr panes", "\n  graph "}},
 		{[]string{"agent", "graph", "--help"}, []string{"show a live graph of the agents"}},
-		{[]string{"guide", "--help"}, []string{"print the hive guide"}},
+		{[]string{"guide", "--help"}, []string{"print the full agent-friendly CLI reference"}},
 		{[]string{"version", "--help"}, []string{"Print the hive version"}},
 		{[]string{"worktree", "--help"}, []string{"manage the branch checkouts"}},
 		{[]string{"logs", "--help"}, []string{"--component string", "--level string", "--request string", "--follow ", "--limit int"}},
