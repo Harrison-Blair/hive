@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -16,6 +17,8 @@ import (
 func gitRun(ctx context.Context, logger *slog.Logger, dir string, args ...string) (string, error) {
 	started := time.Now()
 	command := exec.CommandContext(ctx, "git", append([]string{"-C", dir}, args...)...)
+	// The C locale gives untranslated messages, so hive can read them.
+	command.Env = append(os.Environ(), "LC_ALL=C")
 	var stderr strings.Builder
 	command.Stderr = &stderr
 	out, err := command.Output()

@@ -41,10 +41,10 @@ Send hands the message to the native message path of the target harness, through
 - Read `FRICTION.md` first. If an entry for the issue exists, add the new facts to that entry.
 - Write a new entry from `_template.md` at `entries/SLUG.md`. Add one line under `## Open` in `FRICTION.md`: `- [TITLE](entries/SLUG.md) — DESCRIPTION`. TITLE and DESCRIPTION are the same as in the frontmatter.
 - Put each new entry on its own branch and pull request. Do not change the checkout of your current work:
-  1. Run `git worktree add -b friction/SLUG .hive/tmp/friction-SLUG origin/main`.
+  1. Run `git worktree add -b friction/SLUG "$HIVE_TMP/friction-SLUG" origin/main`.
   2. Write the entry and the index line in that worktree.
   3. Commit with the subject `docs(friction): SUMMARY`. Push the branch. Open a pull request to `main`.
-  4. Run `git worktree remove .hive/tmp/friction-SLUG`.
+  4. Run `git worktree remove "$HIVE_TMP/friction-SLUG"`.
 - The pull request that fixes an issue also resolves its entry. Set `status` to `Resolved YYYY-MM-DD` and set `decision`. Move the file to `entries/resolved/`. Move its line to `## Resolved`.
 - `friction_test.go` fails when `FRICTION.md` and the entry files do not agree.
 
@@ -59,8 +59,7 @@ hive/                            the repository
 ├─ reference/herdr/              herdr API reference   tracked
 ├─ reference/dogfood/friction/   friction log          tracked
 ├─ memory/  overrides/  plans/   personal              ignored
-├─ handoff.md  _archive/         personal              ignored
-└─ .hive/tmp/                    scratch               ignored
+└─ handoff.md  _archive/         personal              ignored
 ```
 
 The home is `$HIVE_HOME` when that variable is set and not empty, otherwise `~/.hive`. Hive creates it when it first needs it. It has no marker and no config file.
@@ -73,7 +72,7 @@ The home is `$HIVE_HOME` when that variable is set and not empty, otherwise `~/.
 ├─ logs/YYYY-MM-DD.jsonl             log events
 ├─ coordinator-choice.json           last picker choice
 ├─ extensions/hive-inbox.ts          pi extension of hive agent send
-├─ tmp/                              scratch files
+├─ tmp/<project>/                    scratch place of a project ($HIVE_TMP)
 ├─ lock                              store lock
 ├─ layout.lock                       lock of spawn, stop, worktree, and coordinator names
 └─ schema.json                       store schema version 5
@@ -81,7 +80,7 @@ The home is `$HIVE_HOME` when that variable is set and not empty, otherwise `~/.
 
 - `.gitignore` is an allowlist. It ignores everything with `*` and then allows named patterns. Add a `!` rule only for a file that the project needs. Use the narrowest pattern. Never remove the leading `*`.
 - Git ignores `.hive/` in the checkout. `gitignore_test.go` fails when Git tracks an ignored path or ignores a tracked file.
-- Put scratch files of development in `.hive/tmp/` of the checkout.
+- Put scratch files of development below `$HIVE_TMP`. A session that hive did not start uses `~/.hive/tmp/hive/`.
 
 ## herdr layout
 
@@ -92,7 +91,8 @@ The home is `$HIVE_HOME` when that variable is set and not empty, otherwise `~/.
 - For `--directory`, the agents of one directory share one herdr workspace. Spawn finds it with `worktree.list` (`open_workspace_id` of the entry at that path), in any position and with any label, and else as the workspace of the first pane of `pane.list` whose shell `cwd` is that directory. It opens a new tab there. When there is none, hive creates a workspace with that `cwd` and the herdr default label, and the agent takes its root pane. Hive never renames a workspace. Hive uses no `hive:` labels.
 - Spawn, `hive worktree create`, `hive worktree remove`, `agent stop`, and bare `hive` after its picker hold the layout lock `<home>/layout.lock` (`agent.Hold`) while they check a name, a checkout, or a workspace and act on it. Spawn holds it from the name check until the record exists, so a remove or a spawn at the same time sees the agent. A second holder waits up to 2 minutes. `agent list` holds it while it removes the record of a dead agent, and waits at most 2 s; when the wait ends, the record stays until a later list.
 - `hive worktree create B` prints the checkout of B and makes it as `spawn --branch` does. It opens no workspace. `hive worktree remove B` removes only a checkout that hive owns, when `git status --porcelain --ignored` is empty and no live agent record has its `cwd` or `worktree` in it. Paths compare with each symlink resolved. The workspaces of the checkout are the workspace open on it and each workspace with a pane whose `cwd` or `foreground_cwd` is in it. Remove refuses when a pane of such a workspace runs an agent or has its `cwd` or `foreground_cwd` outside the checkout, so the close stops no unrelated process. It refuses too when such a workspace holds the caller pane (`HERDR_PANE_ID`), because the close would end the remove. It closes the workspaces of the checkout, runs the `git status` check again, runs `git worktree remove`, and removes the ownership record. `git worktree remove` deletes ignored files. Hive expects each other writer of the checkout to be stopped: a file that a process outside hive writes after the second check and before git ends can be lost. The branch stays. A failure after the close keeps the checkout, so a second remove finishes. When the record removal fails after `git worktree remove`, the outcome is `partial`, and a second remove of the branch, which now has no checkout, removes the record that names it when nothing is at its path.
-- Each agent that spawn starts gets `HIVE_HOME` set to the resolved home of the caller, so its own hive commands use the same home, and the trust env of its harness (`harness.Trust().Env`, for claude `CLAUDE_CODE_SANDBOXED=1`). A new tab gets the env through the `tab.create` `env`, including branch placements because `worktree.open` has no `env` field. The root pane of a new directory workspace gets it through the `workspace.create` `env`. The trust args (pi `--approve`) go on the start line in each placement. Bare `hive` execs the harness with `HIVE_HOME` set to the home.
+- Each agent that spawn starts gets `HIVE_HOME` set to the resolved home of the caller, so its own hive commands use the same home, `HIVE_TMP` set to the scratch place of its project, and the trust env of its harness (`harness.Trust().Env`, for claude `CLAUDE_CODE_SANDBOXED=1`). A new tab gets the env through the `tab.create` `env`, including branch placements because `worktree.open` has no `env` field. The root pane of a new directory workspace gets it through the `workspace.create` `env`. The trust args (pi `--approve`) go on the start line in each placement. Bare `hive` execs the harness with `HIVE_HOME` set to the home and `HIVE_TMP` set to the scratch place of its project.
+- The scratch place of a project is `<home>/tmp/<project>/`. `<project>` is the slug (`agent.Slug`) of the base name of the directory that holds the common Git directory, so each checkout of a repository has the same project. A directory outside Git gives the slug of its own base name. Hive finds the project from the directory where the agent starts: the working directory of the caller for no placement flag and for `--branch` (its checkout is in the same repository), D for `--directory D`, and the working directory of bare `hive` (`worktree.Scratch`). Spawn and bare `hive` create the scratch place when it is missing and log the creation. Spawn shows it as the effect `created directory PATH`. When hive cannot create it, spawn fails in phase `scratch` and starts no agent, and bare `hive` fails and starts no harness. Hive never deletes scratch files.
 - Spawn labels the tab of the agent with the agent name. A new tab gets the name through the `tab.create` label. A root pane of a new workspace gets it through `tab.rename` before the harness starts. When `tab.rename` fails, spawn still starts the harness and sends the prompt, and the outcome is `partial`.
 - Spawn waits for the harness to be ready, then sends the prompt. The trust env and args skip the trust dialog of claude and pi in each placement. A dialog that still shows, for example the Codex folder trust dialog in a Git repository with no saved trust, makes spawn report outcome `partial` with status `blocked` and the pane ID. Spawn then sends no prompt.
 - `agent stop` closes only the pane of the agent and removes its record, so the other agents of the workspace keep running. It never closes a workspace and never removes a checkout. Hive acts only on agents that have a hive record.
@@ -158,7 +158,7 @@ The first command must print nothing. The second command must print nothing. The
 env -u TERM TZ=UTC go test -race -run 'TestName' ./internal/agent/spawn/
 ```
 
-- A live check in herdr uses a binary built with `go build -o .hive/tmp/hive .` and `HIVE_HOME` set to a new scratch directory, for example below `.hive/tmp/`. Never point a live check at `~/.hive`. A test that can fall back to `~/.hive` sets `HOME` to a temporary directory. Give each pane, tab, workspace, and worktree a unique name, and close each one that the check made.
+- A live check in herdr uses a binary built with `go build -o "$HIVE_TMP/hive" .` and `HIVE_HOME` set to a new scratch directory below `$HIVE_TMP`. Never point a live check at `~/.hive`. A test that can fall back to `~/.hive` sets `HOME` to a temporary directory. Give each pane, tab, workspace, and worktree a unique name, and close each one that the check made.
 
 ### Dependencies
 

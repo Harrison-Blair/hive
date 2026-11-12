@@ -533,3 +533,58 @@ func TestConcurrentLaunchesInOneDirectoryGetTwoNames(t *testing.T) {
 		}
 	}
 }
+
+// TestRunGivesTheHarnessTheScratchPlace checks that bare hive makes the
+// scratch place of the project of its working directory before the harness
+// starts, and sets HIVE_TMP to it in place of an inherited value.
+func TestRunGivesTheHarnessTheScratchPlace(t *testing.T) {
+	t.Setenv("HIVE_TMP", "/old/scratch")
+	home := t.TempDir()
+	dir := filepath.Join(t.TempDir(), "Coord Dir")
+	if err := os.Mkdir(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(home, "tmp", "coord-dir")
+	var calls []execCall
+	opts := launchOptions(t, home, dir, func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "pi", Model: "a/b"}, true, nil }, &calls)
+	exec := opts.Exec
+	opts.Exec = func(dir, binary string, args, env []string) error {
+		if info, err := os.Stat(want); err != nil || !info.IsDir() {
+			t.Errorf("scratch place %s at the harness start: %v; want a directory", want, err)
+		}
+		return exec(dir, binary, args, env)
+	}
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	if len(calls) != 1 {
+		t.Fatalf("exec calls = %+v; want one", calls)
+	}
+	var tmps []string
+	for _, pair := range calls[0].env {
+		if value, ok := strings.CutPrefix(pair, "HIVE_TMP="); ok {
+			tmps = append(tmps, value)
+		}
+	}
+	if !slices.Equal(tmps, []string{want}) {
+		t.Fatalf("HIVE_TMP values in the harness environment = %q; want only %q", tmps, want)
+	}
+}
+
+// TestRunFailsWhenTheScratchPlaceCannotBeMade checks that bare hive returns
+// the cause and starts no harness when the tmp directory of the home is a
+// file.
+func TestRunFailsWhenTheScratchPlaceCannotBeMade(t *testing.T) {
+	home := t.TempDir()
+	if err := os.WriteFile(filepath.Join(home, "tmp"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var calls []execCall
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{Harness: "pi", Model: "a/b"}, true, nil }, &calls)
+	if err := Run(opts); err == nil || !strings.Contains(err.Error(), "scratch place") {
+		t.Fatalf("Run = %v; want the scratch place error", err)
+	}
+	if len(calls) != 0 {
+		t.Fatalf("exec calls = %+v; want none", calls)
+	}
+}

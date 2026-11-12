@@ -17,6 +17,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/worktree"
 )
 
 const (
@@ -156,9 +157,23 @@ func launchAgent(ctx context.Context, home string, options Options, directory st
 	if err := checkName(ctx, home, options.Name, logger); err != nil {
 		return stop(output.Failed("name", err.Error()))
 	}
+	// The checkout of --branch is in the Git repository of Cwd, so Cwd gives
+	// its project.
+	startDir := options.Cwd
+	if directory != "" {
+		startDir = directory
+	}
+	scratch, created, err := worktree.Scratch(ctx, home, startDir, logger)
+	if err != nil {
+		return stop(output.Failed("scratch", "scratch place: "+err.Error()))
+	}
+	env["HIVE_TMP"] = scratch
+	var effects []output.Effect
+	if created {
+		effects = append(effects, output.Effect{Resource: "directory", Path: scratch, Action: "created"})
+	}
 	var place placement
 	var phase string
-	var err error
 	switch {
 	case options.Branch != "":
 		place, phase, err = placeInBranch(ctx, home, options, env, logger)
@@ -169,10 +184,10 @@ func launchAgent(ctx context.Context, home string, options Options, directory st
 	}
 	if err != nil {
 		envelope := output.Failed(phase, err.Error())
-		envelope.Effects = append(envelope.Effects, place.effects...)
+		envelope.Effects = append(append(envelope.Effects, effects...), place.effects...)
 		return stop(envelope)
 	}
-	effects := place.effects
+	effects = append(effects, place.effects...)
 	paneID := place.pane.PaneID
 	// A failed rename does not stop the spawn. It makes the outcome partial.
 	// A later failure keeps its phase and carries the rename error too.

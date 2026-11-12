@@ -71,15 +71,16 @@ func TestSpawnWithoutBranchOrDirectoryOpensTabInCallerWorkspace(t *testing.T) {
 	}
 	options := base("kid")
 	options.CallerPane = callerPane.ID
-	options.Cwd = "/work/dir"
+	cwd := t.TempDir()
+	options.Cwd = cwd
 
 	envelope := spawnRun(t, home, options)
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %+v", envelope)
 	}
 	tabs := fake.Requests("tab.create")
-	if len(tabs) != 1 || tabs[0].Params["workspace_id"] != callerWS.ID || tabs[0].Params["cwd"] != "/work/dir" {
-		t.Fatalf("tab.create = %+v, want one tab in %s with cwd /work/dir", tabs, callerWS.ID)
+	if len(tabs) != 1 || tabs[0].Params["workspace_id"] != callerWS.ID || tabs[0].Params["cwd"] != cwd {
+		t.Fatalf("tab.create = %+v, want one tab in %s with cwd %s", tabs, callerWS.ID, cwd)
 	}
 	record, err := agent.Load(home, "kid")
 	if err != nil {
@@ -89,7 +90,7 @@ func TestSpawnWithoutBranchOrDirectoryOpensTabInCallerWorkspace(t *testing.T) {
 	if !ok || pane.WorkspaceID != callerWS.ID || pane.ID == callerPane.ID {
 		t.Fatalf("record pane %q is not a new pane in %s", record.Pane, callerWS.ID)
 	}
-	if record.Parent != "boss" || record.Harness != "pi" || record.Model != "prov/m1" || record.Cwd != "/work/dir" || record.Worktree != "" || record.StartedAt.IsZero() {
+	if record.Parent != "boss" || record.Harness != "pi" || record.Model != "prov/m1" || record.Cwd != cwd || record.Worktree != "" || record.StartedAt.IsZero() {
 		t.Fatalf("record = %+v", record)
 	}
 	if pane.Kind != "pi" || pane.Name != "kid" || !slices.Contains(pane.Args, "prov/m1") {

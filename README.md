@@ -17,11 +17,17 @@ Hive works from any directory and needs no setup step.
 ├─ logs/YYYY-MM-DD.jsonl             log events
 ├─ coordinator-choice.json           last picker choice
 ├─ extensions/hive-inbox.ts          pi extension of hive agent send
-├─ tmp/                              scratch files
+├─ tmp/<project>/                    scratch place of a project ($HIVE_TMP)
 ├─ lock                              store lock
 ├─ layout.lock                       lock of spawn, stop, worktree, and coordinator names
 └─ schema.json                       home schema version
 ```
+
+Each agent that hive starts gets `HIVE_HOME` and `HIVE_TMP` in its
+environment. `HIVE_TMP` is the scratch place of the project of the agent:
+`<home>/tmp/<project>/`, where `<project>` is the slug of the name of the Git
+repository, or of the start directory outside Git. Hive creates it when it is
+missing and never deletes its files.
 
 ## Requirements
 
