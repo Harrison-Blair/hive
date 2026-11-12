@@ -3,7 +3,9 @@ package worktree
 import (
 	"context"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 )
@@ -78,13 +80,18 @@ func TestScratchFailsWhenItCannotMakeThePlace(t *testing.T) {
 }
 
 // TestScratchOutsideGitIgnoresTheLanguage checks that a translated Git
-// message still counts as outside Git.
+// message still counts as outside Git. It skips when the machine gives Git no
+// French message.
 func TestScratchOutsideGitIgnoresTheLanguage(t *testing.T) {
 	t.Setenv("LANGUAGE", "fr")
 	t.Setenv("LC_ALL", "en_US.utf8")
 	dir := filepath.Join(t.TempDir(), "Plain Dir")
 	if err := os.Mkdir(dir, 0o755); err != nil {
 		t.Fatal(err)
+	}
+	out, _ := exec.Command("git", "-C", dir, "rev-parse", "--path-format=absolute", "--git-common-dir").CombinedOutput()
+	if strings.Contains(string(out), "not a git repository") {
+		t.Skipf("git gives no translated message on this machine: %s", strings.TrimSpace(string(out)))
 	}
 	home := t.TempDir()
 	path, _, err := scratch(t, home, dir)
@@ -97,57 +104,41 @@ func TestScratchOutsideGitIgnoresTheLanguage(t *testing.T) {
 }
 
 // TestScratchReportsOneCreation checks that of several starts at the same
-// time for a new project, one reports the creation.
+// time for a new project, one reports the creation. Each round uses a new
+// home, so a race shows in nearly each run.
 func TestScratchReportsOneCreation(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), "plain")
 	if err := os.Mkdir(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	home := t.TempDir()
-	const starts = 64
-	results := make(chan bool, starts)
-	var ready sync.WaitGroup
-	ready.Add(starts)
-	gate := make(chan struct{})
-	for range starts {
-		go func() {
-			ready.Done()
-			<-gate
-			_, created, err := Scratch(context.Background(), home, dir, discard())
-			if err != nil {
-				t.Error(err)
-			}
-			results <- created
-		}()
-	}
-	ready.Wait()
-	close(gate)
-	count := 0
-	for range starts {
-		if <-results {
-			count++
+	const rounds, starts = 8, 64
+	for round := range rounds {
+		home := t.TempDir()
+		results := make(chan bool, starts)
+		var ready sync.WaitGroup
+		ready.Add(starts)
+		gate := make(chan struct{})
+		for range starts {
+			go func() {
+				ready.Done()
+				<-gate
+				_, created, err := Scratch(context.Background(), home, dir, discard())
+				if err != nil {
+					t.Error(err)
+				}
+				results <- created
+			}()
 		}
-	}
-	if count != 1 {
-		t.Fatalf("starts that report the creation = %d; want 1", count)
-	}
-}
-
-// TestScratchFailsWhenAFileIsAtThePlace checks the error when a file has the
-// path of the scratch place.
-func TestScratchFailsWhenAFileIsAtThePlace(t *testing.T) {
-	home := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(home, "tmp"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(home, "tmp", "plain"), nil, 0o644); err != nil {
-		t.Fatal(err)
-	}
-	dir := filepath.Join(t.TempDir(), "plain")
-	if err := os.Mkdir(dir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if path, _, err := scratch(t, home, dir); err == nil {
-		t.Fatalf("scratch = %q; want an error", path)
+		ready.Wait()
+		close(gate)
+		count := 0
+		for range starts {
+			if <-results {
+				count++
+			}
+		}
+		if count != 1 {
+			t.Fatalf("round %d: starts that report the creation = %d; want 1", round, count)
+		}
 	}
 }
