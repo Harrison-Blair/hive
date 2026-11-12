@@ -8,3 +8,4 @@
 7. `--json` prints one object: outcome, phase, effects, error, result. outcome is `ok`, `partial`, or `failed`. The exit status is 0 only on success. A usage error exits with status 2.
 8. Debug with `hive logs --agent NAME`: the events where NAME is the caller or the target.
 9. Wait. After you delegate, end your turn. Each reply arrives as a new message and wakes you. Do not poll `agent list` or `logs` for replies. Do not loop or sleep.
+10. Files. Put scratch files below `$HIVE_TMP`. Start an agent in your workspace or with `--branch`: use `--branch scratch/NAME` when it needs its own directory and changes no repository file. Before you make a directory or start an agent in another place, ask the user, unless the user or your brief named that place. A child agent asks through its parent. The system temp directory is for files only.

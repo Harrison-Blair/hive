@@ -282,7 +282,7 @@ func TestSpawnBranchReportsTheCheckoutThatAFailedHookLeft(t *testing.T) {
 	if !strings.Contains(path, "branch refs/heads/feat") {
 		t.Fatalf("worktree list = %s; want the checkout of feat", path)
 	}
-	if !hasEffect(envelope, output.Effect{Resource: "branch", Path: "feat", Action: "created"}) || len(envelope.Effects) != 2 || envelope.Effects[1].Resource != "worktree" || envelope.Effects[1].Action != "created" {
+	if !hasEffect(envelope, output.Effect{Resource: "branch", Path: "feat", Action: "created"}) || len(envelope.Effects) != 3 || envelope.Effects[2].Resource != "worktree" || envelope.Effects[2].Action != "created" {
 		t.Fatalf("effects = %+v; want branch created feat and worktree created", envelope.Effects)
 	}
 	if got := len(fake.Requests("agent.start")); got != 0 {
@@ -349,7 +349,7 @@ func TestSpawnBranchOpenFailureKeepsCheckoutAndStartsNothing(t *testing.T) {
 	if envelope.Outcome != output.OutcomeFailed || envelope.Phase != "workspace" || !strings.Contains(errorText(envelope), "open failed") {
 		t.Fatalf("envelope = %+v", envelope)
 	}
-	if len(fake.Requests("agent.start")) != 0 || len(envelope.Effects) != 2 || envelope.Effects[1].Resource != "worktree" {
+	if len(fake.Requests("agent.start")) != 0 || len(envelope.Effects) != 3 || envelope.Effects[2].Resource != "worktree" {
 		t.Fatalf("effects = %+v, starts = %+v; want retained branch and checkout, no start", envelope.Effects, fake.Requests("agent.start"))
 	}
 }

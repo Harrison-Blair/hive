@@ -16,6 +16,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
+	"github.com/Harrison-Blair/hive/internal/worktree"
 )
 
 // Name is the agent name of the coordinator record when the start directory
@@ -104,6 +105,11 @@ func Run(opts Options) error {
 	if err != nil {
 		return err
 	}
+	scratch, _, err := worktree.Scratch(context.Background(), opts.Home, opts.Dir, logger)
+	if err != nil {
+		logger.Error("scratch place failed", "cwd", opts.Dir, "error", err.Error())
+		return fmt.Errorf("scratch place: %w", err)
+	}
 	name := opts.Name
 	// Another bare hive can take the name after ResolveName, also while the
 	// picker is open. Under the layout lock, a taken name gives the next free
@@ -158,7 +164,7 @@ func Run(opts Options) error {
 	guideArgs := profile.GuideArgs(opts.Guide)
 	args := profile.Args(choice.Model, append(inbox, guideArgs...))
 	logger.Info("exec harness", "binary", binary, "args", guide.Redact(args, guideArgs), "cwd", opts.Dir)
-	if err := opts.Exec(opts.Dir, binary, args, homeEnv(os.Environ(), opts.Home)); err != nil {
+	if err := opts.Exec(opts.Dir, binary, args, harnessEnv(os.Environ(), opts.Home, scratch)); err != nil {
 		logger.Error("exec harness failed", "binary", binary, "error", err.Error())
 		return fmt.Errorf("start %s: %w", binary, err)
 	}
@@ -181,16 +187,17 @@ func labelTab(pane, name string, logger *slog.Logger) {
 	logger.Info("coordinator tab labeled", "pane", pane, "tab", info.TabID)
 }
 
-// homeEnv returns environ with HIVE_HOME set to home, so the hive commands of
-// the harness use the same home when it runs outside the home.
-func homeEnv(environ []string, home string) []string {
-	env := make([]string, 0, len(environ)+1)
+// harnessEnv returns environ with HIVE_HOME set to home, so the hive commands
+// of the harness use the same home when it runs outside the home, and
+// HIVE_TMP set to the scratch place.
+func harnessEnv(environ []string, home, scratch string) []string {
+	env := make([]string, 0, len(environ)+2)
 	for _, pair := range environ {
-		if !strings.HasPrefix(pair, "HIVE_HOME=") {
+		if !strings.HasPrefix(pair, "HIVE_HOME=") && !strings.HasPrefix(pair, "HIVE_TMP=") {
 			env = append(env, pair)
 		}
 	}
-	return append(env, "HIVE_HOME="+home)
+	return append(env, "HIVE_HOME="+home, "HIVE_TMP="+scratch)
 }
 
 // ExecHarness changes to dir and replaces this process with binary and env.

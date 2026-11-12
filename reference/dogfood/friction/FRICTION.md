@@ -32,6 +32,7 @@ The entries from before the teardown are at the tag `pre-teardown`, below
 
 ## Resolved
 
+- [Agents make scratch directories and workspaces in places the user did not approve](entries/resolved/agent-places-unapproved.md) — The guide had no rule for scratch files or agent places, so agents made ~/stenographer-acceptance and started agents there with --directory, each in its own top-level workspace
 - [The record of a closed pane stays until a stop](entries/resolved/gone-pane-records-stay.md) — When a pane closes without hive agent stop, its agent record stays, and each agent list and each graph refresh queries the gone pane again
 - [A spawn worktree name cannot contain a slash](entries/resolved/worktree-name-no-slash.md) — hive agent spawn --worktree rejects a name with /, so a branch such as friction/SLUG needs a push with HEAD:friction/SLUG
 - [hive agent send can split a message that the user types](entries/resolved/send-splits-typed-message.md) — agent.prompt pastes text and presses Enter into a prompt that already holds the partial text of the user
