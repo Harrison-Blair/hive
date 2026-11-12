@@ -142,3 +142,22 @@ func TestScratchReportsOneCreation(t *testing.T) {
 		}
 	}
 }
+
+// TestScratchFailsWhenAFileIsAtThePlace checks the error when a file has the
+// path of the scratch place.
+func TestScratchFailsWhenAFileIsAtThePlace(t *testing.T) {
+	home := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(home, "tmp"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(home, "tmp", "plain"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(t.TempDir(), "plain")
+	if err := os.Mkdir(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if path, _, err := scratch(t, home, dir); err == nil {
+		t.Fatalf("scratch = %q; want an error", path)
+	}
+}
