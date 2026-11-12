@@ -536,8 +536,9 @@ func TestConcurrentLaunchesInOneDirectoryGetTwoNames(t *testing.T) {
 
 // TestRunGivesTheHarnessTheScratchPlace checks that bare hive makes the
 // scratch place of the project of its working directory before the harness
-// starts, and sets HIVE_TMP to it.
+// starts, and sets HIVE_TMP to it in place of an inherited value.
 func TestRunGivesTheHarnessTheScratchPlace(t *testing.T) {
+	t.Setenv("HIVE_TMP", "/old/scratch")
 	home := t.TempDir()
 	dir := filepath.Join(t.TempDir(), "Coord Dir")
 	if err := os.Mkdir(dir, 0o755); err != nil {

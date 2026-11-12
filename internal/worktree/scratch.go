@@ -3,6 +3,7 @@ package worktree
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/fs"
 	"log/slog"
 	"os"
@@ -32,9 +33,19 @@ func Scratch(ctx context.Context, home, dir string, logger *slog.Logger) (string
 		return "", false, err
 	}
 	path := filepath.Join(home, "tmp", agent.Slug(project, projectSlugMax))
-	_, err = os.Stat(path)
-	created := errors.Is(err, fs.ErrNotExist)
-	if err := os.MkdirAll(path, 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return "", false, err
+	}
+	err = os.Mkdir(path, 0o755)
+	created := err == nil
+	if errors.Is(err, fs.ErrExist) {
+		var info fs.FileInfo
+		info, err = os.Stat(path)
+		if err == nil && !info.IsDir() {
+			err = fmt.Errorf("%s is not a directory", path)
+		}
+	}
+	if err != nil {
 		return "", false, err
 	}
 	if created {

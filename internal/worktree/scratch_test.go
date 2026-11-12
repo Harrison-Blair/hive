@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 )
 
@@ -65,6 +66,81 @@ func TestScratchOutsideGitUsesTheDirectoryName(t *testing.T) {
 func TestScratchFailsWhenItCannotMakeThePlace(t *testing.T) {
 	home := t.TempDir()
 	if err := os.WriteFile(filepath.Join(home, "tmp"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(t.TempDir(), "plain")
+	if err := os.Mkdir(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if path, _, err := scratch(t, home, dir); err == nil {
+		t.Fatalf("scratch = %q; want an error", path)
+	}
+}
+
+// TestScratchOutsideGitIgnoresTheLanguage checks that a translated Git
+// message still counts as outside Git.
+func TestScratchOutsideGitIgnoresTheLanguage(t *testing.T) {
+	t.Setenv("LANGUAGE", "fr")
+	t.Setenv("LC_ALL", "en_US.utf8")
+	dir := filepath.Join(t.TempDir(), "Plain Dir")
+	if err := os.Mkdir(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	home := t.TempDir()
+	path, _, err := scratch(t, home, dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := filepath.Join(home, "tmp", "plain-dir"); path != want {
+		t.Fatalf("scratch = %q; want %q", path, want)
+	}
+}
+
+// TestScratchReportsOneCreation checks that of several starts at the same
+// time for a new project, one reports the creation.
+func TestScratchReportsOneCreation(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "plain")
+	if err := os.Mkdir(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	home := t.TempDir()
+	const starts = 64
+	results := make(chan bool, starts)
+	var ready sync.WaitGroup
+	ready.Add(starts)
+	gate := make(chan struct{})
+	for range starts {
+		go func() {
+			ready.Done()
+			<-gate
+			_, created, err := Scratch(context.Background(), home, dir, discard())
+			if err != nil {
+				t.Error(err)
+			}
+			results <- created
+		}()
+	}
+	ready.Wait()
+	close(gate)
+	count := 0
+	for range starts {
+		if <-results {
+			count++
+		}
+	}
+	if count != 1 {
+		t.Fatalf("starts that report the creation = %d; want 1", count)
+	}
+}
+
+// TestScratchFailsWhenAFileIsAtThePlace checks the error when a file has the
+// path of the scratch place.
+func TestScratchFailsWhenAFileIsAtThePlace(t *testing.T) {
+	home := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(home, "tmp"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(home, "tmp", "plain"), nil, 0o644); err != nil {
 		t.Fatal(err)
 	}
 	dir := filepath.Join(t.TempDir(), "plain")
