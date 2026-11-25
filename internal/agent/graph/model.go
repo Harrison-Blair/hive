@@ -8,6 +8,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/agent/list"
+	"github.com/Harrison-Blair/hive/internal/lib/canvas"
 	"github.com/Harrison-Blair/hive/internal/lib/style"
 	"github.com/charmbracelet/x/ansi"
 )
@@ -15,9 +16,8 @@ import (
 const (
 	refreshInterval = time.Second
 	fetchTimeout    = 5 * time.Second
-	// chromeRows are the rows around the pod area: the title, the status,
-	// the legend, and the keys.
-	chromeRows   = 4
+	// headerRows are the rows above the pod area: the title and the status.
+	headerRows   = 2
 	defaultWidth = 80
 )
 
@@ -297,7 +297,7 @@ func (m Model) area() int {
 	if m.height <= 0 {
 		return 0
 	}
-	return max(1, m.height-chromeRows)
+	return max(1, m.height-headerRows-footerRows(m.screenWidth()))
 }
 
 func (m Model) board() board {
@@ -381,15 +381,15 @@ func (m *Model) syncSpinner() tea.Cmd {
 func (m Model) View() tea.View {
 	width := m.screenWidth()
 	agents := len(m.entries)
-	title := fmt.Sprintf(" hive agents · %d %s · %d %s", len(m.pods), plural(len(m.pods), "pod"), agents, plural(agents, "agent"))
-	lines := []string{split(title, m.now.Format("15:04:05")+" ", width), m.status()}
+	title := fmt.Sprintf("   hive agents · %d %s · %d %s", len(m.pods), plural(len(m.pods), "pod"), agents, plural(agents, "agent"))
+	lines := []string{split(title, m.now.Format("15:04:05")+"    ", width), m.status()}
 	var body []string
 	switch {
 	case m.details:
 		body = m.detailLines(width)
 	case !m.loaded:
 	case len(m.pods) == 0:
-		body = []string{" no agents"}
+		body = []string{"   no agents"}
 	default:
 		body = m.board().lines
 		for i, line := range body {
@@ -407,7 +407,7 @@ func (m Model) View() tea.View {
 		}
 	}
 	lines = append(lines, body...)
-	lines = append(lines, legend(m.frame), m.keys())
+	lines = append(lines, m.footer(width)...)
 	for i, line := range lines {
 		lines[i] = ansi.Truncate(line, width, "")
 	}
@@ -419,37 +419,97 @@ func (m Model) View() tea.View {
 func (m Model) status() string {
 	switch {
 	case m.err != "" && m.loaded:
-		return style.Color(style.Error, " ! refresh failed: "+m.err+" · showing "+m.fetchedAt.Format("15:04:05"))
+		return style.Color(style.Error, "   ! refresh failed: "+m.err+" · showing "+m.fetchedAt.Format("15:04:05"))
 	case m.err != "":
-		return style.Color(style.Error, " ! "+m.err)
+		return style.Color(style.Error, "   ! "+m.err)
 	case !m.loaded:
-		return style.Color(style.Dim, " loading…")
+		return style.Color(style.Dim, "   loading…")
 	}
-	return style.Color(style.Dim, " updated "+m.fetchedAt.Format("15:04:05"))
+	return style.Color(style.Dim, "   updated "+m.fetchedAt.Format("15:04:05"))
 }
 
 func (m Model) keys() string {
 	if m.details {
-		return style.Color(style.Dim, " [details] esc close · ↑↓ move · r refresh · q quit")
+		return "[details] esc close · ↑↓ move · r refresh · q quit"
 	}
-	esc := " esc hide ·"
-	if m.hidden {
-		esc = ""
-	}
-	if m.list {
-		return style.Color(style.Dim, " [list] ←↑↓→ move · enter details ·"+esc+" g tree · r refresh · q quit")
-	}
-	return style.Color(style.Dim, " [tree] ←↑↓→ move · enter details ·"+esc+" g list · r refresh · q quit")
+	return keyLine(m.list, !m.hidden)
 }
 
-// legend shows the glyph of each status. The working glyph follows frame.
-func legend(frame int) string {
-	parts := make([]string, 0, len(statuses))
-	for _, s := range statuses {
-		mark, markStyle := glyph(s.status, frame)
-		parts = append(parts, style.Color(markStyle, mark)+" "+s.status)
+// keyLine is the key line of list mode when list is true, else of tree mode,
+// with esc hide when esc is true.
+func keyLine(list, esc bool) string {
+	hide := ""
+	if esc {
+		hide = " esc hide ·"
 	}
-	return " " + style.Color(style.Border, "──") + " " + strings.Join(parts, "   ")
+	if list {
+		return "[list] ←↑↓→ move · enter details ·" + hide + " g tree · r refresh · q quit"
+	}
+	return "[tree] ←↑↓→ move · enter details ·" + hide + " g list · r refresh · q quit"
+}
+
+// segment is a run of text in one style.
+type segment struct{ text, style string }
+
+// legend shows the glyph of each status. The working glyph follows frame.
+func legend(frame int) []segment {
+	var parts []segment
+	for i, s := range statuses {
+		mark, markStyle := glyph(s.status, frame)
+		if i > 0 {
+			parts = append(parts, segment{"   ", ""})
+		}
+		parts = append(parts, segment{mark, markStyle}, segment{" " + s.status, ""})
+	}
+	return parts
+}
+
+// footerRows is 1 when the legend and the longest key line of tree and list
+// mode fit on one row with their margins, else 2. It depends only on width,
+// so a key press does not change it.
+func footerRows(width int) int {
+	legendWidth := 0
+	for _, s := range legend(0) {
+		legendWidth += ansi.StringWidth(s.text)
+	}
+	keysWidth := max(ansi.StringWidth(keyLine(false, true)), ansi.StringWidth(keyLine(true, true)))
+	if 3+legendWidth+3+keysWidth+4 <= width {
+		return 1
+	}
+	return 2
+}
+
+// footer draws the legend and the key line on footerRows rows with the
+// footer background in each cell: on one row the legend from column 3 and the
+// keys ending in column width - 5, else each on its own row from column 3.
+func (m Model) footer(width int) []string {
+	rows := footerRows(width)
+	c := canvas.New(width, rows)
+	for y := range rows {
+		for x := range width {
+			c.Set(x, y, ' ', style.Footer)
+		}
+	}
+	x := 3
+	for _, s := range legend(m.frame) {
+		c.Text(x, 0, s.text, onFooter(s.style), width)
+		x += ansi.StringWidth(s.text)
+	}
+	keys := m.keys()
+	if rows == 1 {
+		c.Text(width-4-ansi.StringWidth(keys), 0, keys, onFooter(style.Dim), width)
+	} else {
+		c.Text(3, 1, keys, onFooter(style.Dim), width)
+	}
+	return c.Lines()
+}
+
+// onFooter puts the foreground fg on the footer background.
+func onFooter(fg string) string {
+	if fg == "" {
+		return style.Footer
+	}
+	return fg + ";" + style.Footer
 }
 
 func (m Model) selectedEntry() (list.Entry, bool) {

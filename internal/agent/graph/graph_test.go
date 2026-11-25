@@ -213,7 +213,7 @@ func TestViewDrawsPodsTreesAndClock(t *testing.T) {
 	text := screen(listed(t, fixture(), 140, 50))
 	for _, want := range []string{
 		"14:22:05", "╭─ api ", "╭─ hive ", "╭─ home ",
-		"│ │╭─", "├│ ✓ hive-reviewer", "╰│ × hive-worker ", "╰│ ○ hive-worker-kid",
+		"│   │ ╭─", "│   │ │ ✓ hive-reviewer", "│   ├─│ ", "│   │ │ × hive-worker ", "│      │ │ ○ hive-worker-kid", "│      ╰─│ ", "│   ╰─│ ",
 		"┃ ○ coordinator", "⠋ working", "○ idle", "× blocked", "✓ done", "– gone",
 	} {
 		if !strings.Contains(text, want) {
@@ -233,7 +233,7 @@ func TestSelectedCardHasHeavyBorder(t *testing.T) {
 	}
 	m = key(t, m, tea.KeyDown)
 	text = screen(m)
-	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "╰┃ ⠋ api-worker") {
+	if strings.Count(text, "┏") != 1 || !strings.Contains(text, "│ ┃ ⠋ api-worker") {
 		t.Fatalf("down did not move the heavy border:\n%s", text)
 	}
 }
@@ -315,6 +315,13 @@ func TestNarrowStacksPodsInTheWidth(t *testing.T) {
 	}
 	if !strings.Contains(text, "hive-worker") {
 		t.Fatalf("narrow cards drop the names:\n%s", text)
+	}
+	// A list pod is one track: the root card is 36 - 6 = 30 wide, and the
+	// pod box 36 wide from column 0.
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(line, "╭─ ") && (ansi.StringWidth(line) != 36 || !strings.HasSuffix(line, "╮")) {
+			t.Errorf("pod top %q; want a box of 36 columns from column 0", line)
+		}
 	}
 }
 
@@ -555,16 +562,27 @@ func TestEachStateHasItsGlyphAndStyle(t *testing.T) {
 func TestLegendShowsEachGlyphAndNoStaticWorkingGlyph(t *testing.T) {
 	m := loaded(t, []list.Entry{entry("a", "", "idle", "pi", "m", 0)}, 140, 30)
 	legend := legendLine(m)
-	for _, want := range []string{
-		"\x1b[38;2;110;230;154m⠋\x1b[0m working",
-		"\x1b[38;2;245;185;66m○\x1b[0m idle",
-		"\x1b[38;2;232;112;95m×\x1b[0m blocked",
-		"\x1b[38;2;163;157;144m✓\x1b[0m done",
-		"\x1b[38;2;163;157;144m·\x1b[0m unknown",
-		"\x1b[38;2;163;157;144m–\x1b[0m gone",
+	cells := parseCells(legend)
+	text := ansi.Strip(legend)
+	for _, want := range []struct{ glyph, word, style string }{
+		{"⠋", "working", "38;2;110;230;154"},
+		{"○", "idle", "38;2;245;185;66"},
+		{"×", "blocked", "38;2;232;112;95"},
+		{"✓", "done", "38;2;163;157;144"},
+		{"·", "unknown", "38;2;163;157;144"},
+		{"–", "gone", "38;2;163;157;144"},
 	} {
-		if !strings.Contains(legend, want) {
-			t.Errorf("legend %q has no %q", ansi.Strip(legend), ansi.Strip(want))
+		at := strings.Index(text, want.glyph+" "+want.word+" ")
+		if at < 0 {
+			t.Errorf("legend %q has no %q", text, want.glyph+" "+want.word)
+			continue
+		}
+		col := len([]rune(text[:at]))
+		if got := cells[col].Style; got != want.style+";"+style.Footer {
+			t.Errorf("legend glyph %s style = %q; want %q on the footer background", want.glyph, got, want.style+";"+style.Footer)
+		}
+		if got := cells[col+2].Style; got != style.Footer {
+			t.Errorf("legend word %s style = %q; want the footer background only", want.word, got)
 		}
 	}
 	m = loaded(t, fixture(), 140, 50)
@@ -811,7 +829,7 @@ func TestEscHidesTheOutlineAndAMoveKeyShowsIt(t *testing.T) {
 		t.Fatalf("esc did not hide the outline:\n%s", text)
 	}
 	m = key(t, m, tea.KeyDown)
-	if text := screen(m); strings.Count(text, "┏") != 1 || !strings.Contains(text, "╰┃ ⠋ api-worker") {
+	if text := screen(m); strings.Count(text, "┏") != 1 || !strings.Contains(text, "│ ┃ ⠋ api-worker") {
 		t.Fatalf("the first down after esc does not show the outline on api-worker:\n%s", text)
 	}
 	m = key(t, m, tea.KeyDown)

@@ -26,3 +26,9 @@ func TestHarnessColours(t *testing.T) {
 		}
 	}
 }
+
+func TestFooterBackground(t *testing.T) {
+	if Footer != "48;2;28;27;24" {
+		t.Fatalf("Footer = %q; want the background #1c1b18", Footer)
+	}
+}
