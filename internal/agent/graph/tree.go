@@ -2,16 +2,14 @@ package graph
 
 import "github.com/Harrison-Blair/hive/internal/lib/style"
 
-// treeGap is the number of columns between two subtrees side by side.
-const treeGap = 2
-
-// forestWidth is the width of the subtrees of nodes side by side.
-func forestWidth(nodes []*Node, cw int) int {
-	w := -treeGap
-	for _, n := range nodes {
-		w += treeGap + max(cw, forestWidth(n.Children, cw))
+// leaves is the number of tracks of the subtrees of nodes side by side: one
+// for each card with no children.
+func leaves(nodes []*Node) int {
+	n := 0
+	for _, node := range nodes {
+		n += max(1, leaves(node.Children))
 	}
-	return max(0, w)
+	return n
 }
 
 // treePodHeight is the height of a pod with one row of cards for each depth
@@ -21,60 +19,46 @@ func treePodHeight(p Pod) int {
 	return 2 + levels*cardHeight + levels - 1
 }
 
-// forest draws the subtrees of nodes side by side from x, with their roots in
-// row y.
-func (d *drawer) forest(nodes []*Node, x, y int) {
-	for _, n := range nodes {
+// forest draws the subtrees of nodes side by side from the card column x,
+// each on as many tracks as it has leaves, with their roots in row y. It
+// returns the card column of each subtree.
+func (d *drawer) forest(nodes []*Node, x, y int) []int {
+	xs := make([]int, len(nodes))
+	for i, n := range nodes {
+		xs[i] = x
 		d.subtree(n, x, y)
-		x += max(d.cw, forestWidth(n.Children, d.cw)) + treeGap
+		x += trackPitch * max(1, leaves(n.Children))
+	}
+	return xs
+}
+
+// subtree draws the subtree of n with the card of n at x, y, on the track
+// of its first child.
+func (d *drawer) subtree(n *Node, x, y int) {
+	d.card(n, x, y, d.cw)
+	if len(n.Children) > 0 {
+		d.joins(d.forest(n.Children, x, y+cardHeight+1), y)
 	}
 }
 
-// subtree draws the subtree of n with its left edge at x and the card of n
-// in row y. The card is centered over the first and the last child. It
-// returns the column of the card.
-func (d *drawer) subtree(n *Node, x, y int) int {
-	if len(n.Children) == 0 {
-		d.card(n, x, y)
-		return x
-	}
-	xs := make([]int, len(n.Children))
-	at := x
-	for i, child := range n.Children {
-		xs[i] = d.subtree(child, at, y+cardHeight+1)
-		at += max(d.cw, forestWidth(child.Children, d.cw)) + treeGap
-	}
-	cx := (xs[0] + xs[len(xs)-1]) / 2
-	d.card(n, cx, y)
-	d.joins(n, cx, y, xs)
-	return cx
-}
-
-// joins draws the lines from the card of n at x, y to the cards of its
-// children at xs in the next row of cards.
-func (d *drawer) joins(n *Node, x, y int, xs []int) {
+// joins draws the lines in the row below the card row y from the parent,
+// over the first child, to the children at the card columns xs.
+func (d *drawer) joins(xs []int, y int) {
 	half := d.cw / 2
-	center, bar := x+half, y+cardHeight
+	bar := y + cardHeight
 	first, last := xs[0]+half, xs[len(xs)-1]+half
-	for col := first; col <= last; col++ {
+	if len(xs) == 1 {
+		d.c.Set(first, bar, '│', style.Border)
+		return
+	}
+	for col := first + 1; col < last; col++ {
 		d.c.Set(col, bar, '─', style.Border)
 	}
-	if len(xs) == 1 {
-		d.c.Set(center, bar, '│', style.Border)
-	} else {
-		d.c.Set(first, bar, '╭', style.Border)
-		d.c.Set(last, bar, '╮', style.Border)
-		for _, cx := range xs[1 : len(xs)-1] {
-			d.c.Set(cx+half, bar, '┬', style.Border)
-		}
-		up := '┴'
-		for _, cx := range xs[1 : len(xs)-1] {
-			if cx+half == center {
-				up = '┼'
-			}
-		}
-		d.c.Set(center, bar, up, style.Border)
+	d.c.Set(first, bar, '├', style.Border)
+	for _, cx := range xs[1 : len(xs)-1] {
+		d.c.Set(cx+half, bar, '┬', style.Border)
 	}
+	d.c.Set(last, bar, '╮', style.Border)
 }
 
 // vertical moves the selection delta rows of cards down the screen in tree

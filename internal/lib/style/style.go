@@ -12,6 +12,9 @@ const (
 	Error    = "38;2;232;112;95"
 )
 
+// Footer is the SGR background of the footer rows of the graph: #1c1b18.
+const Footer = "48;2;28;27;24"
+
 // The SGR parameters of the harness colours. Pi keeps the default foreground.
 const (
 	Claude = "38;2;217;119;87"

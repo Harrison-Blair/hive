@@ -37,36 +37,36 @@ func stripped(lines []string) string {
 	return strings.Join(out, "\n")
 }
 
-// TestTreeDrawsSiblingsInOneRowUnderACenteredParent compares the tree of
-// smallTree at 38 columns with a picture drawn by hand: cards of 33 columns,
-// a and b side by side, c centered over them, and w below a.
-func TestTreeDrawsSiblingsInOneRowUnderACenteredParent(t *testing.T) {
-	want := strings.Join([]string{
-		"╭─ home " + strings.Repeat("─", 63) + "╮",
-		"│" + strings.Repeat(" ", 18) + "╭" + strings.Repeat("─", 31) + "╮" + strings.Repeat(" ", 19) + "│",
-		"│" + strings.Repeat(" ", 18) + "│ ○ c" + strings.Repeat(" ", 27) + "│" + strings.Repeat(" ", 19) + "│",
-		"│" + strings.Repeat(" ", 18) + "│" + strings.Repeat(" ", 31) + "│" + strings.Repeat(" ", 19) + "│",
-		"│" + strings.Repeat(" ", 18) + "│ pi · m" + strings.Repeat(" ", 24) + "│" + strings.Repeat(" ", 19) + "│",
-		"│" + strings.Repeat(" ", 18) + "╰" + strings.Repeat("─", 31) + "╯" + strings.Repeat(" ", 19) + "│",
-		"│" + strings.Repeat(" ", 17) + "╭" + strings.Repeat("─", 16) + "┴" + strings.Repeat("─", 17) + "╮" + strings.Repeat(" ", 17) + "│",
-		"│ ╭" + strings.Repeat("─", 31) + "╮  ╭" + strings.Repeat("─", 31) + "╮ │",
-		"│ │ ○ a" + strings.Repeat(" ", 27) + "│  │ ○ b" + strings.Repeat(" ", 27) + "│ │",
-		"│ │" + strings.Repeat(" ", 31) + "│  │" + strings.Repeat(" ", 31) + "│ │",
-		"│ │ pi · m" + strings.Repeat(" ", 24) + "│  │ pi · m" + strings.Repeat(" ", 24) + "│ │",
-		"│ ╰" + strings.Repeat("─", 31) + "╯  ╰" + strings.Repeat("─", 31) + "╯ │",
-		"│" + strings.Repeat(" ", 17) + "│" + strings.Repeat(" ", 52) + "│",
-		"│ ╭" + strings.Repeat("─", 31) + "╮" + strings.Repeat(" ", 36) + "│",
-		"│ │ ○ w" + strings.Repeat(" ", 27) + "│" + strings.Repeat(" ", 36) + "│",
-		"│ │" + strings.Repeat(" ", 31) + "│" + strings.Repeat(" ", 36) + "│",
-		"│ │ pi · m" + strings.Repeat(" ", 24) + "│" + strings.Repeat(" ", 36) + "│",
-		"│ ╰" + strings.Repeat("─", 31) + "╯" + strings.Repeat(" ", 36) + "│",
-		"╰" + strings.Repeat("─", 70) + "╯",
-	}, "\n")
+// TestTreeDrawsSiblingsInOneRowUnderTheFirstChild compares the tree of
+// smallTree at 38 columns with a picture drawn by hand: a pod of two tracks,
+// 79 columns, cards of 33 columns at columns 3 and 43, c over its first child
+// a, b beside a, and w below a.
+func TestTreeDrawsSiblingsInOneRowUnderTheFirstChild(t *testing.T) {
+	card := func(right int, rows ...string) []string {
+		out := make([]string, len(rows))
+		for i, row := range rows {
+			out[i] = "│  " + row + strings.Repeat(" ", right) + "│"
+		}
+		return out
+	}
+	top, bottom := "╭"+strings.Repeat("─", 31)+"╮", "╰"+strings.Repeat("─", 31)+"╯"
+	blank := "│" + strings.Repeat(" ", 31) + "│"
+	name := func(n string) string { return "│ ○ " + n + strings.Repeat(" ", 27) + "│" }
+	sub := "│ pi · m" + strings.Repeat(" ", 24) + "│"
+	lines := []string{"╭─ home " + strings.Repeat("─", 70) + "╮"}
+	lines = append(lines, card(42, top, name("c"), blank, sub, bottom)...)
+	lines = append(lines, "│"+strings.Repeat(" ", 18)+"├"+strings.Repeat("─", 39)+"╮"+strings.Repeat(" ", 18)+"│")
+	gap := strings.Repeat(" ", 7)
+	lines = append(lines, card(2, top+gap+top, name("a")+gap+name("b"), blank+gap+blank, sub+gap+sub, bottom+gap+bottom)...)
+	lines = append(lines, "│"+strings.Repeat(" ", 18)+"│"+strings.Repeat(" ", 58)+"│")
+	lines = append(lines, card(42, top, name("w"), blank, sub, bottom)...)
+	lines = append(lines, "╰"+strings.Repeat("─", 77)+"╯")
+	want := strings.Join(lines, "\n")
 	b := drawBoard(Pods(smallTree()), 38, nil, "", 0, nil, true)
 	if got := stripped(b.lines); got != want {
 		t.Fatalf("tree =\n%s\nwant\n%s", got, want)
 	}
-	for name, at := range map[string][2]int{"c": {19, 1}, "a": {2, 7}, "b": {37, 7}, "w": {2, 13}} {
+	for name, at := range map[string][2]int{"c": {3, 1}, "a": {3, 7}, "b": {43, 7}, "w": {3, 13}} {
 		if s := b.cards[name]; s.left != at[0] || s.top != at[1] || s.width != 33 {
 			t.Errorf("span of %s = %+v; want left %d, top %d, width 33", name, s, at[0], at[1])
 		}
@@ -93,23 +93,25 @@ func TestTreeJoinsOfTheSelectedAndOfAWorkingParent(t *testing.T) {
 }
 
 func TestTreeCardsKeepFullWidth(t *testing.T) {
-	// Two cards of 33 and a gap of 2 need 68 columns, and 72 with the pod.
-	for _, width := range []int{120, 72, 71, 38, 20, 1} {
+	// smallTree has two leaves, so its pod is two tracks: 79 columns.
+	for _, width := range []int{120, 79, 78, 38, 20, 1} {
 		b := drawBoard(Pods(smallTree()), width, nil, "", 0, nil, true)
 		if got := b.cards["w"].width; got != 33 {
 			t.Errorf("width %d: card width = %d; want 33", width, got)
 		}
-		if b.width != 72 {
-			t.Errorf("width %d: board width = %d; want 72", width, b.width)
+		if b.width != 79 {
+			t.Errorf("width %d: board width = %d; want 79", width, b.width)
 		}
 	}
 }
 
-func TestListCardWidthIsUnchanged(t *testing.T) {
-	for width, want := range map[int]int{72: 33, 38: 32, 20: 16, 1: 16} {
+// TestListCardWidthFollowsTheScreenAndTheDepth checks the root c, of
+// min(33, max(16, W - 6)), and w at depth 2, 6 narrower down to 16.
+func TestListCardWidthFollowsTheScreenAndTheDepth(t *testing.T) {
+	for width, want := range map[int][2]int{72: {33, 27}, 38: {32, 26}, 20: {16, 16}, 1: {16, 16}} {
 		b := drawBoard(Pods(smallTree()), width, nil, "", 0, nil, false)
-		if got := b.cards["w"].width; got != want {
-			t.Errorf("width %d: list card width = %d; want %d", width, got, want)
+		if got := [2]int{b.cards["c"].width, b.cards["w"].width}; got != want {
+			t.Errorf("width %d: list card widths of c and w = %v; want %v", width, got, want)
 		}
 	}
 }
@@ -122,10 +124,10 @@ func TestNarrowTreeNavigationFollowsSelection(t *testing.T) {
 		xscroll  int
 		row      int
 	}{
-		{tea.KeyDown, "a", 15, 10},
-		{tea.KeyRight, "b", 50, 10},
-		{tea.KeyLeft, "a", 15, 10},
-		{tea.KeyUp, "c", 32, 4},
+		{tea.KeyDown, "a", 16, 10},
+		{tea.KeyRight, "b", 56, 10},
+		{tea.KeyLeft, "a", 16, 10},
+		{tea.KeyUp, "c", 16, 4},
 	} {
 		m = key(t, m, step.key)
 		if m.selected != step.selected || m.xscroll != step.xscroll {
@@ -144,16 +146,16 @@ func TestGraphOpensInTreeModeAndGSwitches(t *testing.T) {
 	if !strings.Contains(text, " [tree] ←↑↓→ move · enter details · esc hide · g list · r refresh · q quit") {
 		t.Fatalf("the graph does not open in tree mode:\n%s", text)
 	}
-	if strings.Contains(text, "├│ ✓ hive-reviewer") || !strings.Contains(text, "┴") {
+	if strings.Contains(text, "├─│") || !strings.Contains(text, "├───") {
 		t.Fatalf("tree mode draws the list:\n%s", text)
 	}
 	m = key(t, m, 'g')
 	text = screen(m)
-	if !strings.Contains(text, " [list] ←↑↓→ move · enter details · esc hide · g tree · r refresh · q quit") || !strings.Contains(text, "├│ ✓ hive-reviewer") {
+	if !strings.Contains(text, " [list] ←↑↓→ move · enter details · esc hide · g tree · r refresh · q quit") || !strings.Contains(text, "├─│") || strings.Contains(text, "├───") {
 		t.Fatalf("g does not switch to the list:\n%s", text)
 	}
 	m = key(t, m, 'g')
-	if text := screen(m); !strings.Contains(text, " [tree] ") || strings.Contains(text, "├│ ✓ hive-reviewer") {
+	if text := screen(m); !strings.Contains(text, " [tree] ") || strings.Contains(text, "├─│") {
 		t.Fatalf("a second g does not switch back to the tree:\n%s", text)
 	}
 }
@@ -194,19 +196,26 @@ func TestTreeMovesFollowTheScreen(t *testing.T) {
 	}
 }
 
+// TestTreeDownTieGoesLeft draws the roots a, b, and c on the tracks 0, 1,
+// and 2, with a1 below a and c1 below c. From b, a1 and c1 are one track
+// away.
 func TestTreeDownTieGoesLeft(t *testing.T) {
-	m := loaded(t, smallTree(), 38, 40)
-	if m.selected != "c" {
-		t.Fatalf("selected = %q; want c", m.selected)
+	m := loaded(t, []list.Entry{
+		entry("a", "", "idle", "pi", "m", 0), entry("a1", "a", "idle", "pi", "m", 0),
+		entry("b", "", "idle", "pi", "m", 0),
+		entry("c", "", "idle", "pi", "m", 0), entry("c1", "c", "idle", "pi", "m", 0),
+	}, 200, 40)
+	if m = key(t, m, tea.KeyRight); m.selected != "b" {
+		t.Fatalf("selected = %q; want b", m.selected)
 	}
-	if m = key(t, m, tea.KeyDown); m.selected != "a" {
-		t.Fatalf("down from c, whose center is as far from a as from b: selected = %q; want a", m.selected)
+	if m = key(t, m, tea.KeyDown); m.selected != "a1" {
+		t.Fatalf("down from b, whose center is as far from a1 as from c1: selected = %q; want a1", m.selected)
 	}
 }
 
 // TestWideTreeScrollsSidewaysToTheSelection draws one root with six children
-// at 80 columns. The children are 33 wide with a gap of 2, so k6 spans
-// columns 177 to 209 of the board.
+// at 80 columns. The children are on the tracks 0 to 5, so k6 spans
+// columns 203 to 235 of the board.
 func TestWideTreeScrollsSidewaysToTheSelection(t *testing.T) {
 	entries := []list.Entry{entry("r", "", "idle", "pi", "m", 0)}
 	for _, name := range []string{"k1", "k2", "k3", "k4", "k5", "k6"} {
@@ -244,7 +253,7 @@ func TestWideTreeScrollsSidewaysToTheSelection(t *testing.T) {
 
 // TestHiddenTreeKeepsTheSideScrollAndAMoveKeyShowsWithoutMoving draws the
 // root a beside the root r with six children at 80 columns. Cards are 33
-// wide: a spans columns 2 to 34 and k6 columns 212 to 244.
+// wide: a spans columns 3 to 35 and k6, on track 6, columns 243 to 275.
 func TestHiddenTreeKeepsTheSideScrollAndAMoveKeyShowsWithoutMoving(t *testing.T) {
 	entries := []list.Entry{entry("a", "", "idle", "pi", "m", 0), entry("r", "", "idle", "pi", "m", 0)}
 	for _, name := range []string{"k1", "k2", "k3", "k4", "k5", "k6"} {
@@ -254,8 +263,8 @@ func TestHiddenTreeKeepsTheSideScrollAndAMoveKeyShowsWithoutMoving(t *testing.T)
 	for range 5 {
 		m = key(t, m, tea.KeyRight)
 	}
-	if m.selected != "k6" || m.xscroll != 165 {
-		t.Fatalf("selected = %q, xscroll = %d; want k6 with xscroll 165", m.selected, m.xscroll)
+	if m.selected != "k6" || m.xscroll != 196 {
+		t.Fatalf("selected = %q, xscroll = %d; want k6 with xscroll 196", m.selected, m.xscroll)
 	}
 	m = key(t, m, tea.KeyEscape)
 	if text := screen(m); strings.ContainsAny(text, "┏┃") {
@@ -264,8 +273,8 @@ func TestHiddenTreeKeepsTheSideScrollAndAMoveKeyShowsWithoutMoving(t *testing.T)
 	// The refresh replaces k6 with k7, so the selection goes to a, left of
 	// the view, and the board keeps its width.
 	m = update(t, m, fetchedMsg{entries: append(entries[:7:7], entry("k7", "r", "idle", "pi", "m", 0)), at: clock})
-	if m.selected != "a" || m.xscroll != 165 {
-		t.Fatalf("selected = %q, xscroll = %d; want a with xscroll 165 kept while hidden", m.selected, m.xscroll)
+	if m.selected != "a" || m.xscroll != 196 {
+		t.Fatalf("selected = %q, xscroll = %d; want a with xscroll 196 kept while hidden", m.selected, m.xscroll)
 	}
 	m = key(t, m, tea.KeyDown)
 	if text := screen(m); m.selected != "a" || !strings.Contains(text, "┃ ○ a ") {
