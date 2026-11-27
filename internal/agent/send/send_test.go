@@ -92,14 +92,74 @@ func TestSendDeliversThroughTheHarnessSocket(t *testing.T) {
 	}
 }
 
-func TestSendWithoutCallerRecordUsesUser(t *testing.T) {
+// adopt sets the record "boss" as the parent of the target "kid".
+func adopt(t *testing.T, home, kidPane string) {
+	t.Helper()
+	if err := agent.Save(home, agent.Record{Name: "kid", Pane: kidPane, Parent: "boss", Harness: "claude"}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// The delivered text marks the parent of the target. The result keeps the
+// plain name.
+func TestSendMarksTheParentOfTheTarget(t *testing.T) {
+	_, home, bossPane, kidPane, lines := setup(t)
+	adopt(t, home, kidPane)
+	envelope := sendRun(t, home, Options{Name: "kid", Text: "hi", CallerPane: bossPane})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := received(t, lines); !slices.Equal(got, []string{"⬢ boss (parent): hi"}) {
+		t.Fatalf("messages = %q", got)
+	}
+	if result := envelope.Result.(Result); result.Sender != "boss" {
+		t.Fatalf("result = %+v; want the sender boss with no mark", result)
+	}
+}
+
+// A sibling has the same parent as the target. It is not the parent.
+func TestSendDoesNotMarkASibling(t *testing.T) {
+	fake, home, _, kidPane, lines := setup(t)
+	adopt(t, home, kidPane)
+	sisPane := fake.AddPane("w1", "")
+	if err := agent.Save(home, agent.Record{Name: "sis", Pane: sisPane.ID, Parent: "boss", Harness: "claude"}); err != nil {
+		t.Fatal(err)
+	}
+	envelope := sendRun(t, home, Options{Name: "kid", Text: "hi", CallerPane: sisPane.ID})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := received(t, lines); !slices.Equal(got, []string{"⬢ sis: hi"}) {
+		t.Fatalf("messages = %q", got)
+	}
+}
+
+// The target "kid" has an empty Parent, and a caller with no record has an
+// empty name. The two empty values must not give the parent mark.
+func TestSendWithoutCallerRecordIsUnregistered(t *testing.T) {
 	_, home, _, _, lines := setup(t)
 	for _, caller := range []string{"", "w9:p9"} {
-		if envelope := sendRun(t, home, Options{Name: "kid", Text: "hi", CallerPane: caller}); envelope.Outcome != "ok" {
+		envelope := sendRun(t, home, Options{Name: "kid", Text: "hi", CallerPane: caller})
+		if envelope.Outcome != "ok" {
 			t.Fatalf("envelope = %+v", envelope)
 		}
+		if result := envelope.Result.(Result); result.Sender != "unregistered" {
+			t.Fatalf("result = %+v; want the sender unregistered", result)
+		}
 	}
-	if got := received(t, lines); !slices.Equal(got, []string{"⬢ user: hi", "⬢ user: hi"}) {
+	if got := received(t, lines); !slices.Equal(got, []string{"⬢ unregistered: hi", "⬢ unregistered: hi"}) {
+		t.Fatalf("messages = %q", got)
+	}
+}
+
+// A caller with no record is not the parent of a target that has a parent.
+func TestSendWithoutCallerRecordToAChildIsUnregistered(t *testing.T) {
+	_, home, _, kidPane, lines := setup(t)
+	adopt(t, home, kidPane)
+	if envelope := sendRun(t, home, Options{Name: "kid", Text: "hi", CallerPane: ""}); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := received(t, lines); !slices.Equal(got, []string{"⬢ unregistered: hi"}) {
 		t.Fatalf("messages = %q", got)
 	}
 }

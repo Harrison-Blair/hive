@@ -35,14 +35,19 @@ type Options struct {
 
 // Result is the target and its status after the send.
 type Result struct {
-	Name   string `json:"name"`
-	Pane   string `json:"pane"`
+	Name string `json:"name"`
+	Pane string `json:"pane"`
+	// Sender is the record name of the caller with no parent mark, or
+	// "unregistered" for a caller pane with no record.
 	Sender string `json:"sender"`
 	Status string `json:"status"`
 }
 
 // Run delivers "⬢ SENDER: TEXT" to the agent of the record Name through the
-// native message path of its harness. It never types into the pane.
+// native message path of its harness. It never types into the pane. SENDER
+// is the record name of the caller pane, with " (parent)" after it when that
+// name is the Parent of the target record. A caller pane with no record gives
+// the SENDER "unregistered".
 func Run(ctx context.Context, home string, options Options) output.Envelope {
 	logger := agent.Logger(options.Logger)
 	envelope := run(ctx, home, options, logger)
@@ -69,8 +74,16 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	if err != nil {
 		return output.Failed("caller", err.Error())
 	}
-	if sender == "" {
-		sender = "user"
+	// A caller with no record has an empty name, and a target can have an
+	// empty Parent. Those two empty values are not a parent relation, so the
+	// empty name comes first.
+	label := sender
+	switch sender {
+	case "":
+		sender = "unregistered"
+		label = sender
+	case record.Parent:
+		label = sender + " (parent)"
 	}
 	pane, err := herdr.PaneGet(ctx, record.Pane, herdr.WithLogger(logger))
 	if err != nil {
@@ -84,7 +97,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		return output.Failed("agent", fmt.Sprintf("agent %s: %s", record.Name, err))
 	}
 
-	text := "⬢ " + sender + ": " + options.Text
+	text := "⬢ " + label + ": " + options.Text
 	if err := profile.Deliver(ctx, record.Pane, text, logger); err != nil {
 		return output.Failed("deliver", fmt.Sprintf("agent %s in pane %s: %s", record.Name, record.Pane, err))
 	}
