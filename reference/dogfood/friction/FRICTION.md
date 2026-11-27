@@ -14,7 +14,6 @@ The entries from before the teardown are at the tag `pre-teardown`, below
 
 ## Open
 
-- [An agent can send a message with user authority](entries/send-gives-user-authority.md) — hive agent send labels the sender user when the caller pane has no record or HERDR_PANE_ID is empty
 - [Hive has no command to stop all agents](entries/no-stop-all-command.md) — hive agent stop takes one NAME, so the end of a session means one stop for each agent
 - [A restart can silently run a stale hive binary](entries/restart-runs-stale-binary.md) — Bare hive and agents run the hive on PATH, and nothing compares it with the home checkout
 - [A Codex spawn in an untrusted Git directory stops at the trust dialog](entries/codex-spawn-stops-at-trust-dialog.md) — Codex shows its folder trust dialog in a Git repository with no saved trust, and hive has no per-process trust method
@@ -38,3 +37,4 @@ The entries from before the teardown are at the tag `pre-teardown`, below
 - [hive agent send can split a message that the user types](entries/resolved/send-splits-typed-message.md) — agent.prompt pastes text and presses Enter into a prompt that already holds the partial text of the user
 - [A report sent to a pane with an open dialog is lost](entries/resolved/send-blocked-by-dialog.md) — hive agent send refuses a target that a dialog blocks, and a worker that ends its turn never sends the report again
 - [A test TMPDIR below the home lets tests reach the real home](entries/resolved/test-tmpdir-reaches-real-home.md) — Home discovery picks the outermost marker, so a t.TempDir() below the home resolves to the real home
+- [An agent can send a message with user authority](entries/resolved/send-gives-user-authority.md) — hive agent send labels the sender user when the caller pane has no record or HERDR_PANE_ID is empty

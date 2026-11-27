@@ -1,9 +1,9 @@
 ---
 title: "An agent can send a message with user authority"
 description: "hive agent send labels the sender user when the caller pane has no record or HERDR_PANE_ID is empty"
-status: "Open"
+status: "Resolved 2026-11-27"
 opened: 2026-10-20
-decision: ""
+decision: "No send carries the authority of the user now. hive agent send gives the label unregistered to a caller pane with no record or with an empty HERDR_PANE_ID, and guide note 3 gives that label no authority. An agent takes a relayed approval of the user only from a message with the mark (parent), which hive adds when the record name of the caller is the Parent of the target record. Hive finds the sender from HERDR_PANE_ID and the agent records. An agent that forges a record or a pane ID can still send with a false name, and this change gives no protection against that"
 ---
 
 **Issue:** `hive agent send` delivers `⬢ SENDER: TEXT`. SENDER is the record
