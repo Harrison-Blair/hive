@@ -98,6 +98,16 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 	if err != nil {
 		return output.Failed("caller", err.Error())
 	}
+	// An agent with a parent gets the delegation paragraph after its brief.
+	// The bytes of the brief stay unchanged, and one empty line comes
+	// between the two. With no brief, spawn sends no prompt.
+	if parent != "" && prompt != "" {
+		separator := "\n\n"
+		if strings.HasSuffix(prompt, "\n") {
+			separator = "\n"
+		}
+		prompt += separator + guide.Delegation(parent)
+	}
 	// The layout lock covers the name check, the placement, and the start
 	// until the record exists, so a spawn or a remove at the same time sees
 	// this agent: its name, its pane, and its checkout.

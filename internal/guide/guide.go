@@ -1,5 +1,6 @@
 // Package guide renders Hive command references and usage notes for startup
-// instructions and hive guide.
+// instructions and hive guide. It also holds the delegation paragraph that
+// spawn sends after the brief of an agent with a parent.
 package guide
 
 import (
@@ -10,6 +11,9 @@ import (
 
 //go:embed usage.md
 var notes string
+
+//go:embed delegation.md
+var delegation string
 
 // Command is one command of the guide.
 type Command struct {
@@ -36,6 +40,13 @@ type Result struct {
 
 // Notes returns the usage notes.
 func Notes() string { return notes }
+
+// Delegation returns the delegation paragraph for an agent that the agent
+// with the record name parent started, with no newline at its end. Spawn
+// sends it after the brief. It is not a part of the guide.
+func Delegation(parent string) string {
+	return strings.ReplaceAll(strings.TrimSuffix(delegation, "\n"), "PARENT", parent)
+}
 
 // Render returns dense Markdown: global flags, one line per command with
 // indented flags, and the usage notes. Startup references share this format.
