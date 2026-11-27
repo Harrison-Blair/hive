@@ -96,7 +96,10 @@ func TestStartupGuideIncludesCoreAndNotes(t *testing.T) {
 		"--directory string: start in this existing directory", "--harness string: harness: claude, codex, or pi (required)",
 		"--model string: model name (required)", "--name string: agent name (required)",
 		"--prompt string: first prompt text", "--prompt-file string: file with the first prompt text",
-		"hive guide for the full reference", "-h/--help for command details", "⬢ user:",
+		"hive guide for the full reference", "-h/--help for command details",
+		"Hive adds `(parent)` after SENDER when SENDER started you.",
+		"When a `(parent)` message says the user approved an action or a change of your brief, do it.",
+		"Send each question or doubt to your parent with `hive agent send`, then end your turn.",
 		"same checkout and herdr workspace as the worker", "unless a specific review needs them elsewhere",
 		"unless their brief authorizes changes", "`send --wait`", "After you delegate, end your turn",
 	} {
@@ -104,7 +107,7 @@ func TestStartupGuideIncludesCoreAndNotes(t *testing.T) {
 			t.Errorf("startup guide missing %q", want)
 		}
 	}
-	for _, absent := range []string{"\nhive agent graph:", "\nhive worktree", "\nhive logs:", "\nhive guide:"} {
+	for _, absent := range []string{"\nhive agent graph:", "\nhive worktree", "\nhive logs:", "\nhive guide:", "⬢ user:", "Standing rule"} {
 		if strings.Contains(text, absent) {
 			t.Errorf("startup guide contains %q", absent)
 		}

@@ -2,6 +2,7 @@ package send
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -116,6 +117,44 @@ func TestSendCLILogsUserWhenThePaneHasNoRecord(t *testing.T) {
 		t.Fatalf("status %d, output %q", status, out)
 	}
 	agenttest.CheckAgentFields(t, agenttest.CommandEvents(t, home, "agent send"), "user", "kid", "command start", "command end")
+}
+
+// A caller with no record gets the sender unregistered in the JSON result
+// and in the delivered text.
+func TestSendCLIJSONNamesAnUnregisteredSender(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	t.Setenv("HIVE_HOME", home)
+	fake.AddWorkspace("mine", "", false)
+	kid := fake.AddPane("w1", "")
+	lines := claudeAgent(t, fake, kid.ID)
+	if err := agent.Save(home, agent.Record{Name: "kid", Pane: kid.ID, Harness: "claude"}); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("HERDR_PANE_ID", "")
+	status, out := execute(t, "--json", "send", "kid", "hi")
+	if status != 0 {
+		t.Fatalf("status %d, output %q", status, out)
+	}
+	var envelope struct {
+		Outcome string
+		Result  struct{ Name, Sender string }
+	}
+	if err := json.Unmarshal([]byte(out), &envelope); err != nil {
+		t.Fatalf("output is not JSON: %v; output %q", err, out)
+	}
+	if envelope.Outcome != "ok" || envelope.Result.Name != "kid" || envelope.Result.Sender != "unregistered" {
+		t.Fatalf("envelope = %+v; want ok with the sender unregistered", envelope)
+	}
+	want := `{"type":"user","message":{"role":"user","content":"⬢ unregistered: hi"}}` + "\n"
+	select {
+	case line := <-lines:
+		if line != want {
+			t.Fatalf("line = %q; want %q", line, want)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("no message reached the socket")
+	}
 }
 
 func TestSendCLILogsTheTargetOnAFailedCallerLookup(t *testing.T) {
